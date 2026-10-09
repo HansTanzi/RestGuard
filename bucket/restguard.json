@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
   "description": "Cross-platform break reminder that actually makes you rest",
-  "homepage": "https://github.com/xiaoxstz/RestTimer",
+  "homepage": "https://github.com/HansTanzi/RestGuard",
   "license": "MIT|Apache-2.0",
   "notes": "Config file: $env:APPDATA\\io.github.restguard\\config.toml",
   "suggest": {
@@ -9,7 +9,7 @@
   },
   "architecture": {
     "64bit": {
-      "url": "https://github.com/xiaoxstz/RestTimer/releases/download/v0.1.0/RestGuard_0.1.0_x64.exe#/RestGuard.exe",
+      "url": "https://github.com/HansTanzi/RestGuard/releases/download/v0.1.0/RestGuard_0.1.0_x64.exe#/RestGuard.exe",
       "hash": "0000000000000000000000000000000000000000000000000000000000000000"
     }
   },
@@ -23,7 +23,7 @@
   "autoupdate": {
     "architecture": {
       "64bit": {
-        "url": "https://github.com/xiaoxstz/RestTimer/releases/download/v$version/RestGuard_$version_x64.exe#/RestGuard.exe"
+        "url": "https://github.com/HansTanzi/RestGuard/releases/download/v$version/RestGuard_$version_x64.exe#/RestGuard.exe"
       }
     }
   }

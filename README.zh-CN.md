@@ -21,7 +21,7 @@
 Windows 可通过 [Scoop](https://scoop.sh) 安装：
 
 ```powershell
-scoop bucket add restguard https://github.com/xiaoxstz/RestTimer
+scoop bucket add restguard https://github.com/HansTanzi/RestGuard
 scoop install restguard/restguard
 ```
 

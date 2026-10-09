@@ -21,7 +21,7 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 On Windows, install with [Scoop](https://scoop.sh):
 
 ```powershell
-scoop bucket add restguard https://github.com/xiaoxstz/RestTimer
+scoop bucket add restguard https://github.com/HansTanzi/RestGuard
 scoop install restguard/restguard
 ```
 

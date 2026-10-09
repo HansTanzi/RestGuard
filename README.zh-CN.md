@@ -6,30 +6,36 @@
 
 > 前身是 Windows 专用的 C# 版 [ProtectEyes](./ProtectEyes)。
 
+![休息遮罩 - 主屏幕](./docs/images/RestUI-MainScreen.zh-CN.webp)
+
+![休息遮罩 - 其他屏幕](./docs/images/RestUI-OtherScreen.webp)
+
 ## 功能
 
 - 每工作 60 分钟，强制休息 10 分钟（可配置）
 - 多显示器：每块屏幕都会被遮挡
 - 休息期间无法关闭遮罩（Alt+F4 无效），也无法从托盘退出
 - 可推迟 5 分钟，最多 3 次；完整休息一次后次数重置
-- 托盘菜单：查看剩余时间、提前休息、开机自启
+- 托盘菜单：查看剩余时间、提前休息、设置、开机自启
 - 单实例运行
-- 界面语言跟随系统：中文系统显示中文，其他显示英文
+- 界面语言默认跟随系统（中文系统显示中文，其他显示英文），也可以随时在托盘菜单的「语言 / Language」中切换
 
 ## 安装
 
 Windows 可通过 [Scoop](https://scoop.sh) 安装：
 
 ```powershell
-scoop bucket add restguard https://github.com/HansTanzi/RestGuard
-scoop install restguard/restguard
+scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
+scoop install hanstanzi/restguard
 ```
 
 依赖 WebView2 运行时（Windows 11 自带）。
 
 ## 配置
 
-首次运行会生成 `config.toml`（注释语言跟随系统），修改后重启生效：
+在托盘菜单中打开「设置…」，可以修改工作/休息时长、推迟规则、遮罩覆盖比例、语言和开机自启，保存后立即生效（休息期间不能修改）。修改工作时长会让当前的工作倒计时按新时长重新开始。
+
+设置保存在首次运行时生成的 `config.toml` 中（注释语言跟随系统），也可以手动编辑，编辑后需重启生效：
 
 | 系统 | 路径 |
 |---|---|
@@ -62,6 +68,8 @@ pnpm tauri dev      # 开发运行
 pnpm tauri build    # 打包安装包
 cd src-tauri && cargo test
 ```
+
+开发构建读取同目录下的 `config.dev.toml` 和 `language.dev`，可以放心改短时长、切换语言，不影响已安装的正式版；遮罩上按 `Esc` 可直接结束休息。调试前请先退出已安装的 RestGuard，否则单实例检查会让开发版直接退出。
 
 发布：同步修改 `tauri.conf.json`、`Cargo.toml`、`package.json` 中的版本号，然后推送 `v<版本号>` 标签。GitHub Actions 会构建 exe、创建 Release，并自动更新 `bucket/restguard.json`。
 

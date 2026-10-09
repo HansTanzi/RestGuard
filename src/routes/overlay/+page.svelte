@@ -5,10 +5,13 @@
   import { onMount } from "svelte";
   import { fade, fly } from "svelte/transition";
   import { STATE_EVENT, formatClock, type Snapshot } from "$lib/timer";
-  import { strings, type Strings } from "$lib/i18n";
+  import { LANG_EVENT, strings, type Strings } from "$lib/i18n";
 
+  const win = getCurrentWebviewWindow();
   // 与 src-tauri/src/overlay.rs 的 PRIMARY_LABEL 一致
-  const primary = getCurrentWebviewWindow().label === "overlay-primary";
+  const primary = win.label === "overlay-primary";
+  // 与 src-tauri/src/lib.rs 的 SHRINK_EVENT 一致，载荷为是否已缩小
+  const SHRINK_EVENT = "overlay:shrunk";
 
   const RADIUS = 120;
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -16,6 +19,9 @@
   let snap = $state<Snapshot | null>(null);
   let s = $state<Strings | null>(null);
   let busy = $state(false);
+  let zh = $state(false);
+  // 遮罩窗口在休息结束时销毁，下次打开自然恢复原大小
+  let shrunk = $state(false);
 
   const resting = $derived(snap?.phase === "resting");
   const restOver = $derived(snap?.phase === "restOver");
@@ -23,15 +29,46 @@
     snap && snap.totalSecs > 0 ? 1 - snap.remainingSecs / snap.totalSecs : 0,
   );
 
+  function applyLang(isZh: boolean) {
+    zh = isZh;
+    s = strings(isZh);
+    document.documentElement.lang = isZh ? "zh-CN" : "en";
+  }
+
+  // 后端保存选择并广播 LANG_EVENT，所有遮罩和托盘随之更新
+  function toggleLang() {
+    invoke("set_zh", { zh: !zh }).catch(console.error);
+  }
+
+  // 紧急模式：所有遮罩缩小一半但仍置顶，能处理急事又没法舒服地继续工作。
+  // 后端缩放后广播 SHRINK_EVENT，各遮罩据此更新 shrunk
+  function toggleShrink() {
+    invoke("set_overlay_shrunk", { shrunk: !shrunk }).catch(console.error);
+  }
+
+  // 缩小后按住空白处可拖动窗口，后端会把它限制在本屏幕内
+  function onMouseDown(e: MouseEvent) {
+    if (!shrunk || e.button !== 0) return;
+    if ((e.target as Element).closest("button")) return;
+    win.startDragging().catch(console.error);
+  }
+
   onMount(() => {
-    invoke<boolean>("is_zh").then((zh) => {
-      s = strings(zh);
-      document.documentElement.lang = zh ? "zh-CN" : "en";
-    });
+    invoke<boolean>("is_zh").then(applyLang);
     invoke<Snapshot>("get_state").then((v) => (snap = v));
-    const unlisten = listen<Snapshot>(STATE_EVENT, (e) => (snap = e.payload));
+    const unlistens = [
+      listen<Snapshot>(STATE_EVENT, (e) => (snap = e.payload)),
+      listen<boolean>(LANG_EVENT, (e) => applyLang(e.payload)),
+      listen<boolean>(SHRINK_EVENT, (e) => (shrunk = e.payload)),
+    ];
+    // 仅 pnpm tauri dev：按 Esc 直接结束休息，避免调试时被遮罩锁住
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") invoke("dev_skip_rest").catch(console.error);
+    };
+    if (import.meta.env.DEV) window.addEventListener("keydown", onKey);
     return () => {
-      unlisten.then((off) => off());
+      unlistens.forEach((p) => p.then((off) => off()));
+      window.removeEventListener("keydown", onKey);
     };
   });
 
@@ -47,9 +84,19 @@
   }
 </script>
 
-<main class:secondary={!primary} in:fade={{ duration: 600 }}>
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+<main
+  class:secondary={!primary}
+  class:movable={shrunk}
+  onmousedown={onMouseDown}
+  in:fade={{ duration: 600 }}
+>
   {#if snap && s}
     {#if primary}
+      <button class="ghost shrink" onclick={toggleShrink}>
+        {shrunk ? s.unshrink : s.shrink}
+      </button>
+      <button class="ghost lang" onclick={toggleLang}>{s.switchLang}</button>
       <h1 in:fly={{ y: -20, duration: 600 }}>{s.title}</h1>
       <p class="tip">{s.tip}</p>
     {/if}
@@ -124,6 +171,10 @@
 
   main.secondary {
     background: var(--bg-1);
+  }
+
+  main.movable {
+    cursor: move;
   }
 
   h1 {
@@ -226,5 +277,34 @@
 
   .ghost:hover:not(:disabled) {
     background: rgb(255 255 255 / 0.06);
+  }
+
+  .lang,
+  .shrink {
+    position: absolute;
+    top: 1.25rem;
+  }
+
+  .lang {
+    right: 1.25rem;
+  }
+
+  .shrink {
+    left: 1.25rem;
+  }
+
+  /* 缩小后窗口较矮，收紧布局避免内容溢出 */
+  @media (max-height: 640px) {
+    main {
+      gap: 0.75rem;
+    }
+
+    .tip {
+      display: none;
+    }
+
+    .actions {
+      min-height: 0;
+    }
   }
 </style>

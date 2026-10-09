@@ -1,12 +1,26 @@
 //! 休息遮罩：每块显示器一个无边框、置顶、关不掉的窗口。
 
+use std::{
+    collections::HashMap,
+    sync::{LazyLock, Mutex},
+};
 use tauri::{
-    AppHandle, Manager, Monitor, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder,
+    AppHandle, Manager, PhysicalPosition, PhysicalSize, WebviewUrl, WebviewWindowBuilder, Window,
 };
 
 const PREFIX: &str = "overlay-";
 /// 主屏幕上的遮罩显示完整界面，其他屏幕只显示倒计时
 pub const PRIMARY_LABEL: &str = "overlay-primary";
+
+/// 显示器区域（物理像素）
+#[derive(Clone, Copy)]
+struct Rect {
+    origin: PhysicalPosition<i32>,
+    size: PhysicalSize<u32>,
+}
+
+/// 每个遮罩所属的显示器。缩小后窗口可拖动，但只能留在这块屏幕上
+static HOMES: LazyLock<Mutex<HashMap<String, Rect>>> = LazyLock::new(Default::default);
 
 pub fn is_overlay(label: &str) -> bool {
     label.starts_with(PREFIX)
@@ -44,6 +58,13 @@ pub fn open_all(app: &AppHandle, coverage: f64) {
             continue;
         }
 
+        let home = Rect {
+            origin: *monitor.position(),
+            size: *monitor.size(),
+        };
+        // 先登记再建窗口，创建过程中触发的 Moved 事件也能被约束
+        HOMES.lock().unwrap().insert(label.clone(), home);
+
         let built = WebviewWindowBuilder::new(app, &label, WebviewUrl::App("overlay".into()))
             .title("RestGuard")
             .decorations(false)
@@ -59,7 +80,7 @@ pub fn open_all(app: &AppHandle, coverage: f64) {
         match built {
             Ok(window) => {
                 // 用物理像素定位，避免多屏 DPI 不同时错位
-                let (pos, size) = cover_rect(monitor, coverage);
+                let (pos, size) = cover_rect(home, coverage);
                 let _ = window.set_position(pos);
                 let _ = window.set_size(size);
                 let _ = window.show();
@@ -67,7 +88,10 @@ pub fn open_all(app: &AppHandle, coverage: f64) {
                     let _ = window.set_focus();
                 }
             }
-            Err(e) => eprintln!("创建遮罩窗口 {label} 失败：{e}"),
+            Err(e) => {
+                HOMES.lock().unwrap().remove(&label);
+                eprintln!("创建遮罩窗口 {label} 失败：{e}");
+            }
         }
     }
 }
@@ -79,17 +103,53 @@ pub fn close_all(app: &AppHandle) {
             let _ = window.destroy();
         }
     }
+    HOMES.lock().unwrap().clear();
+}
+
+/// 紧急模式：把所有遮罩的宽高缩小一半（仍居中置顶），露出四周以便保存文件等；
+/// `shrunk = false` 时恢复原大小并回到屏幕中央
+pub fn set_shrunk(app: &AppHandle, coverage: f64, shrunk: bool) {
+    let coverage = if shrunk { coverage * 0.5 } else { coverage };
+    let homes = HOMES.lock().unwrap().clone();
+    for (label, window) in app.webview_windows() {
+        if let Some(&home) = homes.get(&label) {
+            let (pos, size) = cover_rect(home, coverage);
+            let _ = window.set_size(size);
+            let _ = window.set_position(pos);
+        }
+    }
+}
+
+/// 窗口移动后调用：如果被拖出（或用 Win+Shift+方向键移出）所属屏幕，就拉回屏幕内
+pub fn keep_on_home(window: &Window, pos: PhysicalPosition<i32>) {
+    let Some(home) = HOMES.lock().unwrap().get(window.label()).copied() else {
+        return;
+    };
+    let Ok(size) = window.outer_size() else {
+        return;
+    };
+    let clamp = |v: i32, origin: i32, screen: u32, len: u32| {
+        // 窗口比屏幕大时贴住左/上边
+        let max = origin + screen.saturating_sub(len) as i32;
+        v.clamp(origin, max.max(origin))
+    };
+    let fixed = PhysicalPosition::new(
+        clamp(pos.x, home.origin.x, home.size.width, size.width),
+        clamp(pos.y, home.origin.y, home.size.height, size.height),
+    );
+    if fixed != pos {
+        let _ = window.set_position(fixed);
+    }
 }
 
 /// 按比例计算居中覆盖区域
-fn cover_rect(monitor: &Monitor, coverage: f64) -> (PhysicalPosition<i32>, PhysicalSize<u32>) {
-    let PhysicalSize { width, height } = *monitor.size();
+fn cover_rect(home: Rect, coverage: f64) -> (PhysicalPosition<i32>, PhysicalSize<u32>) {
+    let PhysicalSize { width, height } = home.size;
     let w = (width as f64 * coverage) as u32;
     let h = (height as f64 * coverage) as u32;
-    let origin = monitor.position();
     let pos = PhysicalPosition::new(
-        origin.x + ((width - w) / 2) as i32,
-        origin.y + ((height - h) / 2) as i32,
+        home.origin.x + ((width - w) / 2) as i32,
+        home.origin.y + ((height - h) / 2) as i32,
     );
     (pos, PhysicalSize::new(w, h))
 }

@@ -15,6 +15,8 @@ use tauri_plugin_autostart::MacosLauncher;
 use timer::{Snapshot, Timer, TimerEvent};
 
 const STATE_EVENT: &str = "timer:state";
+/// 载荷为切换后是否显示中文，与 src/lib/i18n.ts 的 LANG_EVENT 一致
+const LANG_EVENT: &str = "lang:changed";
 
 struct AppState {
     timer: Mutex<Timer>,
@@ -33,6 +35,12 @@ fn is_zh() -> bool {
     i18n::is_zh()
 }
 
+/// 遮罩上的语言切换按钮：在中英文之间切换，与托盘菜单的手动选择等效
+#[tauri::command]
+fn set_zh(app: AppHandle, zh: bool) {
+    set_language(&app, if zh { i18n::Lang::Zh } else { i18n::Lang::En });
+}
+
 #[tauri::command]
 fn start_work(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::start_work)
@@ -41,6 +49,15 @@ fn start_work(app: AppHandle) -> Result<(), String> {
 #[tauri::command]
 fn postpone(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::postpone)
+}
+
+/// 仅开发构建可用：遮罩上按 Esc 直接结束休息，方便调试
+#[tauri::command]
+fn dev_skip_rest(app: AppHandle) -> Result<(), String> {
+    if !cfg!(debug_assertions) {
+        return Err("仅开发构建可用".into());
+    }
+    end_rest(&app, Timer::skip_rest)
 }
 
 fn end_rest(app: &AppHandle, action: fn(&mut Timer, Instant) -> bool) -> Result<(), String> {
@@ -70,6 +87,20 @@ pub(crate) fn rest_now(app: &AppHandle) {
     };
     open_overlays(app);
     broadcast(app, &snap);
+}
+
+pub(crate) fn set_language(app: &AppHandle, lang: i18n::Lang) {
+    if let Err(e) = i18n::set(lang) {
+        eprintln!("无法保存语言设置：{e}");
+    }
+    tray::refresh_language(app);
+    let _ = app.emit(LANG_EVENT, i18n::is_zh());
+    let snap = {
+        let state = app.state::<AppState>();
+        let snap = state.timer.lock().unwrap().snapshot(Instant::now());
+        snap
+    };
+    tray::update(app, &snap);
 }
 
 fn open_overlays(app: &AppHandle) {
@@ -109,8 +140,16 @@ pub fn run() {
         .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
         .setup(|app| {
-            let path = app.path().app_config_dir()?.join("config.toml");
-            let cfg = Config::load_or_create(&path);
+            let dir = app.path().app_config_dir()?;
+            // 开发构建用单独的配置和语言文件，调试时不影响已安装的正式版
+            let (lang_name, cfg_name) = if cfg!(debug_assertions) {
+                ("language.dev", "config.dev.toml")
+            } else {
+                ("language", "config.toml")
+            };
+            // 先确定语言：首次运行生成的配置文件注释语言依赖它
+            i18n::init(&dir.join(lang_name));
+            let cfg = Config::load_or_create(&dir.join(cfg_name));
             app.manage(AppState {
                 timer: Mutex::new(Timer::new(&cfg, Instant::now())),
                 overlay_coverage: cfg.overlay_coverage,
@@ -127,7 +166,14 @@ pub fn run() {
                 }
             }
         })
-        .invoke_handler(tauri::generate_handler![get_state, is_zh, start_work, postpone])
+        .invoke_handler(tauri::generate_handler![
+            get_state,
+            is_zh,
+            set_zh,
+            start_work,
+            postpone,
+            dev_skip_rest
+        ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|_app, event| {

@@ -6,6 +6,10 @@
 
 > 前身是 Windows 专用的 C# 版 [ProtectEyes](./ProtectEyes)。
 
+![休息遮罩 - 主屏幕](./docs/images/RestUI-MainScreen.zh-CN.webp)
+
+![休息遮罩 - 其他屏幕](./docs/images/RestUI-OtherScreen.webp)
+
 ## 功能
 
 - 每工作 60 分钟，强制休息 10 分钟（可配置）
@@ -14,7 +18,7 @@
 - 可推迟 5 分钟，最多 3 次；完整休息一次后次数重置
 - 托盘菜单：查看剩余时间、提前休息、开机自启
 - 单实例运行
-- 界面语言跟随系统：中文系统显示中文，其他显示英文
+- 界面语言默认跟随系统（中文系统显示中文，其他显示英文），也可以随时在托盘菜单的「语言 / Language」中切换
 
 ## 安装
 
@@ -62,6 +66,8 @@ pnpm tauri dev      # 开发运行
 pnpm tauri build    # 打包安装包
 cd src-tauri && cargo test
 ```
+
+开发构建读取同目录下的 `config.dev.toml` 和 `language.dev`，可以放心改短时长、切换语言，不影响已安装的正式版；遮罩上按 `Esc` 可直接结束休息。调试前请先退出已安装的 RestGuard，否则单实例检查会让开发版直接退出。
 
 发布：同步修改 `tauri.conf.json`、`Cargo.toml`、`package.json` 中的版本号，然后推送 `v<版本号>` 标签。GitHub Actions 会构建 exe、创建 Release，并自动更新 `bucket/restguard.json`。
 

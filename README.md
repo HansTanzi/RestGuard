@@ -6,6 +6,10 @@ A cross-platform break reminder that actually makes you rest: after each work se
 
 Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [ProtectEyes](./ProtectEyes).
 
+![The break overlay - Main Screen](./docs/images/RestUI-MainScreen.webp)
+
+![The break overlay - Other Screens](./docs/images/RestUI-OtherScreen.webp)
+
 ## Features
 
 - Forces a 10-minute break after every 60 minutes of work (configurable)
@@ -14,7 +18,7 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 - Postpone for 5 minutes, up to 3 times; the count resets after a full break
 - Tray menu: time remaining, rest now, start at login
 - Single instance
-- UI language follows the system: Chinese on Chinese systems, English otherwise
+- UI language follows the system by default (Chinese on Chinese systems, English otherwise); switch it any time from the tray menu's "语言 / Language" submenu
 
 ## Install
 
@@ -62,6 +66,8 @@ pnpm tauri dev      # run in development
 pnpm tauri build    # build installers
 cd src-tauri && cargo test
 ```
+
+Dev builds read `config.dev.toml` and `language.dev` (same directory as `config.toml`), so you can use short durations or switch languages without touching the installed app. Press `Esc` on the overlay to end a break immediately. Quit the installed RestGuard first, otherwise the single-instance check makes the dev build exit right away.
 
 To release, bump the version in `tauri.conf.json`, `Cargo.toml` and `package.json`, then push a `v<version>` tag. GitHub Actions builds the exe, creates the Release, and updates `bucket/restguard.json`.
 

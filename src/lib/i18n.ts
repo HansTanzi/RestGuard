@@ -1,10 +1,16 @@
-// 界面语言由后端按系统语言决定（src-tauri/src/i18n.rs），与托盘保持一致
+// 界面语言由后端决定（src-tauri/src/i18n.rs），与托盘保持一致
+
+// 托盘切换语言时广播，载荷为是否显示中文
+export const LANG_EVENT = "lang:changed";
+
 export interface Strings {
   title: string;
   tip: string;
   restOver: string;
   startWork: string;
   postpone: (left: number) => string;
+  // 语言切换按钮上显示的“另一种”语言
+  switchLang: string;
 }
 
 const zh: Strings = {
@@ -13,6 +19,7 @@ const zh: Strings = {
   restOver: "休息结束",
   startWork: "开始工作",
   postpone: (left) => `过会儿再休息（还剩 ${left} 次）`,
+  switchLang: "English",
 };
 
 const en: Strings = {
@@ -21,6 +28,7 @@ const en: Strings = {
   restOver: "Break over",
   startWork: "Back to work",
   postpone: (left) => `Not now (${left} left)`,
+  switchLang: "中文",
 };
 
 export function strings(isZh: boolean): Strings {

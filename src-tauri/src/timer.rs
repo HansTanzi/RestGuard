@@ -107,6 +107,16 @@ impl Timer {
         true
     }
 
+    /// 开发调试用：无论休息是否结束，直接回到工作
+    pub fn skip_rest(&mut self, now: Instant) -> bool {
+        if self.phase == Phase::Working {
+            return false;
+        }
+        self.postpones_used = 0;
+        self.begin_work(now, self.work);
+        true
+    }
+
     pub fn snapshot(&self, now: Instant) -> Snapshot {
         let remaining = self.deadline.saturating_duration_since(now);
         Snapshot {
@@ -198,6 +208,16 @@ mod tests {
         assert!(!t.rest_now(t0 + MIN), "已经在休息");
         assert!(!t.snapshot(t0 + MIN).can_postpone);
         assert!(!t.postpone(t0 + MIN));
+    }
+
+    #[test]
+    fn skip_rest_works_mid_rest() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        assert!(!t.skip_rest(t0), "工作中无需跳过");
+        assert!(t.rest_now(t0 + MIN));
+        assert!(t.skip_rest(t0 + 2 * MIN));
+        assert_eq!(t.snapshot(t0 + 2 * MIN).phase, Phase::Working);
     }
 
     #[test]

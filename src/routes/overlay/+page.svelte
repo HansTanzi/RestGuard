@@ -5,7 +5,7 @@
   import { onMount } from "svelte";
   import { fade, fly } from "svelte/transition";
   import { STATE_EVENT, formatClock, type Snapshot } from "$lib/timer";
-  import { strings, type Strings } from "$lib/i18n";
+  import { LANG_EVENT, strings, type Strings } from "$lib/i18n";
 
   // 与 src-tauri/src/overlay.rs 的 PRIMARY_LABEL 一致
   const primary = getCurrentWebviewWindow().label === "overlay-primary";
@@ -16,6 +16,7 @@
   let snap = $state<Snapshot | null>(null);
   let s = $state<Strings | null>(null);
   let busy = $state(false);
+  let zh = $state(false);
 
   const resting = $derived(snap?.phase === "resting");
   const restOver = $derived(snap?.phase === "restOver");
@@ -23,15 +24,32 @@
     snap && snap.totalSecs > 0 ? 1 - snap.remainingSecs / snap.totalSecs : 0,
   );
 
+  function applyLang(isZh: boolean) {
+    zh = isZh;
+    s = strings(isZh);
+    document.documentElement.lang = isZh ? "zh-CN" : "en";
+  }
+
+  // 后端保存选择并广播 LANG_EVENT，所有遮罩和托盘随之更新
+  function toggleLang() {
+    invoke("set_zh", { zh: !zh }).catch(console.error);
+  }
+
   onMount(() => {
-    invoke<boolean>("is_zh").then((zh) => {
-      s = strings(zh);
-      document.documentElement.lang = zh ? "zh-CN" : "en";
-    });
+    invoke<boolean>("is_zh").then(applyLang);
     invoke<Snapshot>("get_state").then((v) => (snap = v));
-    const unlisten = listen<Snapshot>(STATE_EVENT, (e) => (snap = e.payload));
+    const unlistens = [
+      listen<Snapshot>(STATE_EVENT, (e) => (snap = e.payload)),
+      listen<boolean>(LANG_EVENT, (e) => applyLang(e.payload)),
+    ];
+    // 仅 pnpm tauri dev：按 Esc 直接结束休息，避免调试时被遮罩锁住
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") invoke("dev_skip_rest").catch(console.error);
+    };
+    if (import.meta.env.DEV) window.addEventListener("keydown", onKey);
     return () => {
-      unlisten.then((off) => off());
+      unlistens.forEach((p) => p.then((off) => off()));
+      window.removeEventListener("keydown", onKey);
     };
   });
 
@@ -50,6 +68,7 @@
 <main class:secondary={!primary} in:fade={{ duration: 600 }}>
   {#if snap && s}
     {#if primary}
+      <button class="ghost lang" onclick={toggleLang}>{s.switchLang}</button>
       <h1 in:fly={{ y: -20, duration: 600 }}>{s.title}</h1>
       <p class="tip">{s.tip}</p>
     {/if}
@@ -226,5 +245,11 @@
 
   .ghost:hover:not(:disabled) {
     background: rgb(255 255 255 / 0.06);
+  }
+
+  .lang {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
   }
 </style>

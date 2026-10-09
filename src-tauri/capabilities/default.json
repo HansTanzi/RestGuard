@@ -4,6 +4,7 @@
   "description": "Capability for the rest overlay windows",
   "windows": ["overlay-*"],
   "permissions": [
-    "core:default"
+    "core:default",
+    "core:window:allow-start-dragging"
   ]
 }

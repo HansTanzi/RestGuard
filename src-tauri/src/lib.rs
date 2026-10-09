@@ -17,6 +17,8 @@ use timer::{Snapshot, Timer, TimerEvent};
 const STATE_EVENT: &str = "timer:state";
 /// 载荷为切换后是否显示中文，与 src/lib/i18n.ts 的 LANG_EVENT 一致
 const LANG_EVENT: &str = "lang:changed";
+/// 载荷为遮罩是否已缩小，与 src/routes/overlay/+page.svelte 的 SHRINK_EVENT 一致
+const SHRINK_EVENT: &str = "overlay:shrunk";
 
 struct AppState {
     timer: Mutex<Timer>,
@@ -49,6 +51,16 @@ fn start_work(app: AppHandle) -> Result<(), String> {
 #[tauri::command]
 fn postpone(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::postpone)
+}
+
+/// 遮罩上的“缩小窗口”按钮：紧急时缩小遮罩处理一下手头的事，但不结束休息。
+/// 用 async 让它跑在主线程之外，避免在 Windows 上调整窗口时卡住
+#[tauri::command]
+async fn set_overlay_shrunk(app: AppHandle, shrunk: bool) {
+    let coverage = app.state::<AppState>().overlay_coverage;
+    overlay::set_shrunk(&app, coverage, shrunk);
+    // 通知所有遮罩（包括副屏）切换可拖动状态
+    let _ = app.emit(SHRINK_EVENT, shrunk);
 }
 
 /// 仅开发构建可用：遮罩上按 Esc 直接结束休息，方便调试
@@ -159,11 +171,15 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| {
-            // 拦截 Alt+F4 等系统关闭操作，遮罩只能由程序销毁
-            if let WindowEvent::CloseRequested { api, .. } = event {
-                if overlay::is_overlay(window.label()) {
-                    api.prevent_close();
-                }
+            if !overlay::is_overlay(window.label()) {
+                return;
+            }
+            match event {
+                // 拦截 Alt+F4 等系统关闭操作，遮罩只能由程序销毁
+                WindowEvent::CloseRequested { api, .. } => api.prevent_close(),
+                // 缩小后可拖动，但不能离开所属屏幕
+                WindowEvent::Moved(pos) => overlay::keep_on_home(window, *pos),
+                _ => {}
             }
         })
         .invoke_handler(tauri::generate_handler![
@@ -172,6 +188,7 @@ pub fn run() {
             set_zh,
             start_work,
             postpone,
+            set_overlay_shrunk,
             dev_skip_rest
         ])
         .build(tauri::generate_context!())

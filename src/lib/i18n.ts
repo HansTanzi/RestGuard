@@ -9,6 +9,8 @@ export interface Strings {
   restOver: string;
   startWork: string;
   postpone: (left: number) => string;
+  shrink: string;
+  unshrink: string;
   // 语言切换按钮上显示的“另一种”语言
   switchLang: string;
 }
@@ -19,6 +21,8 @@ const zh: Strings = {
   restOver: "休息结束",
   startWork: "开始工作",
   postpone: (left) => `过会儿再休息（还剩 ${left} 次）`,
+  shrink: "有急事，缩小一下",
+  unshrink: "恢复大小",
   switchLang: "English",
 };
 
@@ -28,6 +32,8 @@ const en: Strings = {
   restOver: "Break over",
   startWork: "Back to work",
   postpone: (left) => `Not now (${left} left)`,
+  shrink: "Urgent? Shrink",
+  unshrink: "Restore size",
   switchLang: "中文",
 };
 

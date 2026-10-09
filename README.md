@@ -15,6 +15,17 @@ A cross-platform break reminder that actually makes you rest. Built with Rust + 
 - 托盘菜单：查看剩余时间、提前休息、开机自启
 - 单实例运行
 
+## 安装
+
+Windows 可通过 [Scoop](https://scoop.sh) 安装：
+
+```powershell
+scoop bucket add restguard https://github.com/xiaoxstz/RestTimer
+scoop install restguard/restguard
+```
+
+依赖 WebView2 运行时（Windows 11 自带）。
+
 ## 配置
 
 首次运行会生成 `config.toml`，修改后重启生效：
@@ -50,5 +61,7 @@ pnpm tauri dev      # 开发运行
 pnpm tauri build    # 打包安装包
 cd src-tauri && cargo test
 ```
+
+发布：同步修改 `tauri.conf.json`、`Cargo.toml`、`package.json` 中的版本号，然后推送 `v<版本号>` 标签。GitHub Actions 会构建 exe、创建 Release，并自动更新 `bucket/restguard.json`。
 
 调试时可以把 `work_minutes` 设为 `0.1`（6 秒），快速触发休息。

@@ -14,6 +14,7 @@ const LANG_ID_PREFIX: &str = "lang:";
 struct TrayItems {
     status: MenuItem<Wry>,
     rest_now: MenuItem<Wry>,
+    settings: MenuItem<Wry>,
     autostart: CheckMenuItem<Wry>,
     /// 与 Lang::ALL 顺序一致
     langs: Vec<CheckMenuItem<Wry>>,
@@ -22,6 +23,10 @@ struct TrayItems {
 
 fn rest_now_text() -> &'static str {
     t("提前休息", "Rest now")
+}
+
+fn settings_text() -> &'static str {
+    t("设置…", "Settings…")
 }
 
 fn autostart_text() -> &'static str {
@@ -44,7 +49,8 @@ fn lang_text(lang: Lang) -> &'static str {
 pub fn init(app: &AppHandle) -> tauri::Result<()> {
     let status = MenuItem::with_id(app, "status", "RestGuard", false, None::<&str>)?;
     let rest_now = MenuItem::with_id(app, "rest_now", rest_now_text(), true, None::<&str>)?;
-    let autostart_on = app.autolaunch().is_enabled().unwrap_or(false);
+    let settings = MenuItem::with_id(app, "settings", settings_text(), true, None::<&str>)?;
+    let autostart_on = autostart_enabled(app);
     let autostart = CheckMenuItem::with_id(
         app,
         "autostart",
@@ -81,6 +87,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
             &status,
             &PredefinedMenuItem::separator(app)?,
             &rest_now,
+            &settings,
             &autostart,
             &lang_menu,
             &PredefinedMenuItem::separator(app)?,
@@ -94,7 +101,10 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         .show_menu_on_left_click(true)
         .on_menu_event(|app, event| match event.id().as_ref() {
             "rest_now" => crate::rest_now(app),
-            "autostart" => toggle_autostart(app),
+            "settings" => crate::open_settings(app),
+            "autostart" => {
+                crate::apply_autostart(app, !autostart_enabled(app));
+            }
             "quit" => app.exit(0),
             id => {
                 if let Some(lang) = id.strip_prefix(LANG_ID_PREFIX).and_then(Lang::from_id) {
@@ -110,6 +120,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
     app.manage(TrayItems {
         status,
         rest_now,
+        settings,
         autostart,
         langs,
         quit,
@@ -123,6 +134,7 @@ pub fn refresh_language(app: &AppHandle) {
         return;
     };
     let _ = items.rest_now.set_text(rest_now_text());
+    let _ = items.settings.set_text(settings_text());
     let _ = items.autostart.set_text(autostart_text());
     let _ = items.quit.set_text(quit_text());
     // 点击 CheckMenuItem 会自动切换它的勾选，这里统一按实际选择重设
@@ -148,7 +160,8 @@ pub fn update(app: &AppHandle, snap: &Snapshot) {
     if let Some(items) = app.try_state::<TrayItems>() {
         let _ = items.status.set_text(&text);
         let _ = items.rest_now.set_enabled(working);
-        // 休息期间不允许从托盘退出
+        // 休息期间不允许从托盘退出，也不允许打开设置缩短休息
+        let _ = items.settings.set_enabled(working);
         let _ = items.quit.set_enabled(working);
     }
     if let Some(tray) = app.tray_by_id(TRAY_ID) {
@@ -156,22 +169,27 @@ pub fn update(app: &AppHandle, snap: &Snapshot) {
     }
 }
 
-fn toggle_autostart(app: &AppHandle) {
+pub fn autostart_enabled(app: &AppHandle) -> bool {
+    app.autolaunch().is_enabled().unwrap_or(false)
+}
+
+/// 开启或关闭开机自启，返回系统里的实际状态
+pub fn set_autostart(app: &AppHandle, on: bool) -> bool {
     let launcher = app.autolaunch();
-    let result = if launcher.is_enabled().unwrap_or(false) {
-        launcher.disable()
-    } else {
+    let result = if on {
         launcher.enable()
+    } else {
+        launcher.disable()
     };
     if let Err(e) = result {
         eprintln!("切换开机自启失败：{e}");
     }
     // 以系统里的实际状态为准，防止菜单勾选与真实状态不一致
+    let actual = autostart_enabled(app);
     if let Some(items) = app.try_state::<TrayItems>() {
-        let _ = items
-            .autostart
-            .set_checked(launcher.is_enabled().unwrap_or(false));
+        let _ = items.autostart.set_checked(actual);
     }
+    actual
 }
 
 fn mm_ss(secs: u64) -> String {

@@ -117,6 +117,20 @@ impl Timer {
         true
     }
 
+    /// 设置面板保存后立即应用新配置。
+    /// 正常工作期间修改了工作时长时，按新时长重新开始倒计时；推迟期间的倒计时不受影响
+    pub fn apply_config(&mut self, cfg: &Config, now: Instant) {
+        let work_changed = cfg.work() != self.work;
+        self.work = cfg.work();
+        self.rest = cfg.rest();
+        self.postpone = cfg.postpone();
+        self.max_postpones = cfg.max_postpones;
+        // 推迟次数清零前，postpones_used > 0 说明当前处于推迟后的倒计时
+        if self.phase == Phase::Working && self.postpones_used == 0 && work_changed {
+            self.begin_work(now, self.work);
+        }
+    }
+
     pub fn snapshot(&self, now: Instant) -> Snapshot {
         let remaining = self.deadline.saturating_duration_since(now);
         Snapshot {
@@ -218,6 +232,56 @@ mod tests {
         assert!(t.rest_now(t0 + MIN));
         assert!(t.skip_rest(t0 + 2 * MIN));
         assert_eq!(t.snapshot(t0 + 2 * MIN).phase, Phase::Working);
+    }
+
+    #[test]
+    fn apply_config_restarts_work_only_when_needed() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        let now = t0 + 10 * MIN;
+
+        // 只改休息时长：工作倒计时不变
+        let cfg = Config {
+            rest_minutes: 3.0,
+            ..Config::default()
+        };
+        t.apply_config(&cfg, now);
+        assert_eq!(t.snapshot(now).remaining_secs, 50 * 60);
+
+        // 改工作时长：按新时长重新计时
+        let cfg = Config {
+            work_minutes: 25.0,
+            ..cfg
+        };
+        t.apply_config(&cfg, now);
+        assert_eq!(t.snapshot(now).remaining_secs, 25 * 60);
+
+        // 新的休息时长在下次休息生效
+        let now = now + 25 * MIN;
+        assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
+        assert_eq!(t.snapshot(now).total_secs, 3 * 60);
+
+        // 推迟期间改工作时长，不打断推迟倒计时
+        assert!(t.postpone(now));
+        let cfg = Config {
+            work_minutes: 30.0,
+            ..cfg
+        };
+        t.apply_config(&cfg, now + MIN);
+        assert_eq!(t.snapshot(now + MIN).remaining_secs, 4 * 60);
+    }
+
+    #[test]
+    fn lowering_max_postpones_takes_effect() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        let cfg = Config {
+            max_postpones: 0,
+            ..Config::default()
+        };
+        t.apply_config(&cfg, t0);
+        t.tick(t0 + 60 * MIN);
+        assert!(!t.snapshot(t0 + 60 * MIN).can_postpone);
     }
 
     #[test]

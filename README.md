@@ -16,7 +16,7 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 - Multi-monitor: every screen is covered
 - The overlay can't be closed during a break (Alt+F4 does nothing), and you can't quit from the tray
 - Postpone for 5 minutes, up to 3 times; the count resets after a full break
-- Tray menu: time remaining, rest now, start at login
+- Tray menu: time remaining, rest now, settings, start at login
 - Single instance
 - UI language follows the system by default (Chinese on Chinese systems, English otherwise); switch it any time from the tray menu's "语言 / Language" submenu
 
@@ -33,7 +33,9 @@ Requires the WebView2 runtime (preinstalled on Windows 11).
 
 ## Configuration
 
-A `config.toml` is created on first run. Restart the app after editing it.
+Open **Settings…** from the tray menu to change durations, postpone limits, overlay coverage, language and start-at-login. Changes apply immediately (settings are locked during a break). Changing the work duration restarts the current work countdown.
+
+Settings are stored in `config.toml`, created on first run. You can also edit it by hand; restart the app afterwards.
 
 | OS | Path |
 |---|---|

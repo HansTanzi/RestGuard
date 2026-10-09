@@ -1,28 +1,39 @@
 mod config;
 mod i18n;
 mod overlay;
+mod settings;
 mod timer;
 mod tray;
 
 use config::Config;
 use std::{
+    path::PathBuf,
     sync::Mutex,
     thread,
     time::{Duration, Instant},
 };
 use tauri::{AppHandle, Emitter, Manager, RunEvent, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
-use timer::{Snapshot, Timer, TimerEvent};
+use timer::{Phase, Snapshot, Timer, TimerEvent};
 
 const STATE_EVENT: &str = "timer:state";
 /// 载荷为切换后是否显示中文，与 src/lib/i18n.ts 的 LANG_EVENT 一致
 const LANG_EVENT: &str = "lang:changed";
 /// 载荷为遮罩是否已缩小，与 src/routes/overlay/+page.svelte 的 SHRINK_EVENT 一致
 const SHRINK_EVENT: &str = "overlay:shrunk";
+/// 载荷为开机自启是否开启，与 src/lib/config.ts 的 AUTOSTART_EVENT 一致
+const AUTOSTART_EVENT: &str = "autostart:changed";
 
 struct AppState {
     timer: Mutex<Timer>,
-    overlay_coverage: f64,
+    config: Mutex<Config>,
+    config_path: PathBuf,
+}
+
+impl AppState {
+    fn overlay_coverage(&self) -> f64 {
+        self.config.lock().unwrap().overlay_coverage
+    }
 }
 
 #[tauri::command]
@@ -43,6 +54,66 @@ fn set_zh(app: AppHandle, zh: bool) {
     set_language(&app, if zh { i18n::Lang::Zh } else { i18n::Lang::En });
 }
 
+/// 设置面板的语言选项：auto / zh / en
+#[tauri::command]
+fn get_lang() -> &'static str {
+    i18n::current().id()
+}
+
+#[tauri::command]
+fn set_lang(app: AppHandle, lang: String) -> Result<(), String> {
+    let lang = i18n::Lang::from_id(&lang).ok_or("未知的语言")?;
+    set_language(&app, lang);
+    Ok(())
+}
+
+#[tauri::command]
+fn get_config(app: AppHandle) -> Config {
+    let cfg = app.state::<AppState>().config.lock().unwrap().clone();
+    cfg
+}
+
+/// 设置面板保存：写入配置文件并立即生效，返回修正后的实际配置。
+/// 休息期间不允许修改，防止通过缩短休息时长绕过休息
+#[tauri::command]
+fn save_config(app: AppHandle, config: Config) -> Result<Config, String> {
+    let config = config.sanitized();
+    let state = app.state::<AppState>();
+    let snap = {
+        let mut timer = state.timer.lock().unwrap();
+        let now = Instant::now();
+        if timer.snapshot(now).phase != Phase::Working {
+            return Err(i18n::t(
+                "休息期间不能修改设置",
+                "Settings can't be changed during a break",
+            )
+            .into());
+        }
+        config.save(&state.config_path).map_err(|e| {
+            format!(
+                "{}：{e}",
+                i18n::t("无法保存配置文件", "Couldn't save the config file")
+            )
+        })?;
+        timer.apply_config(&config, now);
+        timer.snapshot(now)
+    };
+    *state.config.lock().unwrap() = config.clone();
+    broadcast(&app, &snap);
+    Ok(config)
+}
+
+#[tauri::command]
+fn get_autostart(app: AppHandle) -> bool {
+    tray::autostart_enabled(&app)
+}
+
+/// 返回切换后系统里的实际状态
+#[tauri::command]
+fn set_autostart(app: AppHandle, on: bool) -> bool {
+    apply_autostart(&app, on)
+}
+
 #[tauri::command]
 fn start_work(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::start_work)
@@ -57,7 +128,7 @@ fn postpone(app: AppHandle) -> Result<(), String> {
 /// 用 async 让它跑在主线程之外，避免在 Windows 上调整窗口时卡住
 #[tauri::command]
 async fn set_overlay_shrunk(app: AppHandle, shrunk: bool) {
-    let coverage = app.state::<AppState>().overlay_coverage;
+    let coverage = app.state::<AppState>().overlay_coverage();
     overlay::set_shrunk(&app, coverage, shrunk);
     // 通知所有遮罩（包括副屏）切换可拖动状态
     let _ = app.emit(SHRINK_EVENT, shrunk);
@@ -106,6 +177,7 @@ pub(crate) fn set_language(app: &AppHandle, lang: i18n::Lang) {
         eprintln!("无法保存语言设置：{e}");
     }
     tray::refresh_language(app);
+    settings::refresh_language(app);
     let _ = app.emit(LANG_EVENT, i18n::is_zh());
     let snap = {
         let state = app.state::<AppState>();
@@ -115,11 +187,24 @@ pub(crate) fn set_language(app: &AppHandle, lang: i18n::Lang) {
     tray::update(app, &snap);
 }
 
+/// 托盘和设置面板共用，切换后通知设置面板同步开关状态
+pub(crate) fn apply_autostart(app: &AppHandle, on: bool) -> bool {
+    let actual = tray::set_autostart(app, on);
+    let _ = app.emit(AUTOSTART_EVENT, actual);
+    actual
+}
+
+pub(crate) fn open_settings(app: &AppHandle) {
+    let app = app.clone();
+    // 见 overlay::open_all 的说明：不能在事件回调线程里直接创建窗口
+    thread::spawn(move || settings::open(&app));
+}
+
 fn open_overlays(app: &AppHandle) {
     let app = app.clone();
     // 见 overlay::open_all 的说明：不能在事件回调线程里直接创建窗口
     thread::spawn(move || {
-        let coverage = app.state::<AppState>().overlay_coverage;
+        let coverage = app.state::<AppState>().overlay_coverage();
         overlay::open_all(&app, coverage);
     });
 }
@@ -161,10 +246,12 @@ pub fn run() {
             };
             // 先确定语言：首次运行生成的配置文件注释语言依赖它
             i18n::init(&dir.join(lang_name));
-            let cfg = Config::load_or_create(&dir.join(cfg_name));
+            let config_path = dir.join(cfg_name);
+            let cfg = Config::load_or_create(&config_path);
             app.manage(AppState {
                 timer: Mutex::new(Timer::new(&cfg, Instant::now())),
-                overlay_coverage: cfg.overlay_coverage,
+                config: Mutex::new(cfg),
+                config_path,
             });
             tray::init(app.handle())?;
             spawn_ticker(app.handle().clone());
@@ -186,6 +273,12 @@ pub fn run() {
             get_state,
             is_zh,
             set_zh,
+            get_lang,
+            set_lang,
+            get_config,
+            save_config,
+            get_autostart,
+            set_autostart,
             start_work,
             postpone,
             set_overlay_shrunk,

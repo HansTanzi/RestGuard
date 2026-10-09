@@ -1,46 +1,47 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::{fs, io, path::Path, time::Duration};
 
-/// 首次运行时写入的配置文件，带注释方便用户手改
-const DEFAULT_TOML_ZH: &str = r#"# RestGuard 配置文件，修改后重启生效
+/// 配置文件模板，带注释方便用户手改。`{name}` 占位符由 render 填入实际值
+const TEMPLATE_ZH: &str = r#"# RestGuard 配置文件。可以在托盘菜单的“设置”里修改；手动编辑后需重启生效
 # 时间单位均为分钟，可以写小数（例如 0.5 表示 30 秒）
 
 # 连续工作多久后强制休息
-work_minutes = 60.0
+work_minutes = {work_minutes}
 
 # 每次休息多久
-rest_minutes = 10.0
+rest_minutes = {rest_minutes}
 
 # 每次推迟多久
-postpone_minutes = 5.0
+postpone_minutes = {postpone_minutes}
 
 # 完整休息一次之前，最多推迟几次
-max_postpones = 3
+max_postpones = {max_postpones}
 
 # 遮罩覆盖每块屏幕的比例，0.1 ~ 1.0
-overlay_coverage = 1.0
+overlay_coverage = {overlay_coverage}
 "#;
 
-const DEFAULT_TOML_EN: &str = r#"# RestGuard config. Restart the app after editing.
+const TEMPLATE_EN: &str = r#"# RestGuard config. Edit it from "Settings" in the tray menu, or by hand and then restart the app.
 # All durations are in minutes and may be fractional (e.g. 0.5 = 30 seconds).
 
 # How long to work before a forced break
-work_minutes = 60.0
+work_minutes = {work_minutes}
 
 # How long each break lasts
-rest_minutes = 10.0
+rest_minutes = {rest_minutes}
 
 # How long each postpone lasts
-postpone_minutes = 5.0
+postpone_minutes = {postpone_minutes}
 
 # Max postpones before a full break is required
-max_postpones = 3
+max_postpones = {max_postpones}
 
 # Fraction of each screen covered by the overlay, 0.1 ~ 1.0
-overlay_coverage = 1.0
+overlay_coverage = {overlay_coverage}
 "#;
 
-#[derive(Debug, Clone, PartialEq, Deserialize)]
+/// 与 src/lib/config.ts 的 Config 保持一致。前端也用配置文件里的 snake_case 字段名
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
     pub work_minutes: f64,
@@ -74,7 +75,7 @@ impl Config {
                 }
             },
             Err(e) if e.kind() == io::ErrorKind::NotFound => {
-                if let Err(e) = write_default(path) {
+                if let Err(e) = Self::default().save(path) {
                     eprintln!("无法写入默认配置 {}：{e}", path.display());
                 }
                 Self::default()
@@ -86,8 +87,33 @@ impl Config {
         }
     }
 
+    /// 保存到配置文件（保留注释模板）
+    pub fn save(&self, path: &Path) -> io::Result<()> {
+        if let Some(dir) = path.parent() {
+            fs::create_dir_all(dir)?;
+        }
+        fs::write(path, self.render(crate::i18n::is_zh()))
+    }
+
+    fn render(&self, zh: bool) -> String {
+        let template = if zh { TEMPLATE_ZH } else { TEMPLATE_EN };
+        // {:?} 保证浮点数总带小数点（60.0 而不是 60），写出的仍是合法的 TOML 浮点数
+        template
+            .replace("{work_minutes}", &format!("{:?}", self.work_minutes))
+            .replace("{rest_minutes}", &format!("{:?}", self.rest_minutes))
+            .replace(
+                "{postpone_minutes}",
+                &format!("{:?}", self.postpone_minutes),
+            )
+            .replace("{max_postpones}", &self.max_postpones.to_string())
+            .replace(
+                "{overlay_coverage}",
+                &format!("{:?}", self.overlay_coverage),
+            )
+    }
+
     /// 把明显无效的值替换成默认值，避免出现 0 分钟工作之类的死循环
-    fn sanitized(self) -> Self {
+    pub fn sanitized(self) -> Self {
         let d = Self::default();
         let positive = |v: f64, fallback: f64| if v.is_finite() && v > 0.0 { v } else { fallback };
         Self {
@@ -120,27 +146,24 @@ fn minutes(m: f64) -> Duration {
     Duration::from_secs_f64(m * 60.0)
 }
 
-fn write_default(path: &Path) -> io::Result<()> {
-    if let Some(dir) = path.parent() {
-        fs::create_dir_all(dir)?;
-    }
-    let text = if crate::i18n::is_zh() {
-        DEFAULT_TOML_ZH
-    } else {
-        DEFAULT_TOML_EN
-    };
-    fs::write(path, text)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn default_files_match_default_struct() {
-        for text in [DEFAULT_TOML_ZH, DEFAULT_TOML_EN] {
-            let parsed: Config = toml::from_str(text).unwrap();
-            assert_eq!(parsed, Config::default());
+    fn rendered_files_round_trip() {
+        let custom = Config {
+            work_minutes: 25.0,
+            rest_minutes: 0.5,
+            postpone_minutes: 2.5,
+            max_postpones: 0,
+            overlay_coverage: 0.8,
+        };
+        for cfg in [Config::default(), custom] {
+            for zh in [true, false] {
+                let parsed: Config = toml::from_str(&cfg.render(zh)).unwrap();
+                assert_eq!(parsed, cfg);
+            }
         }
     }
 

@@ -21,8 +21,8 @@
 Windows 可通过 [Scoop](https://scoop.sh) 安装：
 
 ```powershell
-scoop bucket add restguard https://github.com/HansTanzi/RestGuard
-scoop install restguard/restguard
+scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
+scoop install hanstanzi/restguard
 ```
 
 依赖 WebView2 运行时（Windows 11 自带）。

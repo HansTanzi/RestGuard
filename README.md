@@ -21,8 +21,8 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 On Windows, install with [Scoop](https://scoop.sh):
 
 ```powershell
-scoop bucket add restguard https://github.com/HansTanzi/RestGuard
-scoop install restguard/restguard
+scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
+scoop install hanstanzi/restguard
 ```
 
 Requires the WebView2 runtime (preinstalled on Windows 11).

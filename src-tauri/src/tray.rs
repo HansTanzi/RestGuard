@@ -1,3 +1,4 @@
+use crate::i18n::t;
 use crate::timer::{Phase, Snapshot};
 use tauri::{
     menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem},
@@ -18,11 +19,23 @@ struct TrayItems {
 
 pub fn init(app: &AppHandle) -> tauri::Result<()> {
     let status = MenuItem::with_id(app, "status", "RestGuard", false, None::<&str>)?;
-    let rest_now = MenuItem::with_id(app, "rest_now", "提前休息", true, None::<&str>)?;
+    let rest_now = MenuItem::with_id(
+        app,
+        "rest_now",
+        t("提前休息", "Rest now"),
+        true,
+        None::<&str>,
+    )?;
     let autostart_on = app.autolaunch().is_enabled().unwrap_or(false);
-    let autostart =
-        CheckMenuItem::with_id(app, "autostart", "开机自启", true, autostart_on, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
+    let autostart = CheckMenuItem::with_id(
+        app,
+        "autostart",
+        t("开机自启", "Start at login"),
+        true,
+        autostart_on,
+        None::<&str>,
+    )?;
+    let quit = MenuItem::with_id(app, "quit", t("退出", "Quit"), true, None::<&str>)?;
 
     let menu = Menu::with_items(
         app,
@@ -62,9 +75,13 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
 
 pub fn update(app: &AppHandle, snap: &Snapshot) {
     let text = match snap.phase {
-        Phase::Working => format!("距离休息 {}", mm_ss(snap.remaining_secs)),
-        Phase::Resting => format!("休息中 {}", mm_ss(snap.remaining_secs)),
-        Phase::RestOver => "休息结束".to_string(),
+        Phase::Working => format!(
+            "{} {}",
+            t("距离休息", "Break in"),
+            mm_ss(snap.remaining_secs)
+        ),
+        Phase::Resting => format!("{} {}", t("休息中", "Resting"), mm_ss(snap.remaining_secs)),
+        Phase::RestOver => t("休息结束", "Break over").to_string(),
     };
     let working = snap.phase == Phase::Working;
 

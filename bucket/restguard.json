@@ -2,7 +2,7 @@
   "version": "0.1.0",
   "description": "Cross-platform break reminder that actually makes you rest",
   "homepage": "https://github.com/xiaoxstz/RestTimer",
-  "license": "Unknown",
+  "license": "MIT|Apache-2.0",
   "notes": "Config file: $env:APPDATA\\io.github.restguard\\config.toml",
   "suggest": {
     "WebView2": "extras/webview2"

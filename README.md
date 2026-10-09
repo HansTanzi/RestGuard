@@ -1,67 +1,72 @@
 # RestGuard
 
-跨平台的强制休息提醒工具：每工作一段时间，全屏遮罩强制你休息，倒计时结束前关不掉。
+English | [简体中文](README.zh-CN.md)
 
-A cross-platform break reminder that actually makes you rest. Built with Rust + Tauri 2 + Svelte.
+A cross-platform break reminder that actually makes you rest: after each work session, a full-screen overlay forces you to take a break, and it can't be closed until the countdown ends.
 
-> 前身是 Windows 专用的 C# 版 [ProtectEyes](./ProtectEyes)。
+Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [ProtectEyes](./ProtectEyes).
 
-## 功能
+## Features
 
-- 每工作 60 分钟，强制休息 10 分钟（可配置）
-- 多显示器：每块屏幕都会被遮挡
-- 休息期间无法关闭遮罩（Alt+F4 无效），也无法从托盘退出
-- 可推迟 5 分钟，最多 3 次；完整休息一次后次数重置
-- 托盘菜单：查看剩余时间、提前休息、开机自启
-- 单实例运行
+- Forces a 10-minute break after every 60 minutes of work (configurable)
+- Multi-monitor: every screen is covered
+- The overlay can't be closed during a break (Alt+F4 does nothing), and you can't quit from the tray
+- Postpone for 5 minutes, up to 3 times; the count resets after a full break
+- Tray menu: time remaining, rest now, start at login
+- Single instance
+- UI language follows the system: Chinese on Chinese systems, English otherwise
 
-## 安装
+## Install
 
-Windows 可通过 [Scoop](https://scoop.sh) 安装：
+On Windows, install with [Scoop](https://scoop.sh):
 
 ```powershell
 scoop bucket add restguard https://github.com/xiaoxstz/RestTimer
 scoop install restguard/restguard
 ```
 
-依赖 WebView2 运行时（Windows 11 自带）。
+Requires the WebView2 runtime (preinstalled on Windows 11).
 
-## 配置
+## Configuration
 
-首次运行会生成 `config.toml`，修改后重启生效：
+A `config.toml` is created on first run. Restart the app after editing it.
 
-| 系统 | 路径 |
+| OS | Path |
 |---|---|
 | Windows | `%APPDATA%\io.github.restguard\config.toml` |
 | macOS | `~/Library/Application Support/io.github.restguard/config.toml` |
 | Linux | `~/.config/io.github.restguard/config.toml` |
 
 ```toml
-work_minutes = 60.0      # 连续工作多久后强制休息
-rest_minutes = 10.0      # 每次休息多久
-postpone_minutes = 5.0   # 每次推迟多久
-max_postpones = 3        # 完整休息前最多推迟几次
-overlay_coverage = 1.0   # 遮罩覆盖屏幕的比例 0.1 ~ 1.0
+work_minutes = 60.0      # how long to work before a forced break
+rest_minutes = 10.0      # how long each break lasts
+postpone_minutes = 5.0   # how long each postpone lasts
+max_postpones = 3        # max postpones before a full break is required
+overlay_coverage = 1.0   # fraction of each screen covered, 0.1 ~ 1.0
 ```
 
-设置项刻意不放在界面里，否则就不算"强制"休息了。
+Settings are deliberately kept out of the UI; otherwise the breaks wouldn't really be forced.
 
-## 平台限制
+## Platform limitations
 
-- **macOS**：`Cmd+Q`、调度中心等系统手势无法完全拦截
-- **Linux Wayland**：协议不允许应用自行置顶和定位窗口，遮罩可能失效；X11 正常
+- **macOS**: system gestures such as `Cmd+Q` and Mission Control can't be fully blocked
+- **Linux Wayland**: the protocol doesn't let apps keep themselves on top or position their own windows, so the overlay may not work; X11 is fine
 
-## 开发
+## Development
 
-需要 [Rust](https://rustup.rs)、Node.js、pnpm，以及 [Tauri 的系统依赖](https://tauri.app/start/prerequisites/)。
+Requires [Rust](https://rustup.rs), Node.js, pnpm, and [Tauri's system dependencies](https://tauri.app/start/prerequisites/).
 
 ```sh
 pnpm install
-pnpm tauri dev      # 开发运行
-pnpm tauri build    # 打包安装包
+pnpm tauri dev      # run in development
+pnpm tauri build    # build installers
 cd src-tauri && cargo test
 ```
 
-发布：同步修改 `tauri.conf.json`、`Cargo.toml`、`package.json` 中的版本号，然后推送 `v<版本号>` 标签。GitHub Actions 会构建 exe、创建 Release，并自动更新 `bucket/restguard.json`。
+To release, bump the version in `tauri.conf.json`, `Cargo.toml` and `package.json`, then push a `v<version>` tag. GitHub Actions builds the exe, creates the Release, and updates `bucket/restguard.json`.
 
-调试时可以把 `work_minutes` 设为 `0.1`（6 秒），快速触发休息。
+For debugging, set `work_minutes` to `0.1` (6 seconds) to trigger a break quickly.
+
+## License
+
+Licensed under either of [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at your option.

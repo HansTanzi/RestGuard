@@ -5,6 +5,7 @@
   import { onMount } from "svelte";
   import { fade, fly } from "svelte/transition";
   import { STATE_EVENT, formatClock, type Snapshot } from "$lib/timer";
+  import { strings, type Strings } from "$lib/i18n";
 
   // 与 src-tauri/src/overlay.rs 的 PRIMARY_LABEL 一致
   const primary = getCurrentWebviewWindow().label === "overlay-primary";
@@ -13,6 +14,7 @@
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
   let snap = $state<Snapshot | null>(null);
+  let s = $state<Strings | null>(null);
   let busy = $state(false);
 
   const resting = $derived(snap?.phase === "resting");
@@ -22,7 +24,11 @@
   );
 
   onMount(() => {
-    invoke<Snapshot>("get_state").then((s) => (snap = s));
+    invoke<boolean>("is_zh").then((zh) => {
+      s = strings(zh);
+      document.documentElement.lang = zh ? "zh-CN" : "en";
+    });
+    invoke<Snapshot>("get_state").then((v) => (snap = v));
     const unlisten = listen<Snapshot>(STATE_EVENT, (e) => (snap = e.payload));
     return () => {
       unlisten.then((off) => off());
@@ -42,10 +48,10 @@
 </script>
 
 <main class:secondary={!primary} in:fade={{ duration: 600 }}>
-  {#if snap}
+  {#if snap && s}
     {#if primary}
-      <h1 in:fly={{ y: -20, duration: 600 }}>保护眼睛，小心猝死！</h1>
-      <p class="tip">起来走走，看看远处，喝口水。</p>
+      <h1 in:fly={{ y: -20, duration: 600 }}>{s.title}</h1>
+      <p class="tip">{s.tip}</p>
     {/if}
 
     <div class="ring">
@@ -61,7 +67,7 @@
         />
       </svg>
       <div class="clock" class:done={restOver}>
-        {restOver ? "休息结束" : formatClock(snap.remainingSecs)}
+        {restOver ? s.restOver : formatClock(snap.remainingSecs)}
       </div>
     </div>
 
@@ -69,12 +75,12 @@
       <div class="actions">
         {#if restOver}
           <button class="primary" disabled={busy} onclick={() => run("start_work")} in:fade>
-            开始工作
+            {s.startWork}
           </button>
         {/if}
         {#if resting && snap.canPostpone}
           <button class="ghost" disabled={busy} onclick={() => run("postpone")}>
-            过会儿再休息（还剩 {snap.postponesLeft} 次）
+            {s.postpone(snap.postponesLeft)}
           </button>
         {/if}
       </div>

@@ -1,4 +1,5 @@
 mod config;
+mod i18n;
 mod overlay;
 mod timer;
 mod tray;
@@ -25,6 +26,11 @@ fn get_state(app: AppHandle) -> Snapshot {
     let state = app.state::<AppState>();
     let snap = state.timer.lock().unwrap().snapshot(Instant::now());
     snap
+}
+
+#[tauri::command]
+fn is_zh() -> bool {
+    i18n::is_zh()
 }
 
 #[tauri::command]
@@ -121,7 +127,7 @@ pub fn run() {
                 }
             }
         })
-        .invoke_handler(tauri::generate_handler![get_state, start_work, postpone])
+        .invoke_handler(tauri::generate_handler![get_state, is_zh, start_work, postpone])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|_app, event| {

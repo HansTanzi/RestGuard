@@ -2,7 +2,7 @@ use serde::Deserialize;
 use std::{fs, io, path::Path, time::Duration};
 
 /// 首次运行时写入的配置文件，带注释方便用户手改
-const DEFAULT_TOML: &str = r#"# RestGuard 配置文件，修改后重启生效
+const DEFAULT_TOML_ZH: &str = r#"# RestGuard 配置文件，修改后重启生效
 # 时间单位均为分钟，可以写小数（例如 0.5 表示 30 秒）
 
 # 连续工作多久后强制休息
@@ -18,6 +18,25 @@ postpone_minutes = 5.0
 max_postpones = 3
 
 # 遮罩覆盖每块屏幕的比例，0.1 ~ 1.0
+overlay_coverage = 1.0
+"#;
+
+const DEFAULT_TOML_EN: &str = r#"# RestGuard config. Restart the app after editing.
+# All durations are in minutes and may be fractional (e.g. 0.5 = 30 seconds).
+
+# How long to work before a forced break
+work_minutes = 60.0
+
+# How long each break lasts
+rest_minutes = 10.0
+
+# How long each postpone lasts
+postpone_minutes = 5.0
+
+# Max postpones before a full break is required
+max_postpones = 3
+
+# Fraction of each screen covered by the overlay, 0.1 ~ 1.0
 overlay_coverage = 1.0
 "#;
 
@@ -105,7 +124,12 @@ fn write_default(path: &Path) -> io::Result<()> {
     if let Some(dir) = path.parent() {
         fs::create_dir_all(dir)?;
     }
-    fs::write(path, DEFAULT_TOML)
+    let text = if crate::i18n::is_zh() {
+        DEFAULT_TOML_ZH
+    } else {
+        DEFAULT_TOML_EN
+    };
+    fs::write(path, text)
 }
 
 #[cfg(test)]
@@ -113,9 +137,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn default_file_matches_default_struct() {
-        let parsed: Config = toml::from_str(DEFAULT_TOML).unwrap();
-        assert_eq!(parsed, Config::default());
+    fn default_files_match_default_struct() {
+        for text in [DEFAULT_TOML_ZH, DEFAULT_TOML_EN] {
+            let parsed: Config = toml::from_str(text).unwrap();
+            assert_eq!(parsed, Config::default());
+        }
     }
 
     #[test]

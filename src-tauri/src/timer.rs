@@ -44,6 +44,8 @@ pub struct Timer {
     rest: Duration,
     postpone: Duration,
     max_postpones: u32,
+    /// 无操作超过这么久算离开，None 表示关闭空闲检测
+    idle_threshold: Option<Duration>,
 
     phase: Phase,
     started: Instant,
@@ -53,6 +55,8 @@ pub struct Timer {
     voluntary: bool,
     held_by: Option<String>,
     meeting_app: Option<String>,
+    /// 用户离开期间冻结的工作剩余时间
+    away_remaining: Option<Duration>,
 }
 
 impl Timer {
@@ -62,6 +66,7 @@ impl Timer {
             rest: cfg.rest(),
             postpone: cfg.postpone(),
             max_postpones: cfg.max_postpones,
+            idle_threshold: cfg.idle(),
             phase: Phase::Working,
             started: now,
             deadline: now + cfg.work(),
@@ -69,6 +74,35 @@ impl Timer {
             voluntary: false,
             held_by: None,
             meeting_app: None,
+            away_remaining: None,
+        }
+    }
+
+    /// 告知用户已多久没有操作。需在 tick 之前调用。
+    /// 工作期间离开超过阈值时暂停倒计时（离开的整段时间都不算工作）；
+    /// 离开时间达到一次休息的长度，就当已经完整休息过，回来后重新开始计时
+    pub fn idle(&mut self, now: Instant, idle: Duration) {
+        if self.phase != Phase::Working {
+            return;
+        }
+        let Some(threshold) = self.idle_threshold else {
+            self.away_remaining = None;
+            return;
+        };
+        if idle < threshold {
+            // 回来了，从冻结的剩余时间继续
+            self.away_remaining = None;
+        } else if idle >= self.rest {
+            self.postpones_used = 0;
+            self.begin_work(now, self.work);
+        } else {
+            let remaining = *self.away_remaining.get_or_insert_with(|| {
+                let left_at = now.checked_sub(idle).unwrap_or(self.started);
+                self.deadline.saturating_duration_since(left_at)
+            });
+            let total = self.deadline - self.started;
+            self.deadline = now + remaining;
+            self.started = self.deadline.checked_sub(total).unwrap_or(now);
         }
     }
 
@@ -161,6 +195,7 @@ impl Timer {
         self.rest = cfg.rest();
         self.postpone = cfg.postpone();
         self.max_postpones = cfg.max_postpones;
+        self.idle_threshold = cfg.idle();
         // 推迟次数清零前，postpones_used > 0 说明当前处于推迟后的倒计时
         if self.phase == Phase::Working && self.postpones_used == 0 && work_changed {
             self.begin_work(now, self.work);
@@ -196,6 +231,7 @@ impl Timer {
         self.voluntary = voluntary;
         self.held_by = None;
         self.meeting_app = None;
+        self.away_remaining = None;
         self.started = now;
         self.deadline = now + self.rest;
     }
@@ -205,6 +241,7 @@ impl Timer {
         self.voluntary = false;
         self.held_by = None;
         self.meeting_app = None;
+        self.away_remaining = None;
         self.started = now;
         self.deadline = now + length;
     }
@@ -382,6 +419,86 @@ mod tests {
         t.apply_config(&cfg, t0);
         t.tick(t0 + 60 * MIN);
         assert!(!t.snapshot(t0 + 60 * MIN).can_postpone);
+    }
+
+    #[test]
+    fn short_absence_pauses_countdown() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        // 工作 20 分钟后离开，6 分钟后才越过 5 分钟阈值：离开的 6 分钟都不算
+        let left = t0 + 20 * MIN;
+        let mut now = left + 6 * MIN;
+        t.idle(now, now - left);
+        assert_eq!(t.snapshot(now).remaining_secs, 40 * 60);
+        assert_eq!(t.snapshot(now).total_secs, 60 * 60);
+
+        now += 2 * MIN;
+        t.idle(now, now - left);
+        assert_eq!(t.tick(now), None);
+        assert_eq!(t.snapshot(now).remaining_secs, 40 * 60);
+
+        // 回来后从 40 分钟继续倒计时
+        t.idle(now, Duration::ZERO);
+        now += 40 * MIN;
+        t.idle(now, Duration::ZERO);
+        assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
+    }
+
+    #[test]
+    fn brief_inactivity_still_counts_as_work() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        let now = t0 + 30 * MIN;
+        t.idle(now, 4 * MIN);
+        assert_eq!(t.snapshot(now).remaining_secs, 30 * 60);
+    }
+
+    #[test]
+    fn long_absence_counts_as_full_rest() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        let mut now = t0 + 60 * MIN;
+        assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
+        assert!(t.postpone(now));
+
+        // 推迟期间离开了 10 分钟（一次休息的长度）：回来后完整计时，推迟次数清零
+        let left = now + MIN;
+        now = left + 10 * MIN;
+        t.idle(now, now - left);
+        assert_eq!(t.tick(now), None);
+        let snap = t.snapshot(now);
+        assert_eq!(snap.remaining_secs, 60 * 60);
+        assert_eq!(snap.postpones_left, 3);
+
+        now += 30 * MIN;
+        t.idle(now, now - left);
+        t.idle(now, Duration::ZERO);
+        assert_eq!(t.snapshot(now).remaining_secs, 60 * 60);
+    }
+
+    #[test]
+    fn idle_does_not_affect_rest() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        assert!(t.rest_now(t0));
+        t.idle(t0 + 9 * MIN, 9 * MIN);
+        assert_eq!(t.snapshot(t0 + 9 * MIN).phase, Phase::Resting);
+        assert_eq!(t.tick(t0 + 10 * MIN), Some(TimerEvent::RestFinished));
+        t.idle(t0 + 30 * MIN, 30 * MIN);
+        assert_eq!(t.snapshot(t0 + 30 * MIN).phase, Phase::RestOver);
+    }
+
+    #[test]
+    fn idle_detection_can_be_disabled() {
+        let t0 = Instant::now();
+        let cfg = Config {
+            idle_minutes: 0.0,
+            ..Config::default()
+        };
+        let mut t = Timer::new(&cfg, t0);
+        let now = t0 + 60 * MIN;
+        t.idle(now, 30 * MIN);
+        assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
     }
 
     #[test]

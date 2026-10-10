@@ -369,9 +369,25 @@ pub mod config {
         id: "Bagian setiap layar yang ditutupi lapisan, 0.1 ~ 1.0",
     };
 
+    pub const IDLE: Tr = Tr {
+        zh: "无操作超过多久算离开电脑，离开期间不计工作时间；离开满一次休息时长就当已休息。0 表示关闭",
+        en: "Inactivity after which you count as away; away time isn't work, and being away for a full break counts as one. 0 = off",
+        hi: "कितनी देर निष्क्रिय रहने पर आपको दूर माना जाए; दूर का समय काम नहीं गिना जाता, और पूरे ब्रेक जितनी देर दूर रहना ब्रेक माना जाता है। 0 = बंद",
+        es: "Inactividad tras la que cuentas como ausente; ese tiempo no es trabajo, y ausentarte lo que dura un descanso cuenta como uno. 0 = desactivado",
+        ar: "مدة الخمول التي تُعدّ بعدها بعيدًا؛ وقت الغياب لا يُحسب عملًا، والغياب بطول استراحة كاملة يُحسب استراحة. 0 = إيقاف",
+        fr: "Inactivité au-delà de laquelle vous êtes considéré absent ; ce temps ne compte pas comme travail, et une absence aussi longue qu'une pause compte comme une pause. 0 = désactivé",
+        bn: "কতক্ষণ নিষ্ক্রিয় থাকলে আপনাকে দূরে ধরা হবে; দূরে থাকার সময় কাজ নয়, আর পুরো বিরতির সমান সময় দূরে থাকলে বিরতি ধরা হয়। 0 = বন্ধ",
+        pt: "Inatividade após a qual você conta como ausente; esse tempo não é trabalho, e ficar ausente por uma pausa inteira conta como pausa. 0 = desativado",
+        de: "Inaktivität, ab der Sie als abwesend gelten; Abwesenheit zählt nicht als Arbeit, und so lange weg wie eine Pause zählt als Pause. 0 = aus",
+        ja: "操作がないまま何分たつと離席とみなすか。離席中は作業時間に数えず、休憩時間分離席したら休憩済みとみなします。0 で無効",
+        it: "Inattività dopo cui risulti assente; quel tempo non conta come lavoro, e un'assenza lunga quanto una pausa conta come pausa. 0 = disattivato",
+        ko: "입력이 없을 때 자리 비움으로 보는 시간입니다. 자리 비운 시간은 작업으로 치지 않고, 휴식 시간만큼 비우면 휴식한 것으로 봅니다. 0 = 끄기",
+        id: "Lama tanpa aktivitas hingga Anda dianggap pergi; waktu pergi tidak dihitung kerja, dan pergi selama satu istirahat penuh dihitung istirahat. 0 = mati",
+    };
+
     /// 用于测试：所有注释
     #[cfg(test)]
-    pub const ALL: [&Tr; 7] = [
+    pub const ALL: [&Tr; 8] = [
         &HEADER,
         &UNITS,
         &WORK,
@@ -379,5 +395,6 @@ pub mod config {
         &POSTPONE,
         &MAX_POSTPONES,
         &COVERAGE,
+        &IDLE,
     ];
 }

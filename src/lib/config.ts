@@ -7,6 +7,7 @@ export interface Config {
   postpone_minutes: number;
   max_postpones: number;
   overlay_coverage: number;
+  idle_minutes: number;
 }
 
 export const DEFAULT_CONFIG: Config = {
@@ -15,6 +16,7 @@ export const DEFAULT_CONFIG: Config = {
   postpone_minutes: 5,
   max_postpones: 3,
   overlay_coverage: 1,
+  idle_minutes: 5,
 };
 
 // 与 src-tauri/src/i18n.rs 的 Lang::id 一致

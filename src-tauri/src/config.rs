@@ -11,6 +11,8 @@ pub struct Config {
     pub postpone_minutes: f64,
     pub max_postpones: u32,
     pub overlay_coverage: f64,
+    /// 无操作超过这么久算离开电脑，0 表示关闭空闲检测
+    pub idle_minutes: f64,
 }
 
 impl Default for Config {
@@ -21,6 +23,7 @@ impl Default for Config {
             postpone_minutes: 5.0,
             max_postpones: 3,
             overlay_coverage: 1.0,
+            idle_minutes: 5.0,
         }
     }
 }
@@ -67,7 +70,8 @@ impl Config {
              # {}\nrest_minutes = {:?}\n\n\
              # {}\npostpone_minutes = {:?}\n\n\
              # {}\nmax_postpones = {}\n\n\
-             # {}\noverlay_coverage = {:?}\n",
+             # {}\noverlay_coverage = {:?}\n\n\
+             # {}\nidle_minutes = {:?}\n",
             c(&comment::HEADER),
             c(&comment::UNITS),
             c(&comment::WORK),
@@ -80,6 +84,8 @@ impl Config {
             self.max_postpones,
             c(&comment::COVERAGE),
             self.overlay_coverage,
+            c(&comment::IDLE),
+            self.idle_minutes,
         )
     }
 
@@ -97,6 +103,11 @@ impl Config {
             } else {
                 d.overlay_coverage
             },
+            idle_minutes: if self.idle_minutes.is_finite() && self.idle_minutes >= 0.0 {
+                self.idle_minutes
+            } else {
+                d.idle_minutes
+            },
         }
     }
 
@@ -110,6 +121,11 @@ impl Config {
 
     pub fn postpone(&self) -> Duration {
         minutes(self.postpone_minutes)
+    }
+
+    /// 空闲检测的阈值，None 表示关闭
+    pub fn idle(&self) -> Option<Duration> {
+        (self.idle_minutes > 0.0).then(|| minutes(self.idle_minutes))
     }
 }
 
@@ -129,6 +145,7 @@ mod tests {
             postpone_minutes: 2.5,
             max_postpones: 0,
             overlay_coverage: 0.8,
+            idle_minutes: 0.0,
         };
         for cfg in [Config::default(), custom] {
             for lang in Lang::ALL {

@@ -90,3 +90,65 @@ jobs:
           release-tag: ${{ github.ref_name }}
           installers-regex: '_x64\.exe$'
           token: ${{ secrets.WINGET_TOKEN }}
+
+  # 排在 windows 之后：由 windows 创建 Release、校验版本号，也避免两边同时推送 dev
+  macos:
+    needs: windows
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: pnpm install --frozen-lockfile
+
+      # 同时支持 Apple Silicon 和 Intel 的通用版 .app
+      - run: pnpm tauri build --target universal-apple-darwin --bundles app
+
+      - name: Prepare asset
+        id: asset
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          name="RestGuard_${version}_universal.zip"
+          ditto -c -k --keepParent src-tauri/target/universal-apple-darwin/release/bundle/macos/RestGuard.app "$name"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "hash=$(shasum -a 256 "$name" | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.asset.outputs.name }}
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: default-branch
+
+      - name: Update Homebrew cask
+        working-directory: default-branch
+        run: |
+          path="Casks/restguard.rb"
+          sed -i '' -E \
+            -e 's/^(  version ")[^"]+/\1${{ steps.asset.outputs.version }}/' \
+            -e 's/^(  sha256 ")[^"]+/\1${{ steps.asset.outputs.hash }}/' \
+            "$path"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$path"
+          git diff --cached --quiet || git commit -m "brew: restguard ${{ steps.asset.outputs.version }}"
+          git push

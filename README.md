@@ -37,6 +37,15 @@ scoop install hanstanzi/restguard
 
 Requires the WebView2 runtime (preinstalled on Windows 11).
 
+On macOS, install with [Homebrew](https://brew.sh) (universal build for Apple Silicon and Intel):
+
+```sh
+brew tap hanstanzi/restguard https://github.com/HansTanzi/RestGuard
+brew install --cask hanstanzi/restguard/restguard
+```
+
+RestGuard lives in the menu bar and has no Dock icon. The app isn't notarized by Apple; the cask removes the quarantine flag on install. If you download the zip from Releases by hand, run `xattr -dr com.apple.quarantine /Applications/RestGuard.app` before first launch.
+
 ## Configuration
 
 Open **Settings…** from the tray menu to change durations, postpone limits, overlay coverage, language and start-at-login. Changes apply immediately (settings are locked during a break). Changing the work duration restarts the current work countdown.
@@ -59,7 +68,7 @@ overlay_coverage = 1.0   # fraction of each screen covered, 0.1 ~ 1.0
 
 ## Platform limitations
 
-- **macOS**: system gestures such as `Cmd+Q` and Mission Control can't be fully blocked
+- **macOS**: system-level actions such as Force Quit (`Cmd+Option+Esc`) can't be blocked
 - **Linux Wayland**: the protocol doesn't let apps keep themselves on top or position their own windows, so the overlay may not work; X11 is fine
 
 ## Development
@@ -75,7 +84,7 @@ cd src-tauri && cargo test
 
 Dev builds read `config.dev.toml` and `language.dev` (same directory as `config.toml`), so you can use short durations or switch languages without touching the installed app. Press `Esc` on the overlay to end a break immediately. Quit the installed RestGuard first, otherwise the single-instance check makes the dev build exit right away.
 
-To release, run `pnpm release <version>` (e.g. `pnpm release 0.2.0`) on a clean `dev` branch. It bumps the version in `package.json`, `tauri.conf.json`, `Cargo.toml` and `Cargo.lock`, commits, and pushes a `v<version>` tag. GitHub Actions then builds the exe, creates the Release, and commits the updated `bucket/restguard.json` to `dev`, so run `git pull` afterwards. For stable versions it also opens a PR to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) via [winget-releaser](https://github.com/vedantmgoyal9/winget-releaser); this needs a `WINGET_TOKEN` repository secret (a classic PAT with `public_repo` scope) and a fork of `winget-pkgs` under the token owner's account. The very first WinGet version must be submitted by hand, e.g. `komac new HansTanzi.RestGuard --version <version> --urls <exe release URL>` with [Komac](https://github.com/russellbanks/Komac) (pick the `portable` installer type and add `Microsoft.EdgeWebView2Runtime` as a package dependency).
+To release, run `pnpm release <version>` (e.g. `pnpm release 0.2.0`) on a clean `dev` branch. It bumps the version in `package.json`, `tauri.conf.json`, `Cargo.toml` and `Cargo.lock`, commits, and pushes a `v<version>` tag. GitHub Actions then builds the exe and a universal macOS `.app`, creates the Release, and commits the updated `bucket/restguard.json` and `Casks/restguard.rb` to `dev`, so run `git pull` afterwards. For stable versions it also opens a PR to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) via [winget-releaser](https://github.com/vedantmgoyal9/winget-releaser); this needs a `WINGET_TOKEN` repository secret (a classic PAT with `public_repo` scope) and a fork of `winget-pkgs` under the token owner's account. The very first WinGet version must be submitted by hand, e.g. `komac new HansTanzi.RestGuard --version <version> --urls <exe release URL>` with [Komac](https://github.com/russellbanks/Komac) (pick the `portable` installer type and add `Microsoft.EdgeWebView2Runtime` as a package dependency).
 
 For debugging, set `work_minutes` to `0.1` (6 seconds) to trigger a break quickly.
 

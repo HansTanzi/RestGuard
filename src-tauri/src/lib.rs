@@ -236,7 +236,12 @@ pub fn run() {
         // 必须最先注册：重复启动时直接退出新进程
         .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
+        // macOS 默认菜单带 Cmd+Q，休息时按下会直接退出
+        .enable_macos_default_menu(false)
         .setup(|app| {
+            // macOS 上只在菜单栏显示图标，不占 Dock
+            #[cfg(target_os = "macos")]
+            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
             let dir = app.path().app_config_dir()?;
             // 开发构建用单独的配置和语言文件，调试时不影响已安装的正式版
             let (lang_name, cfg_name) = if cfg!(debug_assertions) {

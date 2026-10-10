@@ -9,7 +9,7 @@ use tauri::{
 };
 
 const PREFIX: &str = "overlay-";
-/// 主屏幕上的遮罩显示完整界面，其他屏幕只显示倒计时
+/// 主屏幕上的遮罩，打开时获得焦点
 pub const PRIMARY_LABEL: &str = "overlay-primary";
 
 /// 显示器区域（物理像素）

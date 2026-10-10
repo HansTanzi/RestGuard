@@ -26,13 +26,13 @@ serde_json = "1"
 toml = "0.9"
 sys-locale = "0.3"
 
-# 与 tauri 使用的版本一致，用于把遮罩提升到菜单栏和全屏应用之上
+# 与 tauri 使用的版本一致，用于把遮罩提升到菜单栏和全屏应用之上，以及检测前台应用
 [target.'cfg(target_os = "macos")'.dependencies]
-objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSResponder", "NSWindow"] }
+objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSResponder", "NSWindow", "NSWorkspace", "NSRunningApplication"] }
 
-# 与 tauri 使用的版本一致，用于商店（MSIX）版的开机自启
+# 与 tauri 使用的版本一致，用于商店（MSIX）版的开机自启，以及检测前台应用和麦克风占用
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.62", features = ["ApplicationModel", "Foundation", "Win32_Foundation", "Win32_Storage_Packaging_Appx", "Win32_System_Registry"] }
+windows = { version = "0.62", features = ["ApplicationModel", "Foundation", "Win32_Foundation", "Win32_Storage_Packaging_Appx", "Win32_System_Diagnostics_ToolHelp", "Win32_System_Registry", "Win32_System_Threading", "Win32_UI_WindowsAndMessaging"] }
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
 [profile.release]

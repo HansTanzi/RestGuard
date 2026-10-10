@@ -10,6 +10,8 @@ permissions:
 jobs:
   windows:
     runs-on: windows-latest
+    env:
+      WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -77,3 +79,14 @@ jobs:
           git add $path
           git diff --cached --quiet || git commit -m "scoop: restguard ${{ steps.version.outputs.version }}"
           git push
+
+      # 向 microsoft/winget-pkgs 提交新版本 PR。首个版本需手动提交（见 README），
+      # 需要仓库 secret WINGET_TOKEN（classic PAT，public_repo 权限），预发布版本跳过
+      - uses: vedantmgoyal9/winget-releaser@v2
+        if: ${{ env.WINGET_TOKEN != '' && !contains(github.ref_name, '-') }}
+        with:
+          identifier: HansTanzi.RestGuard
+          version: ${{ steps.version.outputs.version }}
+          release-tag: ${{ github.ref_name }}
+          installers-regex: '_x64\.exe$'
+          token: ${{ secrets.WINGET_TOKEN }}

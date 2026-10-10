@@ -48,5 +48,5 @@ Invoke-Git tag $tag
 Invoke-Git push --atomic origin HEAD $tag
 
 Write-Host ""
-Write-Host "Pushed $tag. GitHub Actions will build the release and update the Scoop manifest on dev."
+Write-Host "Pushed $tag. GitHub Actions will build the release and update the Scoop manifest on dev (and open a winget-pkgs PR for stable versions)."
 Write-Host "Run 'git pull' after the workflow finishes."

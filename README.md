@@ -22,7 +22,13 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 
 ## Install
 
-On Windows, install with [Scoop](https://scoop.sh):
+On Windows, install with [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
+
+```powershell
+winget install HansTanzi.RestGuard
+```
+
+Or with [Scoop](https://scoop.sh):
 
 ```powershell
 scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
@@ -69,7 +75,7 @@ cd src-tauri && cargo test
 
 Dev builds read `config.dev.toml` and `language.dev` (same directory as `config.toml`), so you can use short durations or switch languages without touching the installed app. Press `Esc` on the overlay to end a break immediately. Quit the installed RestGuard first, otherwise the single-instance check makes the dev build exit right away.
 
-To release, run `pnpm release <version>` (e.g. `pnpm release 0.2.0`) on a clean `dev` branch. It bumps the version in `package.json`, `tauri.conf.json`, `Cargo.toml` and `Cargo.lock`, commits, and pushes a `v<version>` tag. GitHub Actions then builds the exe, creates the Release, and commits the updated `bucket/restguard.json` to `dev`, so run `git pull` afterwards.
+To release, run `pnpm release <version>` (e.g. `pnpm release 0.2.0`) on a clean `dev` branch. It bumps the version in `package.json`, `tauri.conf.json`, `Cargo.toml` and `Cargo.lock`, commits, and pushes a `v<version>` tag. GitHub Actions then builds the exe, creates the Release, and commits the updated `bucket/restguard.json` to `dev`, so run `git pull` afterwards. For stable versions it also opens a PR to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) via [winget-releaser](https://github.com/vedantmgoyal9/winget-releaser); this needs a `WINGET_TOKEN` repository secret (a classic PAT with `public_repo` scope) and a fork of `winget-pkgs` under the token owner's account. The very first WinGet version must be submitted by hand, e.g. `komac new HansTanzi.RestGuard --version <version> --urls <exe release URL>` with [Komac](https://github.com/russellbanks/Komac) (pick the `portable` installer type and add `Microsoft.EdgeWebView2Runtime` as a package dependency).
 
 For debugging, set `work_minutes` to `0.1` (6 seconds) to trigger a break quickly.
 

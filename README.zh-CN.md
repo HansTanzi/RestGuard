@@ -22,7 +22,13 @@
 
 ## 安装
 
-Windows 可通过 [Scoop](https://scoop.sh) 安装：
+Windows 可通过 [WinGet](https://learn.microsoft.com/windows/package-manager/winget/) 安装：
+
+```powershell
+winget install HansTanzi.RestGuard
+```
+
+或通过 [Scoop](https://scoop.sh) 安装：
 
 ```powershell
 scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
@@ -69,7 +75,7 @@ cd src-tauri && cargo test
 
 开发构建读取同目录下的 `config.dev.toml` 和 `language.dev`，可以放心改短时长、切换语言，不影响已安装的正式版；遮罩上按 `Esc` 可直接结束休息。调试前请先退出已安装的 RestGuard，否则单实例检查会让开发版直接退出。
 
-发布：在干净的 `dev` 分支上运行 `pnpm release <版本号>`（如 `pnpm release 0.2.0`），脚本会同步修改 `package.json`、`tauri.conf.json`、`Cargo.toml`、`Cargo.lock` 中的版本号，提交并推送 `v<版本号>` 标签。之后 GitHub Actions 会构建 exe、创建 Release，并把更新后的 `bucket/restguard.json` 提交到 `dev`，完成后记得 `git pull`。
+发布：在干净的 `dev` 分支上运行 `pnpm release <版本号>`（如 `pnpm release 0.2.0`），脚本会同步修改 `package.json`、`tauri.conf.json`、`Cargo.toml`、`Cargo.lock` 中的版本号，提交并推送 `v<版本号>` 标签。之后 GitHub Actions 会构建 exe、创建 Release，并把更新后的 `bucket/restguard.json` 提交到 `dev`，完成后记得 `git pull`。正式版（不含 `-` 的版本号）还会通过 [winget-releaser](https://github.com/vedantmgoyal9/winget-releaser) 向 [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) 提交 PR，需要配置仓库 secret `WINGET_TOKEN`（具有 `public_repo` 权限的 classic PAT），且 token 所属账号下已 fork `winget-pkgs`。WinGet 的首个版本需手动提交，例如用 [Komac](https://github.com/russellbanks/Komac) 运行 `komac new HansTanzi.RestGuard --version <版本号> --urls <Release 中 exe 的下载地址>`（安装类型选 `portable`，并添加依赖 `Microsoft.EdgeWebView2Runtime`）。
 
 调试时可以把 `work_minutes` 设为 `0.1`（6 秒），快速触发休息。
 

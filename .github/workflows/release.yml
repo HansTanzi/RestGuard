@@ -168,3 +168,52 @@ jobs:
           git add "$path"
           git diff --cached --quiet || git commit -m "brew: restguard ${{ steps.asset.outputs.version }}"
           git push
+
+  # 排在 windows 之后，等 Release 建好再上传产物
+  linux:
+    needs: windows
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # Tauri v2 的 Linux 构建依赖：webkit2gtk、托盘用的 appindicator、AppImage 打包用的 patchelf 等
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libgtk-3-dev \
+            libxdo-dev \
+            libssl-dev \
+            patchelf \
+            build-essential \
+            file \
+            wget
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: pnpm install --frozen-lockfile
+
+      # x86_64 的 AppImage（几乎全发行版通用）和 .deb（Debian/Ubuntu）
+      - run: pnpm tauri build --bundles appimage deb
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/deb/*.deb

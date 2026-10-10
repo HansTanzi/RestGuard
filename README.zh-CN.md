@@ -6,9 +6,7 @@
 
 > 前身是 Windows 专用的 C# 版 [ProtectEyes](./ProtectEyes)。
 
-![休息遮罩 - 主屏幕](./docs/images/RestUI-MainScreen.zh-CN.webp)
-
-![休息遮罩 - 其他屏幕](./docs/images/RestUI-OtherScreen.webp)
+![休息遮罩](./docs/images/BreakOverlay-MainScreen.zh-CN.webp)
 
 ## 功能
 

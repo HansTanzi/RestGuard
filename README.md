@@ -6,9 +6,7 @@ A cross-platform break reminder that actually makes you rest: after each work se
 
 Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [ProtectEyes](./ProtectEyes).
 
-![The break overlay - Main Screen](./docs/images/RestUI-MainScreen.webp)
-
-![The break overlay - Other Screens](./docs/images/RestUI-OtherScreen.webp)
+![The break overlay](./docs/images/BreakOverlay-MainScreen.webp)
 
 ## Features
 

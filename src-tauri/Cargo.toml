@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Cross-platform break reminder that actually makes you rest"
 authors = ["Tanzi"]
 license = "MIT OR Apache-2.0"
+repository = "https://github.com/HansTanzi/RestGuard"
 edition = "2021"
 
 [lib]

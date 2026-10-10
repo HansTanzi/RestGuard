@@ -21,6 +21,7 @@ struct TrayItems {
     autostart: CheckMenuItem<Wry>,
     /// 与 Lang::ALL 顺序一致
     langs: Vec<CheckMenuItem<Wry>>,
+    about: MenuItem<Wry>,
     quit: MenuItem<Wry>,
     /// 当前托盘图标，变化时才重设
     icon: Mutex<IconKey>,
@@ -88,6 +89,10 @@ fn autostart_text() -> &'static str {
     t("开机自启", "Start at login")
 }
 
+fn about_text() -> &'static str {
+    t("关于 RestGuard…", "About RestGuard…")
+}
+
 fn quit_text() -> &'static str {
     t("退出", "Quit")
 }
@@ -134,6 +139,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         true,
         &[&langs[0], &PredefinedMenuItem::separator(app)?, &langs[1], &langs[2]],
     )?;
+    let about = MenuItem::with_id(app, "about", about_text(), true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", quit_text(), true, None::<&str>)?;
 
     let menu = Menu::with_items(
@@ -146,6 +152,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
             &autostart,
             &lang_menu,
             &PredefinedMenuItem::separator(app)?,
+            &about,
             &quit,
         ],
     )?;
@@ -160,6 +167,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         .on_menu_event(|app, event| match event.id().as_ref() {
             "rest_now" => crate::rest_now(app),
             "settings" => crate::open_settings(app),
+            "about" => crate::open_about(app),
             "autostart" => {
                 crate::apply_autostart(app, !autostart_enabled(app));
             }
@@ -178,6 +186,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         settings,
         autostart,
         langs,
+        about,
         quit,
         icon: Mutex::new(icon),
     });
@@ -192,6 +201,7 @@ pub fn refresh_language(app: &AppHandle) {
     let _ = items.rest_now.set_text(rest_now_text());
     let _ = items.settings.set_text(settings_text());
     let _ = items.autostart.set_text(autostart_text());
+    let _ = items.about.set_text(about_text());
     let _ = items.quit.set_text(quit_text());
     // 点击 CheckMenuItem 会自动切换它的勾选，这里统一按实际选择重设
     let current = i18n::current();
@@ -217,8 +227,10 @@ pub fn update(app: &AppHandle, snap: &Snapshot) {
     if let Some(items) = app.try_state::<TrayItems>() {
         let _ = items.status.set_text(&text);
         let _ = items.rest_now.set_enabled(working);
-        // 休息期间不允许从托盘退出，也不允许打开设置缩短休息
+        // 休息期间不允许从托盘退出，也不允许打开设置缩短休息；
+        // 关于页面能打开浏览器，同样禁用
         let _ = items.settings.set_enabled(working);
+        let _ = items.about.set_enabled(working);
         let _ = items.quit.set_enabled(working);
 
         // 每次刷新都重新判断，任务栏切换深浅色后图标随之更新

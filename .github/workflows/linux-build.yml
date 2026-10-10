@@ -5,11 +5,10 @@ name: Linux build check
 on:
   pull_request:
     branches: [dev, main, master]
-    # 只改文档、其他平台的分发清单或发布流程时，不影响 Linux 构建，跳过
+    # 只改文档或发布流程时，不影响 Linux 构建，跳过
     paths-ignore:
       - "**.md"
       - "docs/**"
-      - "Casks/**"
       - "LICENSE-*"
       - ".vscode/**"
       - ".github/workflows/release.yml"

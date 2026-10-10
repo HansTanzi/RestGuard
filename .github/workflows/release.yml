@@ -193,10 +193,11 @@ jobs:
             fi
           done
 
-  # 清单已是此版本和哈希时 git diff 为空，不会提交。
-  # 固定推送到 dev（不随默认分支变化），随 dev 合并进 main 发布给用户；
-  # dev 受规则保护（只能走 PR），用在 bypass 列表中的 deploy key 推送；
-  # 与 homebrew 可能同时推送，被拒绝时 rebase 后重试（两者改的是不同文件）
+  # 直接更新 HansTanzi/scoop-bucket（用户添加的 bucket），发布后立即可用，不用等它的 Excavator 定时任务。
+  # 用该仓库的 deploy key（secret SCOOP_BUCKET_DEPLOY_KEY，需写权限）推送到其默认分支。
+  # 清单已是此版本和哈希时（比如 Excavator 抢先更新了）不提交。
+  # 只替换 version、url、hash 三处文本，保留 Excavator 的 JSON 格式，避免两边来回改格式。
+  # 推送被拒绝（Excavator 同时提交）时，重置到远端最新再改一遍，而不是 rebase（两边改的是同几行，会冲突）
   scoop:
     needs: [prepare, build-windows]
     if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-windows.result) }}
@@ -206,8 +207,8 @@ jobs:
       - uses: actions/checkout@v4
         timeout-minutes: 5
         with:
-          ref: dev
-          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          repository: HansTanzi/scoop-bucket
+          ssh-key: ${{ secrets.SCOOP_BUCKET_DEPLOY_KEY }}
 
       - name: Update Scoop manifest
         shell: pwsh
@@ -219,27 +220,40 @@ jobs:
           gh release download "${{ github.ref_name }}" -R "${{ github.repository }}" --pattern $name --dir $env:RUNNER_TEMP
           if ($LASTEXITCODE -ne 0) { throw "Failed to download $name" }
           $hash = (Get-FileHash "$env:RUNNER_TEMP/$name" -Algorithm SHA256).Hash.ToLower()
-
-          $path = "bucket/restguard.json"
-          $manifest = Get-Content $path -Raw | ConvertFrom-Json
-          $manifest.version = $env:VERSION
-          $manifest.architecture."64bit".url = "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/$name#/RestGuard.exe"
-          $manifest.architecture."64bit".hash = $hash
-          ($manifest | ConvertTo-Json -Depth 10) + "`n" | Set-Content $path -NoNewline
+          $url = "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/$name#/RestGuard.exe"
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add $path
-          git diff --cached --quiet || git commit -m "scoop: restguard $env:VERSION"
+          $path = "bucket/restguard.json"
           for ($i = 1; $i -le 5; $i++) {
+            git fetch origin
+            git reset --hard "@{u}"
+            if ($LASTEXITCODE -ne 0) { throw "git reset failed" }
+
+            # autoupdate 里的 url 含 $version，不会被 url 的替换匹配到
+            $text = Get-Content $path -Raw
+            $text = $text -replace '(?m)^(\s*"version":\s*")[^"]*', "`${1}$env:VERSION"
+            $text = $text -replace '(?m)^(\s*"url":\s*")[^"$]*(")', "`${1}$url`${2}"
+            $text = $text -replace '(?m)^(\s*"hash":\s*")[^"]*', "`${1}$hash"
+            $manifest = $text | ConvertFrom-Json
+            if ($manifest.version -ne $env:VERSION -or $manifest.architecture."64bit".url -ne $url -or $manifest.architecture."64bit".hash -ne $hash) {
+              throw "Failed to update $path, check its format"
+            }
+            Set-Content $path $text -NoNewline
+
+            git add $path
+            git diff --cached --quiet
+            if ($LASTEXITCODE -eq 0) { Write-Host "::notice::$path is already at $env:VERSION"; break }
+            git commit -m "restguard: Update to version $env:VERSION"
             git push
             if ($LASTEXITCODE -eq 0) { break }
             if ($i -eq 5) { throw "git push failed" }
-            git pull --rebase
             Start-Sleep 5
           }
 
-  # 同 scoop：内容未变时不提交，推送被拒绝时 rebase 后重试
+  # 清单已是此版本和哈希时 git diff 为空，不会提交。
+  # 固定推送到 dev（不随默认分支变化），随 dev 合并进 main 发布给用户；
+  # dev 受规则保护（只能走 PR），用在 bypass 列表中的 deploy key 推送；推送被拒绝时 rebase 后重试
   homebrew:
     needs: [prepare, build-macos]
     if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-macos.result) }}

@@ -1,5 +1,7 @@
 mod config;
 mod i18n;
+#[cfg(windows)]
+mod msix;
 mod overlay;
 mod settings;
 mod timer;

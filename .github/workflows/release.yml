@@ -59,6 +59,19 @@ jobs:
           files: ${{ steps.asset.outputs.name }}
           generate_release_notes: true
 
+      # 微软商店包：未签名（由商店签名），不放进 Release，作为构建产物供手动上传到合作伙伴中心。
+      # 商店不支持预发布版本号，预发布版本跳过
+      - name: Build MSIX
+        if: ${{ !contains(github.ref_name, '-') }}
+        shell: pwsh
+        run: ./scripts/msix.ps1 -SkipBuild
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !contains(github.ref_name, '-') }}
+        with:
+          name: msix
+          path: src-tauri/target/msix/*.msix
+
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.repository.default_branch }}

@@ -170,18 +170,16 @@ pub fn update(app: &AppHandle, snap: &Snapshot) {
 }
 
 pub fn autostart_enabled(app: &AppHandle) -> bool {
+    #[cfg(windows)]
+    if crate::msix::is_packaged() {
+        return crate::msix::startup_enabled();
+    }
     app.autolaunch().is_enabled().unwrap_or(false)
 }
 
 /// 开启或关闭开机自启，返回系统里的实际状态
 pub fn set_autostart(app: &AppHandle, on: bool) -> bool {
-    let launcher = app.autolaunch();
-    let result = if on {
-        launcher.enable()
-    } else {
-        launcher.disable()
-    };
-    if let Err(e) = result {
+    if let Err(e) = toggle_autostart(app, on) {
         eprintln!("切换开机自启失败：{e}");
     }
     // 以系统里的实际状态为准，防止菜单勾选与真实状态不一致
@@ -190,6 +188,20 @@ pub fn set_autostart(app: &AppHandle, on: bool) -> bool {
         let _ = items.autostart.set_checked(actual);
     }
     actual
+}
+
+fn toggle_autostart(app: &AppHandle, on: bool) -> Result<(), String> {
+    #[cfg(windows)]
+    if crate::msix::is_packaged() {
+        return crate::msix::set_startup(on).map_err(|e| e.to_string());
+    }
+    let launcher = app.autolaunch();
+    let result = if on {
+        launcher.enable()
+    } else {
+        launcher.disable()
+    };
+    result.map_err(|e| e.to_string())
 }
 
 fn mm_ss(secs: u64) -> String {

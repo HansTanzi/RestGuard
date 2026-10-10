@@ -29,6 +29,10 @@ sys-locale = "0.3"
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSResponder", "NSWindow"] }
 
+# 与 tauri 使用的版本一致，用于商店（MSIX）版的开机自启
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62", features = ["ApplicationModel", "Foundation", "Win32_Foundation", "Win32_Storage_Packaging_Appx"] }
+
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
 [profile.release]
 codegen-units = 1

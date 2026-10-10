@@ -51,8 +51,6 @@ max_postpones = 3        # 完整休息前最多推迟几次
 overlay_coverage = 1.0   # 遮罩覆盖屏幕的比例 0.1 ~ 1.0
 ```
 
-设置项刻意不放在界面里，否则就不算"强制"休息了。
-
 ## 平台限制
 
 - **macOS**：`Cmd+Q`、调度中心等系统手势无法完全拦截
@@ -71,7 +69,7 @@ cd src-tauri && cargo test
 
 开发构建读取同目录下的 `config.dev.toml` 和 `language.dev`，可以放心改短时长、切换语言，不影响已安装的正式版；遮罩上按 `Esc` 可直接结束休息。调试前请先退出已安装的 RestGuard，否则单实例检查会让开发版直接退出。
 
-发布：同步修改 `tauri.conf.json`、`Cargo.toml`、`package.json` 中的版本号，然后推送 `v<版本号>` 标签。GitHub Actions 会构建 exe、创建 Release，并自动更新 `bucket/restguard.json`。
+发布：在干净的 `dev` 分支上运行 `pnpm release <版本号>`（如 `pnpm release 0.2.0`），脚本会同步修改 `package.json`、`tauri.conf.json`、`Cargo.toml`、`Cargo.lock` 中的版本号，提交并推送 `v<版本号>` 标签。之后 GitHub Actions 会构建 exe、创建 Release，并把更新后的 `bucket/restguard.json` 提交到 `dev`，完成后记得 `git pull`。
 
 调试时可以把 `work_minutes` 设为 `0.1`（6 秒），快速触发休息。
 

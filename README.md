@@ -51,8 +51,6 @@ max_postpones = 3        # max postpones before a full break is required
 overlay_coverage = 1.0   # fraction of each screen covered, 0.1 ~ 1.0
 ```
 
-Settings are deliberately kept out of the UI; otherwise the breaks wouldn't really be forced.
-
 ## Platform limitations
 
 - **macOS**: system gestures such as `Cmd+Q` and Mission Control can't be fully blocked
@@ -71,7 +69,7 @@ cd src-tauri && cargo test
 
 Dev builds read `config.dev.toml` and `language.dev` (same directory as `config.toml`), so you can use short durations or switch languages without touching the installed app. Press `Esc` on the overlay to end a break immediately. Quit the installed RestGuard first, otherwise the single-instance check makes the dev build exit right away.
 
-To release, bump the version in `tauri.conf.json`, `Cargo.toml` and `package.json`, then push a `v<version>` tag. GitHub Actions builds the exe, creates the Release, and updates `bucket/restguard.json`.
+To release, run `pnpm release <version>` (e.g. `pnpm release 0.2.0`) on a clean `dev` branch. It bumps the version in `package.json`, `tauri.conf.json`, `Cargo.toml` and `Cargo.lock`, commits, and pushes a `v<version>` tag. GitHub Actions then builds the exe, creates the Release, and commits the updated `bucket/restguard.json` to `dev`, so run `git pull` afterwards.
 
 For debugging, set `work_minutes` to `0.1` (6 seconds) to trigger a break quickly.
 

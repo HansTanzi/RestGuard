@@ -7,11 +7,59 @@ on:
 permissions:
   contents: write
 
+# 两个阶段：
+# 1. build-*：编译并上传 GitHub Release 文件。文件已存在时跳过：构建不可复现，重编会改变哈希，
+#    导致已更新的各渠道清单校验失败
+# 2. 分发渠道（scoop、homebrew、winget、msix）：各自一个 job，互不依赖，只从 Release 下载文件，
+#    各自检查本渠道是否需要更新。只要对应平台的 Release 文件就绪，一个渠道失败不影响其他渠道
 jobs:
-  windows:
+  # 校验版本号，确保 Release 存在（让两个 build job 无需相互等待），并检查各平台文件是否已上传
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      windows_exists: ${{ steps.check.outputs.windows_exists }}
+      macos_exists: ${{ steps.check.outputs.macos_exists }}
+      linux_exists: ${{ steps.check.outputs.linux_exists }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check version and existing assets
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          conf=$(jq -r .version src-tauri/tauri.conf.json)
+          if [ "$version" != "$conf" ]; then
+            echo "::error::Tag $version does not match tauri.conf.json version $conf"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if ! gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
+          fi
+          assets=$(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name')
+          # 一个平台的所有文件都已存在才跳过该平台的编译
+          check() {
+            platform="$1"; shift
+            for name in "$@"; do
+              if ! grep -qxF "$name" <<< "$assets"; then
+                echo "${platform}_exists=false" >> "$GITHUB_OUTPUT"
+                return
+              fi
+            done
+            echo "::notice::$* already exist in release $GITHUB_REF_NAME, skipping $platform build"
+            echo "${platform}_exists=true" >> "$GITHUB_OUTPUT"
+          }
+          check windows "RestGuard_${version}_x64.exe"
+          check macos "RestGuard_${version}_universal.zip"
+          check linux "RestGuard_${version}_amd64.AppImage" "RestGuard_${version}_amd64.deb"
+
+  build-windows:
+    needs: prepare
+    if: needs.prepare.outputs.windows_exists == 'false'
     runs-on: windows-latest
-    env:
-      WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -30,87 +78,25 @@ jobs:
         with:
           workspaces: src-tauri
 
-      - name: Check version
-        id: version
-        shell: pwsh
-        run: |
-          $version = "${{ github.ref_name }}".TrimStart("v")
-          $conf = (Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
-          if ($version -ne $conf) { throw "Tag $version does not match tauri.conf.json version $conf" }
-          "version=$version" >> $env:GITHUB_OUTPUT
-
       - run: pnpm install --frozen-lockfile
 
       # Scoop 安装便携版 exe，不需要安装包
       - run: pnpm tauri build --no-bundle
 
-      - name: Prepare asset
-        id: asset
+      # 不加 --clobber：文件已存在时上传失败，绝不覆盖已发布的文件
+      - name: Upload asset
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          $name = "RestGuard_${{ steps.version.outputs.version }}_x64.exe"
+          $name = "RestGuard_${{ needs.prepare.outputs.version }}_x64.exe"
           Copy-Item src-tauri/target/release/restguard.exe $name
-          $hash = (Get-FileHash $name -Algorithm SHA256).Hash.ToLower()
-          "name=$name" >> $env:GITHUB_OUTPUT
-          "hash=$hash" >> $env:GITHUB_OUTPUT
+          gh release upload "${{ github.ref_name }}" $name
+          if ($LASTEXITCODE -ne 0) { throw "Failed to upload $name" }
 
-      - uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ steps.asset.outputs.name }}
-          generate_release_notes: true
-
-      # 微软商店包：未签名（由商店签名），不放进 Release，作为构建产物供手动上传到合作伙伴中心。
-      # 商店不支持预发布版本号，预发布版本跳过
-      - name: Build MSIX
-        if: ${{ !contains(github.ref_name, '-') }}
-        shell: pwsh
-        run: ./scripts/msix.ps1 -SkipBuild
-
-      - uses: actions/upload-artifact@v4
-        if: ${{ !contains(github.ref_name, '-') }}
-        with:
-          name: msix
-          path: src-tauri/target/msix/*.msix
-
-      # dev 受规则保护（只能走 PR），用在 bypass 列表中的 deploy key 推送
-      # 私钥有密码或格式不对时 ssh 会无限等待输入，用超时让它尽快失败
-      - uses: actions/checkout@v4
-        timeout-minutes: 5
-        with:
-          ref: ${{ github.event.repository.default_branch }}
-          path: default-branch
-          ssh-key: ${{ secrets.DEPLOY_KEY }}
-
-      - name: Update Scoop manifest
-        shell: pwsh
-        working-directory: default-branch
-        run: |
-          $path = "bucket/restguard.json"
-          $manifest = Get-Content $path -Raw | ConvertFrom-Json
-          $manifest.version = "${{ steps.version.outputs.version }}"
-          $manifest.architecture."64bit".url = "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ steps.asset.outputs.name }}#/RestGuard.exe"
-          $manifest.architecture."64bit".hash = "${{ steps.asset.outputs.hash }}"
-          ($manifest | ConvertTo-Json -Depth 10) + "`n" | Set-Content $path -NoNewline
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add $path
-          git diff --cached --quiet || git commit -m "scoop: restguard ${{ steps.version.outputs.version }}"
-          git push
-
-      # 向 microsoft/winget-pkgs 提交新版本 PR。首个版本需手动提交（见 README），
-      # 需要仓库 secret WINGET_TOKEN（classic PAT，public_repo 权限），预发布版本跳过
-      - uses: vedantmgoyal9/winget-releaser@v2
-        if: ${{ env.WINGET_TOKEN != '' && !contains(github.ref_name, '-') }}
-        with:
-          identifier: HansTanzi.RestGuard
-          version: ${{ steps.version.outputs.version }}
-          release-tag: ${{ github.ref_name }}
-          installers-regex: '_x64\.exe$'
-          token: ${{ secrets.WINGET_TOKEN }}
-
-  # 排在 windows 之后：由 windows 创建 Release、校验版本号，也避免两边同时推送 dev
-  macos:
-    needs: windows
+  build-macos:
+    needs: prepare
+    if: needs.prepare.outputs.macos_exists == 'false'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -137,44 +123,19 @@ jobs:
       # 同时支持 Apple Silicon 和 Intel 的通用版 .app
       - run: pnpm tauri build --target universal-apple-darwin --bundles app
 
-      - name: Prepare asset
-        id: asset
+      # 不加 --clobber：文件已存在时上传失败，绝不覆盖已发布的文件
+      - name: Upload asset
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
-          name="RestGuard_${version}_universal.zip"
+          name="RestGuard_${{ needs.prepare.outputs.version }}_universal.zip"
           ditto -c -k --keepParent src-tauri/target/universal-apple-darwin/release/bundle/macos/RestGuard.app "$name"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "name=$name" >> "$GITHUB_OUTPUT"
-          echo "hash=$(shasum -a 256 "$name" | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+          gh release upload "$GITHUB_REF_NAME" "$name"
 
-      - uses: softprops/action-gh-release@v2
-        with:
-          files: ${{ steps.asset.outputs.name }}
-
-      - uses: actions/checkout@v4
-        timeout-minutes: 5
-        with:
-          ref: ${{ github.event.repository.default_branch }}
-          path: default-branch
-          ssh-key: ${{ secrets.DEPLOY_KEY }}
-
-      - name: Update Homebrew cask
-        working-directory: default-branch
-        run: |
-          path="Casks/restguard.rb"
-          sed -i '' -E \
-            -e 's/^(  version ")[^"]+/\1${{ steps.asset.outputs.version }}/' \
-            -e 's/^(  sha256 ")[^"]+/\1${{ steps.asset.outputs.hash }}/' \
-            "$path"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$path"
-          git diff --cached --quiet || git commit -m "brew: restguard ${{ steps.asset.outputs.version }}"
-          git push
-
-  # 排在 windows 之后，等 Release 建好再上传产物
-  linux:
-    needs: windows
+  # 没有对应的分发渠道，只上传 Release 文件
+  build-linux:
+    needs: prepare
+    if: needs.prepare.outputs.linux_exists == 'false'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -215,8 +176,175 @@ jobs:
       # x86_64 的 AppImage（几乎全发行版通用）和 .deb（Debian/Ubuntu）
       - run: pnpm tauri build --bundles appimage deb
 
-      - uses: softprops/action-gh-release@v2
+      # 只上传 Release 上还没有的文件（比如上次只传成功了一个），不加 --clobber，绝不覆盖
+      - name: Upload assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          assets=$(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name')
+          for file in \
+            "src-tauri/target/release/bundle/appimage/RestGuard_${VERSION}_amd64.AppImage" \
+            "src-tauri/target/release/bundle/deb/RestGuard_${VERSION}_amd64.deb"; do
+            if grep -qxF "$(basename "$file")" <<< "$assets"; then
+              echo "::notice::$(basename "$file") already exists, not uploading"
+            else
+              gh release upload "$GITHUB_REF_NAME" "$file"
+            fi
+          done
+
+  # 清单已是此版本和哈希时 git diff 为空，不会提交。
+  # dev 受规则保护（只能走 PR），用在 bypass 列表中的 deploy key 推送；
+  # 与 homebrew 可能同时推送，被拒绝时 rebase 后重试（两者改的是不同文件）
+  scoop:
+    needs: [prepare, build-windows]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-windows.result) }}
+    runs-on: ubuntu-latest
+    steps:
+      # 私钥有密码或格式不对时 ssh 会无限等待输入，用超时让它尽快失败
+      - uses: actions/checkout@v4
+        timeout-minutes: 5
         with:
-          files: |
-            src-tauri/target/release/bundle/appimage/*.AppImage
-            src-tauri/target/release/bundle/deb/*.deb
+          ref: ${{ github.event.repository.default_branch }}
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Update Scoop manifest
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          $name = "RestGuard_${env:VERSION}_x64.exe"
+          gh release download "${{ github.ref_name }}" -R "${{ github.repository }}" --pattern $name --dir $env:RUNNER_TEMP
+          if ($LASTEXITCODE -ne 0) { throw "Failed to download $name" }
+          $hash = (Get-FileHash "$env:RUNNER_TEMP/$name" -Algorithm SHA256).Hash.ToLower()
+
+          $path = "bucket/restguard.json"
+          $manifest = Get-Content $path -Raw | ConvertFrom-Json
+          $manifest.version = $env:VERSION
+          $manifest.architecture."64bit".url = "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/$name#/RestGuard.exe"
+          $manifest.architecture."64bit".hash = $hash
+          ($manifest | ConvertTo-Json -Depth 10) + "`n" | Set-Content $path -NoNewline
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add $path
+          git diff --cached --quiet || git commit -m "scoop: restguard $env:VERSION"
+          for ($i = 1; $i -le 5; $i++) {
+            git push
+            if ($LASTEXITCODE -eq 0) { break }
+            if ($i -eq 5) { throw "git push failed" }
+            git pull --rebase
+            Start-Sleep 5
+          }
+
+  # 同 scoop：内容未变时不提交，推送被拒绝时 rebase 后重试
+  homebrew:
+    needs: [prepare, build-macos]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-macos.result) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        timeout-minutes: 5
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Update Homebrew cask
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          name="RestGuard_${VERSION}_universal.zip"
+          gh release download "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY" --pattern "$name" --dir "$RUNNER_TEMP"
+          hash=$(sha256sum "$RUNNER_TEMP/$name" | cut -d ' ' -f 1)
+
+          path="Casks/restguard.rb"
+          sed -i -E \
+            -e "s/^(  version \")[^\"]+/\1${VERSION}/" \
+            -e "s/^(  sha256 \")[^\"]+/\1${hash}/" \
+            "$path"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$path"
+          git diff --cached --quiet || git commit -m "brew: restguard ${VERSION}"
+          for i in 1 2 3 4 5; do
+            git push && break
+            if [ "$i" = 5 ]; then echo "::error::git push failed"; exit 1; fi
+            git pull --rebase
+            sleep 5
+          done
+
+  # 向 microsoft/winget-pkgs 提交新版本 PR，winget-releaser 自行从 Release 读取安装文件。
+  # 需要仓库 secret WINGET_TOKEN（classic PAT，public_repo 权限），预发布版本跳过
+  winget:
+    needs: [prepare, build-windows]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-windows.result) && !contains(github.ref_name, '-') }}
+    runs-on: windows-latest
+    env:
+      WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      # 未配置 token、包还不存在于 winget-pkgs（首个版本需手动提交，见 README）、
+      # 已有此版本或已有待合并的 PR 时跳过
+      - name: Check winget
+        id: winget
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.WINGET_TOKEN }}
+        run: |
+          function Skip($message) {
+            Write-Host "::notice::$message"
+            "submit=false" >> $env:GITHUB_OUTPUT
+            exit 0
+          }
+          if (-not $env:WINGET_TOKEN) { Skip "WINGET_TOKEN is not set" }
+          $dir = "repos/microsoft/winget-pkgs/contents/manifests/h/HansTanzi/RestGuard"
+          gh api $dir --silent 2>$null
+          if ($LASTEXITCODE -ne 0) { Skip "HansTanzi.RestGuard does not exist in microsoft/winget-pkgs, submit the first version manually" }
+          gh api "$dir/$env:VERSION" --silent 2>$null
+          if ($LASTEXITCODE -eq 0) { Skip "HansTanzi.RestGuard $env:VERSION already exists in microsoft/winget-pkgs" }
+          $prs = gh pr list -R microsoft/winget-pkgs --state open --search "HansTanzi.RestGuard $env:VERSION in:title" --json number --jq length
+          if ($LASTEXITCODE -ne 0) { throw "Failed to query winget-pkgs PRs" }
+          if ([int]$prs -gt 0) { Skip "An open PR for HansTanzi.RestGuard $env:VERSION already exists in microsoft/winget-pkgs" }
+          "submit=true" >> $env:GITHUB_OUTPUT
+
+      - uses: vedantmgoyal9/winget-releaser@v2
+        if: steps.winget.outputs.submit == 'true'
+        with:
+          identifier: HansTanzi.RestGuard
+          version: ${{ env.VERSION }}
+          release-tag: ${{ github.ref_name }}
+          installers-regex: '_x64\.exe$'
+          token: ${{ secrets.WINGET_TOKEN }}
+
+  # 微软商店包：未签名（由商店签名），不放进 Release，作为构建产物供手动上传到合作伙伴中心。
+  # 商店提交是手动的，无从检查，每次都用 Release 上的 exe 打包。商店不支持预发布版本号，预发布版本跳过
+  msix:
+    needs: [prepare, build-windows]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-windows.result) && !contains(github.ref_name, '-') }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 放到构建输出位置，msix.ps1 -SkipBuild 从这里取 exe
+      - name: Download asset
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $name = "RestGuard_${{ needs.prepare.outputs.version }}_x64.exe"
+          gh release download "${{ github.ref_name }}" --pattern $name --dir $env:RUNNER_TEMP
+          if ($LASTEXITCODE -ne 0) { throw "Failed to download $name" }
+          New-Item -ItemType Directory -Force src-tauri/target/release | Out-Null
+          Copy-Item "$env:RUNNER_TEMP/$name" src-tauri/target/release/restguard.exe
+
+      - name: Build MSIX
+        shell: pwsh
+        run: ./scripts/msix.ps1 -SkipBuild
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: msix
+          path: src-tauri/target/msix/*.msix

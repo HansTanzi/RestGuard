@@ -72,10 +72,12 @@ jobs:
           name: msix
           path: src-tauri/target/msix/*.msix
 
+      # dev 受规则保护（只能走 PR），用在 bypass 列表中的 deploy key 推送
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.repository.default_branch }}
           path: default-branch
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Update Scoop manifest
         shell: pwsh
@@ -151,6 +153,7 @@ jobs:
         with:
           ref: ${{ github.event.repository.default_branch }}
           path: default-branch
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Update Homebrew cask
         working-directory: default-branch

@@ -1,6 +1,6 @@
 {
   "name": "restguard",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Cross-platform break reminder that actually makes you rest",
   "private": true,
   "type": "module",

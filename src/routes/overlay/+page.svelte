@@ -70,7 +70,7 @@
     };
   });
 
-  async function run(command: "start_work" | "postpone") {
+  async function run(command: "start_work" | "postpone" | "in_meeting") {
     busy = true;
     try {
       await invoke(command);
@@ -118,6 +118,11 @@
       {#if resting && snap.canPostpone}
         <button class="ghost" disabled={busy} onclick={() => run("postpone")}>
           {s.postpone(snap.postponesLeft)}
+        </button>
+      {/if}
+      {#if resting && snap.meetingApp}
+        <button class="ghost" disabled={busy} onclick={() => run("in_meeting")}>
+          {s.inMeeting(snap.meetingApp)}
         </button>
       {/if}
     </div>

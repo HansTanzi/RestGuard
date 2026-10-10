@@ -144,6 +144,12 @@ fn postpone(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::postpone)
 }
 
+/// 遮罩上的“我在开会”：会议软件在运行但无法确定是否在开会时，由用户确认
+#[tauri::command]
+fn in_meeting(app: AppHandle) -> Result<(), String> {
+    end_rest(&app, Timer::in_meeting)
+}
+
 /// 遮罩上的“缩小窗口”按钮：紧急时缩小遮罩处理一下手头的事，但不结束休息。
 /// 用 async 让它跑在主线程之外，避免在 Windows 上调整窗口时卡住
 #[tauri::command]
@@ -255,7 +261,11 @@ fn spawn_ticker(app: AppHandle) {
                 None
             };
             timer.hold(held);
-            (timer.tick(now), timer.snapshot(now))
+            let event = timer.tick(now);
+            if event == Some(TimerEvent::RestStarted) {
+                timer.set_meeting_app(bypass::running_app());
+            }
+            (event, timer.snapshot(now))
         };
         if event == Some(TimerEvent::RestStarted) {
             open_overlays(&app);
@@ -322,6 +332,7 @@ pub fn run() {
             open_link,
             start_work,
             postpone,
+            in_meeting,
             set_overlay_shrunk,
             dev_skip_rest
         ])

@@ -123,11 +123,11 @@ fn foreground_id() -> Option<String> {
 /// 应用异常退出时系统记录可能停留在“使用中”，所以还要求它的进程仍在运行
 #[cfg(windows)]
 fn mic_app() -> Option<&'static App> {
-    let users = mic::users();
+    let users = win::mic_users();
     if users.is_empty() {
         return None;
     }
-    let running = mic::running_exes();
+    let running = win::running_exes();
     BUILTIN.iter().find(|app| {
         users
             .iter()
@@ -142,8 +142,24 @@ fn mic_app() -> Option<&'static App> {
     None
 }
 
+/// 正在运行（不一定在开会）的豁免应用
 #[cfg(windows)]
-mod mic {
+pub fn running_app() -> Option<String> {
+    let running = win::running_exes();
+    BUILTIN
+        .iter()
+        .find(|app| running.iter().any(|exe| contains(app.exe, exe)))
+        .map(|app| app.name.to_string())
+}
+
+/// 其他平台暂不支持检测运行中的进程
+#[cfg(not(windows))]
+pub fn running_app() -> Option<String> {
+    None
+}
+
+#[cfg(windows)]
+mod win {
     use windows::{
         core::{w, PCWSTR, PWSTR},
         Win32::{
@@ -169,7 +185,7 @@ mod mic {
     );
 
     /// 正在使用麦克风的应用：商店应用返回包系列名，其余返回可执行文件名
-    pub fn users() -> Vec<String> {
+    pub fn mic_users() -> Vec<String> {
         let mut users = Vec::new();
         let Some(root) = Key::open(HKEY_CURRENT_USER, CONSENT_STORE) else {
             return users;
@@ -311,7 +327,7 @@ mod mic {
         #[test]
         fn reads_consent_store() {
             // 只要能读出来、不崩溃即可；打印出来方便开会时手动核对
-            println!("mic users: {:?}", users());
+            println!("mic users: {:?}", mic_users());
         }
     }
 }

@@ -9,6 +9,8 @@ export interface Snapshot {
   postponesLeft: number;
   /** 休息时间已到，但因该豁免应用在前台而暂缓 */
   heldBy: string | null;
+  /** 休息开始时正在运行的会议软件，此时遮罩提供“我在开会” */
+  meetingApp: string | null;
 }
 
 export const STATE_EVENT = "timer:state";

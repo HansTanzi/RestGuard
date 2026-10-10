@@ -2,6 +2,7 @@ mod about;
 mod bypass;
 mod config;
 mod i18n;
+mod idle;
 #[cfg(windows)]
 mod msix;
 mod overlay;
@@ -239,10 +240,15 @@ fn broadcast(app: &AppHandle, snap: &Snapshot) {
 fn spawn_ticker(app: AppHandle) {
     thread::spawn(move || loop {
         thread::sleep(Duration::from_millis(500));
+        // 在加锁前查询：Linux 上需要启动外部进程
+        let idle = idle::idle_time();
         let (event, snap) = {
             let state = app.state::<AppState>();
             let mut timer = state.timer.lock().unwrap();
             let now = Instant::now();
+            if let Some(idle) = idle {
+                timer.idle(now, idle);
+            }
             // 只在休息到点后才检测前台应用
             let held = if timer.rest_due(now) {
                 bypass::active_app()

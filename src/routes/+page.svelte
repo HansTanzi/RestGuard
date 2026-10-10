@@ -35,6 +35,7 @@
     rest_minutes: !positive(draft.rest_minutes),
     postpone_minutes: !positive(draft.postpone_minutes),
     max_postpones: !(Number.isInteger(draft.max_postpones) && draft.max_postpones >= 0),
+    idle_minutes: !(positive(draft.idle_minutes) || draft.idle_minutes === 0),
   });
   const valid = $derived(!Object.values(errors).some(Boolean));
   const dirty = $derived(
@@ -154,7 +155,18 @@
               bind:value={draft.max_postpones}
             />
           </label>
+          <label>
+            <span>{s.idleMinutes}</span>
+            <input
+              type="number"
+              min="0"
+              step="any"
+              class:invalid={errors.idle_minutes}
+              bind:value={draft.idle_minutes}
+            />
+          </label>
           <p class="hint">{s.minutesHint}</p>
+          <p class="hint">{s.idleHint}</p>
           {#if saved && draft.work_minutes !== saved.work_minutes}
             <p class="hint accent">{s.workRestartHint}</p>
           {/if}

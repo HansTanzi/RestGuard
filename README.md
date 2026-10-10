@@ -14,6 +14,7 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 - Multi-monitor: every screen is covered
 - The overlay can't be closed during a break (Alt+F4 does nothing), and you can't quit from the tray
 - Postpone for 5 minutes, up to 3 times; the count resets after a full break
+- Idle detection: after 5 minutes without keyboard or mouse input you count as away and the work countdown pauses; being away as long as a break counts as a full break, so you aren't sent to rest right after coming back
 - Tray menu: time remaining, rest now, settings, start at login
 - Single instance
 - Available in Simplified Chinese, English, Hindi, Spanish, Arabic, French, Bengali, Portuguese, German, Japanese, Italian, Korean and Indonesian. The UI language follows the system by default (English if the system language isn't supported); switch it any time from the tray menu's "语言 / Language" submenu
@@ -90,11 +91,13 @@ rest_minutes = 10.0      # how long each break lasts
 postpone_minutes = 5.0   # how long each postpone lasts
 max_postpones = 3        # max postpones before a full break is required
 overlay_coverage = 1.0   # fraction of each screen covered, 0.1 ~ 1.0
+idle_minutes = 5.0       # no input for this long counts as away, 0 = off
 ```
 
 ## Platform limitations
 
 - **macOS**: system-level actions such as Force Quit (`Cmd+Option+Esc`) can't be blocked
+- **Linux**: idle detection needs GNOME or a desktop implementing `org.freedesktop.ScreenSaver` (e.g. KDE Plasma), plus `gdbus`; otherwise it's off
 - **Linux Wayland**: the protocol doesn't let apps keep themselves on top or position their own windows, so the overlay may not work; X11 is fine
 
 ## Development

@@ -1,6 +1,6 @@
 //! 关于窗口：从托盘菜单打开，加载前端 /about 路由（src/routes/about/+page.svelte）。
 
-use crate::i18n::t;
+use crate::i18n::{t, text};
 use serde::Serialize;
 use std::process::Command;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
@@ -47,7 +47,7 @@ pub fn open_link(link: &str) -> Result<(), String> {
 }
 
 fn title() -> &'static str {
-    t("关于 RestGuard", "About RestGuard")
+    t(&text::ABOUT_TITLE)
 }
 
 /// 打开关于窗口；已经打开时把它带到前台。

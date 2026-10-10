@@ -48,5 +48,4 @@ Invoke-Git tag $tag
 Invoke-Git push --atomic origin HEAD $tag
 
 Write-Host ""
-Write-Host "Pushed $tag. GitHub Actions will build the release and update the Scoop manifest and Homebrew cask on dev (and open a winget-pkgs PR for stable versions)."
-Write-Host "Run 'git pull' after the workflow finishes."
+Write-Host "Pushed $tag. GitHub Actions will build the release, and update HansTanzi/scoop-bucket and HansTanzi/homebrew-tap (and open a winget-pkgs PR for stable versions)."

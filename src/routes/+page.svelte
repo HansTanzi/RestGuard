@@ -4,7 +4,15 @@
   import { listen } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
   import { STATE_EVENT, type Snapshot } from "$lib/timer";
-  import { LANG_EVENT, settingsStrings, type SettingsStrings } from "$lib/i18n";
+  import {
+    LANG_EVENT,
+    LANG_NAMES,
+    UI_LANGS,
+    applyDocumentLang,
+    settingsStrings,
+    type SettingsStrings,
+    type UiLang,
+  } from "$lib/i18n";
   import { AUTOSTART_EVENT, DEFAULT_CONFIG, type Config, type LangId } from "$lib/config";
 
   let s = $state<SettingsStrings | null>(null);
@@ -34,10 +42,10 @@
       (Object.keys(saved) as (keyof Config)[]).some((k) => saved![k] !== draft[k]),
   );
 
-  function applyLang(isZh: boolean) {
-    s = settingsStrings(isZh);
-    document.documentElement.lang = isZh ? "zh-CN" : "en";
-    invoke<LangId>("get_lang").then((v) => (lang = v));
+  function applyLang(v: UiLang) {
+    s = settingsStrings(v);
+    applyDocumentLang(v);
+    invoke<LangId>("get_lang").then((id) => (lang = id));
   }
 
   function flash(text: string, error = false) {
@@ -74,7 +82,7 @@
   }
 
   onMount(() => {
-    invoke<boolean>("is_zh").then(applyLang);
+    invoke<UiLang>("ui_lang").then(applyLang);
     invoke<Config>("get_config").then((v) => {
       saved = v;
       draft = { ...v };
@@ -82,7 +90,7 @@
     invoke<boolean>("get_autostart").then((v) => (autostart = v));
     invoke<Snapshot>("get_state").then((v) => (phase = v.phase));
     const unlistens = [
-      listen<boolean>(LANG_EVENT, (e) => applyLang(e.payload)),
+      listen<UiLang>(LANG_EVENT, (e) => applyLang(e.payload)),
       listen<boolean>(AUTOSTART_EVENT, (e) => (autostart = e.payload)),
       listen<Snapshot>(STATE_EVENT, (e) => (phase = e.payload.phase)),
     ];
@@ -195,8 +203,9 @@
         <select bind:value={lang} onchange={changeLang}>
           <option value="auto">{s.followSystem}</option>
           <!-- 语言名称始终用其本身的文字显示，与托盘菜单一致 -->
-          <option value="zh">简体中文</option>
-          <option value="en">English</option>
+          {#each UI_LANGS as id (id)}
+            <option value={id}>{LANG_NAMES[id]}</option>
+          {/each}
         </select>
       </label>
       <label class="check">
@@ -304,6 +313,12 @@
     outline-offset: -1px;
   }
 
+  /* 部分语言名称较长（如 Bahasa Indonesia） */
+  select {
+    width: auto;
+    min-width: 7.5rem;
+  }
+
   input.invalid {
     border-color: var(--warn);
   }
@@ -325,7 +340,7 @@
 
   output {
     width: 3rem;
-    text-align: right;
+    text-align: end;
     font-variant-numeric: tabular-nums;
   }
 
@@ -383,7 +398,7 @@
   .message {
     min-height: 1.2em;
     margin: 0.5rem 0 1rem;
-    text-align: right;
+    text-align: end;
     font-size: 0.85rem;
     color: var(--accent);
   }

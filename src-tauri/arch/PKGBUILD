@@ -1,0 +1,22 @@
+# Maintainer: HansTanzi <https://github.com/HansTanzi>
+
+# 由 scripts/arch-package.sh 使用：把 Tauri 打出的 .deb 重新打包为 Arch 的 .pkg.tar.zst。
+# pkgver 由脚本填入，restguard.deb 和两份许可证由脚本放到同一目录
+pkgname=restguard
+pkgver=0.0.0
+pkgrel=1
+pkgdesc="Cross-platform break reminder that actually makes you rest"
+arch=('x86_64')
+url="https://github.com/HansTanzi/RestGuard"
+license=('MIT OR Apache-2.0')
+depends=('webkit2gtk-4.1' 'gtk3' 'libayatana-appindicator')
+# 可执行文件已在 cargo 编译时 strip，不需要再 strip，也没有调试符号可拆分
+options=('!debug' '!strip')
+source=('restguard.deb' 'LICENSE-MIT' 'LICENSE-APACHE')
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+  bsdtar -xf data.tar.* -C "$pkgdir"
+  install -Dm644 LICENSE-MIT "$pkgdir/usr/share/licenses/$pkgname/LICENSE-MIT"
+  install -Dm644 LICENSE-APACHE "$pkgdir/usr/share/licenses/$pkgname/LICENSE-APACHE"
+}

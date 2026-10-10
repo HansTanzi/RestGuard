@@ -4,7 +4,13 @@
   import { listen } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
   import { STATE_EVENT, type Snapshot } from "$lib/timer";
-  import { LANG_EVENT, aboutStrings, type AboutStrings } from "$lib/i18n";
+  import {
+    LANG_EVENT,
+    aboutStrings,
+    applyDocumentLang,
+    type AboutStrings,
+    type UiLang,
+  } from "$lib/i18n";
   // 直接用应用图标，static/favicon.png 只有 32px，放大会糊
   import icon from "../../../src-tauri/icons/128x128.png";
 
@@ -22,9 +28,9 @@
 
   const locked = $derived(phase !== "working");
 
-  function applyLang(isZh: boolean) {
-    s = aboutStrings(isZh);
-    document.documentElement.lang = isZh ? "zh-CN" : "en";
+  function applyLang(v: UiLang) {
+    s = aboutStrings(v);
+    applyDocumentLang(v);
   }
 
   // 链接由后端用系统浏览器打开，WebView 里不跳转
@@ -39,11 +45,11 @@
   const short = (url: string) => url.replace(/^https?:\/\//, "");
 
   onMount(() => {
-    invoke<boolean>("is_zh").then(applyLang);
+    invoke<UiLang>("ui_lang").then(applyLang);
     invoke<AboutInfo>("get_about").then((v) => (info = v));
     invoke<Snapshot>("get_state").then((v) => (phase = v.phase));
     const unlistens = [
-      listen<boolean>(LANG_EVENT, (e) => applyLang(e.payload)),
+      listen<UiLang>(LANG_EVENT, (e) => applyLang(e.payload)),
       listen<Snapshot>(STATE_EVENT, (e) => (phase = e.payload.phase)),
     ];
     return () => unlistens.forEach((p) => p.then((off) => off()));

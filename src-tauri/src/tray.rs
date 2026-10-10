@@ -1,10 +1,10 @@
-use crate::i18n::{self, t, Lang};
+use crate::i18n::{self, t, text, Lang};
 use crate::timer::{Phase, Snapshot};
 use std::sync::Mutex;
 use tauri::{
     image::Image,
     include_image,
-    menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu},
+    menu::{CheckMenuItem, IsMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu},
     tray::TrayIconBuilder,
     AppHandle, Manager, Wry,
 };
@@ -78,31 +78,29 @@ fn light_taskbar() -> bool {
 }
 
 fn rest_now_text() -> &'static str {
-    t("提前休息", "Rest now")
+    t(&text::REST_NOW)
 }
 
 fn settings_text() -> &'static str {
-    t("设置…", "Settings…")
+    t(&text::SETTINGS_MENU)
 }
 
 fn autostart_text() -> &'static str {
-    t("开机自启", "Start at login")
+    t(&text::AUTOSTART)
 }
 
 fn about_text() -> &'static str {
-    t("关于 RestGuard…", "About RestGuard…")
+    t(&text::ABOUT_MENU)
 }
 
 fn quit_text() -> &'static str {
-    t("退出", "Quit")
+    t(&text::QUIT)
 }
 
 fn lang_text(lang: Lang) -> &'static str {
     match lang {
-        Lang::Auto => t("跟随系统", "Follow system"),
-        // 语言名称始终用其本身的文字显示，方便看不懂当前语言的用户找到
-        Lang::Zh => "简体中文",
-        Lang::En => "English",
+        Lang::Auto => t(&text::FOLLOW_SYSTEM),
+        lang => lang.native_name(),
     }
 }
 
@@ -133,12 +131,11 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
             )
         })
         .collect::<tauri::Result<Vec<_>>>()?;
-    let lang_menu = Submenu::with_items(
-        app,
-        "语言 / Language",
-        true,
-        &[&langs[0], &PredefinedMenuItem::separator(app)?, &langs[1], &langs[2]],
-    )?;
+    // “跟随系统”与具体语言之间加分隔线
+    let separator = PredefinedMenuItem::separator(app)?;
+    let mut lang_entries: Vec<&dyn IsMenuItem<Wry>> = vec![&langs[0], &separator];
+    lang_entries.extend(langs[1..].iter().map(|item| item as &dyn IsMenuItem<Wry>));
+    let lang_menu = Submenu::with_items(app, "语言 / Language", true, &lang_entries)?;
     let about = MenuItem::with_id(app, "about", about_text(), true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", quit_text(), true, None::<&str>)?;
 
@@ -213,13 +210,13 @@ pub fn refresh_language(app: &AppHandle) {
 
 pub fn update(app: &AppHandle, snap: &Snapshot) {
     let text = match snap.phase {
-        Phase::Working => format!(
-            "{} {}",
-            t("距离休息", "Break in"),
-            mm_ss(snap.remaining_secs)
-        ),
-        Phase::Resting => format!("{} {}", t("休息中", "Resting"), mm_ss(snap.remaining_secs)),
-        Phase::RestOver => t("休息结束", "Break over").to_string(),
+        Phase::Working if snap.held_by.is_some() => {
+            let app = snap.held_by.as_deref().unwrap_or_default();
+            t(&text::BREAK_HELD).replace("{app}", app)
+        }
+        Phase::Working => format!("{} {}", t(&text::BREAK_IN), mm_ss(snap.remaining_secs)),
+        Phase::Resting => format!("{} {}", t(&text::RESTING), mm_ss(snap.remaining_secs)),
+        Phase::RestOver => t(&text::BREAK_OVER).to_string(),
     };
     let working = snap.phase == Phase::Working;
     let tray = app.tray_by_id(TRAY_ID);

@@ -2845,6 +2845,7 @@ dependencies = [
 name = "restguard"
 version = "0.1.0"
 dependencies = [
+ "objc2-app-kit",
  "serde",
  "serde_json",
  "sys-locale",
@@ -2853,6 +2854,7 @@ dependencies = [
  "tauri-plugin-autostart",
  "tauri-plugin-single-instance",
  "toml 0.9.12+spec-1.1.0",
+ "windows",
 ]
 
 [[package]]

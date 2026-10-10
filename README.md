@@ -6,9 +6,7 @@ A cross-platform break reminder that actually makes you rest: after each work se
 
 Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [ProtectEyes](./ProtectEyes).
 
-![The break overlay - Main Screen](./docs/images/RestUI-MainScreen.webp)
-
-![The break overlay - Other Screens](./docs/images/RestUI-OtherScreen.webp)
+![The break overlay](./docs/images/BreakOverlay-MainScreen.webp)
 
 ## Features
 
@@ -22,7 +20,13 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 
 ## Install
 
-On Windows, install with [Scoop](https://scoop.sh):
+On Windows, install with [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
+
+```powershell
+winget install HansTanzi.RestGuard
+```
+
+Or with [Scoop](https://scoop.sh):
 
 ```powershell
 scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
@@ -30,6 +34,15 @@ scoop install hanstanzi/restguard
 ```
 
 Requires the WebView2 runtime (preinstalled on Windows 11).
+
+On macOS, install with [Homebrew](https://brew.sh) (universal build for Apple Silicon and Intel):
+
+```sh
+brew tap hanstanzi/restguard https://github.com/HansTanzi/RestGuard
+brew install --cask hanstanzi/restguard/restguard
+```
+
+RestGuard lives in the menu bar and has no Dock icon. The app isn't notarized by Apple; the cask removes the quarantine flag on install. If you download the zip from Releases by hand, run `xattr -dr com.apple.quarantine /Applications/RestGuard.app` before first launch.
 
 ## Configuration
 
@@ -51,11 +64,9 @@ max_postpones = 3        # max postpones before a full break is required
 overlay_coverage = 1.0   # fraction of each screen covered, 0.1 ~ 1.0
 ```
 
-Settings are deliberately kept out of the UI; otherwise the breaks wouldn't really be forced.
-
 ## Platform limitations
 
-- **macOS**: system gestures such as `Cmd+Q` and Mission Control can't be fully blocked
+- **macOS**: system-level actions such as Force Quit (`Cmd+Option+Esc`) can't be blocked
 - **Linux Wayland**: the protocol doesn't let apps keep themselves on top or position their own windows, so the overlay may not work; X11 is fine
 
 ## Development
@@ -71,7 +82,15 @@ cd src-tauri && cargo test
 
 Dev builds read `config.dev.toml` and `language.dev` (same directory as `config.toml`), so you can use short durations or switch languages without touching the installed app. Press `Esc` on the overlay to end a break immediately. Quit the installed RestGuard first, otherwise the single-instance check makes the dev build exit right away.
 
-To release, bump the version in `tauri.conf.json`, `Cargo.toml` and `package.json`, then push a `v<version>` tag. GitHub Actions builds the exe, creates the Release, and updates `bucket/restguard.json`.
+To release, run `pnpm release <version>` (e.g. `pnpm release 0.2.0`) on a clean `dev` branch. It bumps the version in `package.json`, `tauri.conf.json`, `Cargo.toml` and `Cargo.lock`, commits, and pushes a `v<version>` tag. GitHub Actions then builds the exe and a universal macOS `.app`, creates the Release, and commits the updated `bucket/restguard.json` and `Casks/restguard.rb` to `dev`, so run `git pull` afterwards. For stable versions it also opens a PR to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) via [winget-releaser](https://github.com/vedantmgoyal9/winget-releaser); this needs a `WINGET_TOKEN` repository secret (a classic PAT with `public_repo` scope) and a fork of `winget-pkgs` under the token owner's account. The very first WinGet version must be submitted by hand, e.g. `komac new HansTanzi.RestGuard --version <version> --urls <exe release URL>` with [Komac](https://github.com/russellbanks/Komac) (pick the `portable` installer type and add `Microsoft.EdgeWebView2Runtime` as a package dependency).
+
+### Microsoft Store
+
+The Store build is an MSIX package; the Store signs it, so no code-signing certificate is needed. Run `pnpm msix` to build `src-tauri/target/msix/RestGuard_<version>_x64.msix` locally (needs the Windows SDK); the release workflow also builds it for stable versions and attaches it to the workflow run as the `msix` artifact. Upload it to a new submission in [Partner Center](https://partner.microsoft.com/dashboard).
+
+One-time setup: reserve the app name in Partner Center, then copy `Package/Identity/Name`, `Package/Identity/Publisher` and `Package/Properties/PublisherDisplayName` from the app's **Product identity** page into `src-tauri/msix/AppxManifest.xml`. The package declares the restricted `runFullTrust` capability (required for desktop apps), so the submission asks for a justification, e.g. "Desktop app built with Tauri; needs full trust to show always-on-top break overlays on every screen".
+
+Inside the package, start-at-login uses the manifest's `StartupTask` instead of the registry, since registry writes are virtualized there. To try the package without the Store, enable Developer Mode and run `Add-AppxPackage -Register src-tauri/target/msix/layout/AppxManifest.xml`.
 
 For debugging, set `work_minutes` to `0.1` (6 seconds) to trigger a break quickly.
 

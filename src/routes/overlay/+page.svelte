@@ -8,8 +8,6 @@
   import { LANG_EVENT, strings, type Strings } from "$lib/i18n";
 
   const win = getCurrentWebviewWindow();
-  // 与 src-tauri/src/overlay.rs 的 PRIMARY_LABEL 一致
-  const primary = win.label === "overlay-primary";
   // 与 src-tauri/src/lib.rs 的 SHRINK_EVENT 一致，载荷为是否已缩小
   const SHRINK_EVENT = "overlay:shrunk";
 
@@ -85,21 +83,14 @@
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<main
-  class:secondary={!primary}
-  class:movable={shrunk}
-  onmousedown={onMouseDown}
-  in:fade={{ duration: 600 }}
->
+<main class:movable={shrunk} onmousedown={onMouseDown} in:fade={{ duration: 600 }}>
   {#if snap && s}
-    {#if primary}
-      <button class="ghost shrink" onclick={toggleShrink}>
-        {shrunk ? s.unshrink : s.shrink}
-      </button>
-      <button class="ghost lang" onclick={toggleLang}>{s.switchLang}</button>
-      <h1 in:fly={{ y: -20, duration: 600 }}>{s.title}</h1>
-      <p class="tip">{s.tip}</p>
-    {/if}
+    <button class="ghost shrink" onclick={toggleShrink}>
+      {shrunk ? s.unshrink : s.shrink}
+    </button>
+    <button class="ghost lang" onclick={toggleLang}>{s.switchLang}</button>
+    <h1 in:fly={{ y: -20, duration: 600 }}>{s.title}</h1>
+    <p class="tip">{s.tip}</p>
 
     <div class="ring">
       <svg viewBox="0 0 280 280" aria-hidden="true">
@@ -118,20 +109,18 @@
       </div>
     </div>
 
-    {#if primary}
-      <div class="actions">
-        {#if restOver}
-          <button class="primary" disabled={busy} onclick={() => run("start_work")} in:fade>
-            {s.startWork}
-          </button>
-        {/if}
-        {#if resting && snap.canPostpone}
-          <button class="ghost" disabled={busy} onclick={() => run("postpone")}>
-            {s.postpone(snap.postponesLeft)}
-          </button>
-        {/if}
-      </div>
-    {/if}
+    <div class="actions">
+      {#if restOver}
+        <button class="primary" disabled={busy} onclick={() => run("start_work")} in:fade>
+          {s.startWork}
+        </button>
+      {/if}
+      {#if resting && snap.canPostpone}
+        <button class="ghost" disabled={busy} onclick={() => run("postpone")}>
+          {s.postpone(snap.postponesLeft)}
+        </button>
+      {/if}
+    </div>
   {/if}
 </main>
 
@@ -167,10 +156,6 @@
       "PingFang SC",
       "Microsoft YaHei",
       sans-serif;
-  }
-
-  main.secondary {
-    background: var(--bg-1);
   }
 
   main.movable {

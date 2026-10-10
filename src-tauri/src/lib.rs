@@ -1,5 +1,8 @@
+mod about;
 mod config;
 mod i18n;
+#[cfg(windows)]
+mod msix;
 mod overlay;
 mod settings;
 mod timer;
@@ -115,6 +118,22 @@ fn set_autostart(app: AppHandle, on: bool) -> bool {
 }
 
 #[tauri::command]
+fn get_about(app: AppHandle) -> about::AboutInfo {
+    about::info(&app)
+}
+
+/// 关于页面的链接：link 为 "repo" 或 "issues"。
+/// 休息期间不允许打开浏览器，防止借此绕过休息
+#[tauri::command]
+fn open_link(app: AppHandle, link: String) -> Result<(), String> {
+    let snap = get_state(app);
+    if snap.phase != Phase::Working {
+        return Err(i18n::t("休息期间不能打开链接", "Links can't be opened during a break").into());
+    }
+    about::open_link(&link)
+}
+
+#[tauri::command]
 fn start_work(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::start_work)
 }
@@ -178,6 +197,7 @@ pub(crate) fn set_language(app: &AppHandle, lang: i18n::Lang) {
     }
     tray::refresh_language(app);
     settings::refresh_language(app);
+    about::refresh_language(app);
     let _ = app.emit(LANG_EVENT, i18n::is_zh());
     let snap = {
         let state = app.state::<AppState>();
@@ -198,6 +218,12 @@ pub(crate) fn open_settings(app: &AppHandle) {
     let app = app.clone();
     // 见 overlay::open_all 的说明：不能在事件回调线程里直接创建窗口
     thread::spawn(move || settings::open(&app));
+}
+
+pub(crate) fn open_about(app: &AppHandle) {
+    let app = app.clone();
+    // 见 overlay::open_all 的说明：不能在事件回调线程里直接创建窗口
+    thread::spawn(move || about::open(&app));
 }
 
 fn open_overlays(app: &AppHandle) {
@@ -236,7 +262,12 @@ pub fn run() {
         // 必须最先注册：重复启动时直接退出新进程
         .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
+        // macOS 默认菜单带 Cmd+Q，休息时按下会直接退出
+        .enable_macos_default_menu(false)
         .setup(|app| {
+            // macOS 上只在菜单栏显示图标，不占 Dock
+            #[cfg(target_os = "macos")]
+            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
             let dir = app.path().app_config_dir()?;
             // 开发构建用单独的配置和语言文件，调试时不影响已安装的正式版
             let (lang_name, cfg_name) = if cfg!(debug_assertions) {
@@ -279,6 +310,8 @@ pub fn run() {
             save_config,
             get_autostart,
             set_autostart,
+            get_about,
+            open_link,
             start_work,
             postpone,
             set_overlay_shrunk,

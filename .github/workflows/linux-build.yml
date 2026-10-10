@@ -1,4 +1,4 @@
-# 在 PR 阶段验证 Linux 能正常打出 .deb + .rpm，提前暴露系统依赖等问题，
+# 在 PR 阶段验证 Linux 能正常打出 .deb、.rpm 和 Arch 包，提前暴露系统依赖等问题，
 # 不上传任何产物。正式发布由 release.yml 的 linux job 负责。
 name: Linux build check
 
@@ -57,3 +57,5 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm tauri build --bundles deb rpm
+
+      - run: bash scripts/arch-package.sh "$(jq -r .version src-tauri/tauri.conf.json)"

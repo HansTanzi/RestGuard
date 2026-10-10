@@ -54,7 +54,7 @@ jobs:
           }
           check windows "RestGuard_${version}_x64.exe"
           check macos "RestGuard_${version}_universal.zip"
-          check linux "RestGuard_${version}_amd64.deb" "RestGuard_${version}_x86_64.rpm"
+          check linux "RestGuard_${version}_amd64.deb" "RestGuard_${version}_x86_64.rpm" "RestGuard_${version}_x86_64.pkg.tar.zst"
 
   build-windows:
     needs: prepare
@@ -132,7 +132,6 @@ jobs:
           ditto -c -k --keepParent src-tauri/target/universal-apple-darwin/release/bundle/macos/RestGuard.app "$name"
           gh release upload "$GITHUB_REF_NAME" "$name"
 
-  # 没有对应的分发渠道，只上传 Release 文件
   build-linux:
     needs: prepare
     if: needs.prepare.outputs.linux_exists == 'false'
@@ -175,6 +174,9 @@ jobs:
       # x86_64 的 .deb（Debian/Ubuntu）和 .rpm（Fedora/openSUSE），都使用系统的 webkit2gtk
       - run: pnpm tauri build --bundles deb rpm
 
+      # Arch 的 .pkg.tar.zst，由 .deb 重新打包
+      - run: bash scripts/arch-package.sh "${{ needs.prepare.outputs.version }}"
+
       # 只上传 Release 上还没有的文件（比如上次只传成功了一个），不加 --clobber，绝不覆盖
       - name: Upload assets
         env:
@@ -192,7 +194,8 @@ jobs:
           assets=$(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name')
           for file in \
             "src-tauri/target/release/bundle/deb/RestGuard_${VERSION}_amd64.deb" \
-            "RestGuard_${VERSION}_x86_64.rpm"; do
+            "RestGuard_${VERSION}_x86_64.rpm" \
+            "RestGuard_${VERSION}_x86_64.pkg.tar.zst"; do
             if grep -qxF "$(basename "$file")" <<< "$assets"; then
               echo "::notice::$(basename "$file") already exists, not uploading"
             else

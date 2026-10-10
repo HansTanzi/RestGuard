@@ -1,4 +1,5 @@
 mod about;
+mod bypass;
 mod config;
 mod i18n;
 #[cfg(windows)]
@@ -247,6 +248,13 @@ fn spawn_ticker(app: AppHandle) {
             let state = app.state::<AppState>();
             let mut timer = state.timer.lock().unwrap();
             let now = Instant::now();
+            // 只在休息到点后才检测前台应用
+            let held = if timer.rest_due(now) {
+                bypass::active_app()
+            } else {
+                None
+            };
+            timer.hold(held);
             (timer.tick(now), timer.snapshot(now))
         };
         if event == Some(TimerEvent::RestStarted) {

@@ -30,6 +30,8 @@ pub struct Snapshot {
     pub total_secs: u64,
     pub can_postpone: bool,
     pub postpones_left: u32,
+    /// 休息时间已到，但因该豁免应用在前台而暂缓
+    pub held_by: Option<String>,
 }
 
 pub struct Timer {
@@ -44,6 +46,7 @@ pub struct Timer {
     postpones_used: u32,
     /// 本次休息是用户主动开始的，主动休息不提供推迟
     voluntary: bool,
+    held_by: Option<String>,
 }
 
 impl Timer {
@@ -58,7 +61,18 @@ impl Timer {
             deadline: now + cfg.work(),
             postpones_used: 0,
             voluntary: false,
+            held_by: None,
         }
+    }
+
+    /// 工作倒计时已结束，即将开始休息
+    pub fn rest_due(&self, now: Instant) -> bool {
+        self.phase == Phase::Working && now >= self.deadline
+    }
+
+    /// 设置暂缓休息的豁免应用，None 表示不暂缓。需在 tick 之前调用
+    pub fn hold(&mut self, app: Option<String>) {
+        self.held_by = app;
     }
 
     pub fn tick(&mut self, now: Instant) -> Option<TimerEvent> {
@@ -66,6 +80,7 @@ impl Timer {
             return None;
         }
         match self.phase {
+            Phase::Working if self.held_by.is_some() => None,
             Phase::Working => {
                 self.begin_rest(now, false);
                 Some(TimerEvent::RestStarted)
@@ -139,6 +154,7 @@ impl Timer {
             total_secs: ceil_secs(self.deadline - self.started),
             can_postpone: self.can_postpone(),
             postpones_left: self.max_postpones.saturating_sub(self.postpones_used),
+            held_by: self.held_by.clone(),
         }
     }
 
@@ -149,6 +165,7 @@ impl Timer {
     fn begin_rest(&mut self, now: Instant, voluntary: bool) {
         self.phase = Phase::Resting;
         self.voluntary = voluntary;
+        self.held_by = None;
         self.started = now;
         self.deadline = now + self.rest;
     }
@@ -156,6 +173,7 @@ impl Timer {
     fn begin_work(&mut self, now: Instant, length: Duration) {
         self.phase = Phase::Working;
         self.voluntary = false;
+        self.held_by = None;
         self.started = now;
         self.deadline = now + length;
     }
@@ -222,6 +240,25 @@ mod tests {
         assert!(!t.rest_now(t0 + MIN), "已经在休息");
         assert!(!t.snapshot(t0 + MIN).can_postpone);
         assert!(!t.postpone(t0 + MIN));
+    }
+
+    #[test]
+    fn held_rest_starts_once_app_leaves() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        assert!(!t.rest_due(t0 + 59 * MIN));
+        let now = t0 + 60 * MIN;
+        assert!(t.rest_due(now));
+
+        t.hold(Some("Zoom".into()));
+        assert_eq!(t.tick(now), None);
+        let snap = t.snapshot(now + 20 * MIN);
+        assert_eq!(snap.phase, Phase::Working);
+        assert_eq!(snap.held_by.as_deref(), Some("Zoom"));
+
+        t.hold(None);
+        assert_eq!(t.tick(now + 20 * MIN), Some(TimerEvent::RestStarted));
+        assert_eq!(t.snapshot(now + 20 * MIN).held_by, None);
     }
 
     #[test]

@@ -213,6 +213,14 @@ pub fn refresh_language(app: &AppHandle) {
 
 pub fn update(app: &AppHandle, snap: &Snapshot) {
     let text = match snap.phase {
+        Phase::Working if snap.held_by.is_some() => {
+            let app = snap.held_by.as_deref().unwrap_or_default();
+            if i18n::is_zh() {
+                format!("{app} 使用中，休息暂缓")
+            } else {
+                format!("Break on hold: {app} in use")
+            }
+        }
         Phase::Working => format!(
             "{} {}",
             t("距离休息", "Break in"),

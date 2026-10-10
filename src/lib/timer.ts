@@ -7,6 +7,8 @@ export interface Snapshot {
   totalSecs: number;
   canPostpone: boolean;
   postponesLeft: number;
+  /** 休息时间已到，但因该豁免应用在前台而暂缓 */
+  heldBy: string | null;
 }
 
 export const STATE_EVENT = "timer:state";

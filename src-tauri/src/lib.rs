@@ -21,7 +21,7 @@ use tauri_plugin_autostart::MacosLauncher;
 use timer::{Phase, Snapshot, Timer, TimerEvent};
 
 const STATE_EVENT: &str = "timer:state";
-/// 载荷为切换后是否显示中文，与 src/lib/i18n.ts 的 LANG_EVENT 一致
+/// 载荷为切换后实际显示的语言（见 ui_lang），与 src/lib/i18n.ts 的 LANG_EVENT 一致
 const LANG_EVENT: &str = "lang:changed";
 /// 载荷为遮罩是否已缩小，与 src/routes/overlay/+page.svelte 的 SHRINK_EVENT 一致
 const SHRINK_EVENT: &str = "overlay:shrunk";
@@ -47,18 +47,14 @@ fn get_state(app: AppHandle) -> Snapshot {
     snap
 }
 
+/// 实际显示的界面语言（不会是 auto），各页面据此选择文字
 #[tauri::command]
-fn is_zh() -> bool {
-    i18n::is_zh()
+fn ui_lang() -> &'static str {
+    i18n::resolved().id()
 }
 
-/// 遮罩上的语言切换按钮：在中英文之间切换，与托盘菜单的手动选择等效
-#[tauri::command]
-fn set_zh(app: AppHandle, zh: bool) {
-    set_language(&app, if zh { i18n::Lang::Zh } else { i18n::Lang::En });
-}
-
-/// 设置面板的语言选项：auto / zh / en
+/// 用户的语言选择（可能是 auto），设置面板和遮罩的语言选项共用。
+/// 取值见 i18n::Lang::id
 #[tauri::command]
 fn get_lang() -> &'static str {
     i18n::current().id()
@@ -87,18 +83,11 @@ fn save_config(app: AppHandle, config: Config) -> Result<Config, String> {
         let mut timer = state.timer.lock().unwrap();
         let now = Instant::now();
         if timer.snapshot(now).phase != Phase::Working {
-            return Err(i18n::t(
-                "休息期间不能修改设置",
-                "Settings can't be changed during a break",
-            )
-            .into());
+            return Err(i18n::t(&i18n::text::SETTINGS_LOCKED).into());
         }
-        config.save(&state.config_path).map_err(|e| {
-            format!(
-                "{}：{e}",
-                i18n::t("无法保存配置文件", "Couldn't save the config file")
-            )
-        })?;
+        config
+            .save(&state.config_path)
+            .map_err(|e| i18n::t(&i18n::text::SAVE_FAILED).replace("{e}", &e.to_string()))?;
         timer.apply_config(&config, now);
         timer.snapshot(now)
     };
@@ -129,7 +118,7 @@ fn get_about(app: AppHandle) -> about::AboutInfo {
 fn open_link(app: AppHandle, link: String) -> Result<(), String> {
     let snap = get_state(app);
     if snap.phase != Phase::Working {
-        return Err(i18n::t("休息期间不能打开链接", "Links can't be opened during a break").into());
+        return Err(i18n::t(&i18n::text::LINKS_LOCKED).into());
     }
     about::open_link(&link)
 }
@@ -205,7 +194,7 @@ pub(crate) fn set_language(app: &AppHandle, lang: i18n::Lang) {
     tray::refresh_language(app);
     settings::refresh_language(app);
     about::refresh_language(app);
-    let _ = app.emit(LANG_EVENT, i18n::is_zh());
+    let _ = app.emit(LANG_EVENT, i18n::resolved().id());
     let snap = {
         let state = app.state::<AppState>();
         let snap = state.timer.lock().unwrap().snapshot(Instant::now());
@@ -320,8 +309,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             get_state,
-            is_zh,
-            set_zh,
+            ui_lang,
             get_lang,
             set_lang,
             get_config,

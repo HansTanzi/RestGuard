@@ -5,7 +5,15 @@
   import { onMount } from "svelte";
   import { fade, fly } from "svelte/transition";
   import { STATE_EVENT, formatClock, type Snapshot } from "$lib/timer";
-  import { LANG_EVENT, strings, type Strings } from "$lib/i18n";
+  import {
+    LANG_EVENT,
+    LANG_NAMES,
+    UI_LANGS,
+    applyDocumentLang,
+    strings,
+    type Strings,
+    type UiLang,
+  } from "$lib/i18n";
 
   const win = getCurrentWebviewWindow();
   // 与 src-tauri/src/lib.rs 的 SHRINK_EVENT 一致，载荷为是否已缩小
@@ -17,7 +25,7 @@
   let snap = $state<Snapshot | null>(null);
   let s = $state<Strings | null>(null);
   let busy = $state(false);
-  let zh = $state(false);
+  let lang = $state<UiLang>("en");
   // 遮罩窗口在休息结束时销毁，下次打开自然恢复原大小
   let shrunk = $state(false);
 
@@ -27,15 +35,17 @@
     snap && snap.totalSecs > 0 ? 1 - snap.remainingSecs / snap.totalSecs : 0,
   );
 
-  function applyLang(isZh: boolean) {
-    zh = isZh;
-    s = strings(isZh);
-    document.documentElement.lang = isZh ? "zh-CN" : "en";
+  function applyLang(v: UiLang) {
+    lang = v;
+    s = strings(v);
+    applyDocumentLang(v);
   }
 
-  // 后端保存选择并广播 LANG_EVENT，所有遮罩和托盘随之更新
-  function toggleLang() {
-    invoke("set_zh", { zh: !zh }).catch(console.error);
+  // 后端保存选择并广播 LANG_EVENT，所有遮罩和托盘随之更新。
+  // 与托盘菜单里手动选择某种语言等效
+  function changeLang(e: Event) {
+    const value = (e.currentTarget as HTMLSelectElement).value;
+    invoke("set_lang", { lang: value }).catch(console.error);
   }
 
   // 紧急模式：所有遮罩缩小一半但仍置顶，能处理急事又没法舒服地继续工作。
@@ -47,16 +57,16 @@
   // 缩小后按住空白处可拖动窗口，后端会把它限制在本屏幕内
   function onMouseDown(e: MouseEvent) {
     if (!shrunk || e.button !== 0) return;
-    if ((e.target as Element).closest("button")) return;
+    if ((e.target as Element).closest("button, select")) return;
     win.startDragging().catch(console.error);
   }
 
   onMount(() => {
-    invoke<boolean>("is_zh").then(applyLang);
+    invoke<UiLang>("ui_lang").then(applyLang);
     invoke<Snapshot>("get_state").then((v) => (snap = v));
     const unlistens = [
       listen<Snapshot>(STATE_EVENT, (e) => (snap = e.payload)),
-      listen<boolean>(LANG_EVENT, (e) => applyLang(e.payload)),
+      listen<UiLang>(LANG_EVENT, (e) => applyLang(e.payload)),
       listen<boolean>(SHRINK_EVENT, (e) => (shrunk = e.payload)),
     ];
     // 仅 pnpm tauri dev：按 Esc 直接结束休息，避免调试时被遮罩锁住
@@ -88,7 +98,12 @@
     <button class="ghost shrink" onclick={toggleShrink}>
       {shrunk ? s.unshrink : s.shrink}
     </button>
-    <button class="ghost lang" onclick={toggleLang}>{s.switchLang}</button>
+    <!-- 语言名称始终用其本身的文字显示 -->
+    <select class="ghost lang" aria-label="Language" value={lang} onchange={changeLang}>
+      {#each UI_LANGS as id (id)}
+        <option value={id}>{LANG_NAMES[id]}</option>
+      {/each}
+    </select>
     <h1 in:fly={{ y: -20, duration: 600 }}>{s.title}</h1>
     <p class="tip">{s.tip}</p>
 
@@ -231,7 +246,8 @@
     gap: 0.75rem;
   }
 
-  button {
+  button,
+  select {
     font: inherit;
     border-radius: 999px;
     cursor: pointer;
@@ -267,6 +283,17 @@
 
   .ghost:hover:not(:disabled) {
     background: rgb(255 255 255 / 0.06);
+  }
+
+  select.ghost {
+    color-scheme: dark;
+    outline: none;
+  }
+
+  /* 下拉列表本身不继承透明背景，单独设深色 */
+  option {
+    color: var(--fg);
+    background: var(--bg-1);
   }
 
   .lang,

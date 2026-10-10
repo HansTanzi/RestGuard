@@ -1,12 +1,12 @@
 //! 设置面板：从托盘菜单打开的普通窗口，加载前端根路由（src/routes/+page.svelte）。
 
-use crate::i18n::t;
+use crate::i18n::{t, text};
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 pub const LABEL: &str = "settings";
 
 fn title() -> &'static str {
-    t("RestGuard 设置", "RestGuard Settings")
+    t(&text::SETTINGS_TITLE)
 }
 
 /// 打开设置窗口；已经打开时把它带到前台。

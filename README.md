@@ -16,7 +16,7 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 - Postpone for 5 minutes, up to 3 times; the count resets after a full break
 - Tray menu: time remaining, rest now, settings, start at login
 - Single instance
-- UI language follows the system by default (Chinese on Chinese systems, English otherwise); switch it any time from the tray menu's "语言 / Language" submenu
+- Available in Simplified Chinese, English, Hindi, Spanish, Arabic, French, Bengali, Portuguese, German, Japanese, Italian, Korean and Indonesian. The UI language follows the system by default (English if the system language isn't supported); switch it any time from the tray menu's "语言 / Language" submenu
 
 ## Install
 

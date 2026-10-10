@@ -194,6 +194,7 @@ jobs:
           done
 
   # 清单已是此版本和哈希时 git diff 为空，不会提交。
+  # 固定推送到 dev（不随默认分支变化），随 dev 合并进 main 发布给用户；
   # dev 受规则保护（只能走 PR），用在 bypass 列表中的 deploy key 推送；
   # 与 homebrew 可能同时推送，被拒绝时 rebase 后重试（两者改的是不同文件）
   scoop:
@@ -205,7 +206,7 @@ jobs:
       - uses: actions/checkout@v4
         timeout-minutes: 5
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: dev
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Update Scoop manifest
@@ -247,7 +248,7 @@ jobs:
       - uses: actions/checkout@v4
         timeout-minutes: 5
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: dev
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Update Homebrew cask

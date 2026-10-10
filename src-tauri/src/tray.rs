@@ -1,6 +1,9 @@
 use crate::i18n::{self, t, Lang};
 use crate::timer::{Phase, Snapshot};
+use std::sync::Mutex;
 use tauri::{
+    image::Image,
+    include_image,
     menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu},
     tray::TrayIconBuilder,
     AppHandle, Manager, Wry,
@@ -19,6 +22,58 @@ struct TrayItems {
     /// 与 Lang::ALL 顺序一致
     langs: Vec<CheckMenuItem<Wry>>,
     quit: MenuItem<Wry>,
+    /// 当前托盘图标，变化时才重设
+    icon: Mutex<IconKey>,
+}
+
+/// 托盘图标的选择依据：(是否在休息, 任务栏是否为浅色)
+type IconKey = (bool, bool);
+
+fn icon_key(phase: Phase) -> IconKey {
+    // macOS 用模板图，由系统按菜单栏配色着色，始终只用一个图标
+    if cfg!(target_os = "macos") {
+        return (false, false);
+    }
+    (phase != Phase::Working, light_taskbar())
+}
+
+fn icon_image(key: IconKey) -> Image<'static> {
+    if cfg!(target_os = "macos") {
+        return include_image!("icons/tray/tray-template@2x.png");
+    }
+    match key {
+        (false, false) => include_image!("icons/tray/tray-white.png"),
+        (false, true) => include_image!("icons/tray/tray-template.png"),
+        (true, false) => include_image!("icons/tray/tray-rest.png"),
+        (true, true) => include_image!("icons/tray/tray-rest-dark.png"),
+    }
+}
+
+/// Windows 读取任务栏的深浅色设置；Linux 面板大多是深色，按深色处理
+fn light_taskbar() -> bool {
+    #[cfg(windows)]
+    {
+        use windows::{
+            core::w,
+            Win32::System::Registry::{RegGetValueW, HKEY_CURRENT_USER, RRF_RT_REG_DWORD},
+        };
+        let mut value = 0u32;
+        let mut size = std::mem::size_of::<u32>() as u32;
+        let result = unsafe {
+            RegGetValueW(
+                HKEY_CURRENT_USER,
+                w!(r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"),
+                w!("SystemUsesLightTheme"),
+                RRF_RT_REG_DWORD,
+                None,
+                Some(&mut value as *mut u32 as *mut _),
+                Some(&mut size),
+            )
+        };
+        result.is_ok() && value != 0
+    }
+    #[cfg(not(windows))]
+    false
 }
 
 fn rest_now_text() -> &'static str {
@@ -95,7 +150,10 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         ],
     )?;
 
-    let mut builder = TrayIconBuilder::with_id(TRAY_ID)
+    let icon = icon_key(Phase::Working);
+    TrayIconBuilder::with_id(TRAY_ID)
+        .icon(icon_image(icon))
+        .icon_as_template(cfg!(target_os = "macos"))
         .tooltip("RestGuard")
         .menu(&menu)
         .show_menu_on_left_click(true)
@@ -111,11 +169,8 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
                     crate::set_language(app, lang);
                 }
             }
-        });
-    if let Some(icon) = app.default_window_icon() {
-        builder = builder.icon(icon.clone());
-    }
-    builder.build(app)?;
+        })
+        .build(app)?;
 
     app.manage(TrayItems {
         status,
@@ -124,6 +179,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         autostart,
         langs,
         quit,
+        icon: Mutex::new(icon),
     });
     Ok(())
 }
@@ -156,6 +212,7 @@ pub fn update(app: &AppHandle, snap: &Snapshot) {
         Phase::RestOver => t("休息结束", "Break over").to_string(),
     };
     let working = snap.phase == Phase::Working;
+    let tray = app.tray_by_id(TRAY_ID);
 
     if let Some(items) = app.try_state::<TrayItems>() {
         let _ = items.status.set_text(&text);
@@ -163,8 +220,18 @@ pub fn update(app: &AppHandle, snap: &Snapshot) {
         // 休息期间不允许从托盘退出，也不允许打开设置缩短休息
         let _ = items.settings.set_enabled(working);
         let _ = items.quit.set_enabled(working);
+
+        // 每次刷新都重新判断，任务栏切换深浅色后图标随之更新
+        let key = icon_key(snap.phase);
+        let mut icon = items.icon.lock().unwrap();
+        if *icon != key {
+            if let Some(tray) = &tray {
+                let _ = tray.set_icon(Some(icon_image(key)));
+            }
+            *icon = key;
+        }
     }
-    if let Some(tray) = app.tray_by_id(TRAY_ID) {
+    if let Some(tray) = tray {
         let _ = tray.set_tooltip(Some(format!("RestGuard · {text}")));
     }
 }

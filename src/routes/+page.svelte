@@ -268,6 +268,16 @@
             />
             <span>{s.forceRest}</span>
           </label>
+          <!-- 不强制休息时总能跳过 -->
+          <label class="check">
+            <input
+              type="checkbox"
+              disabled={customIndex < 0 || !profile.force_rest}
+              checked={profile.allow_skip || !profile.force_rest}
+              onchange={(e) => edit({ allow_skip: e.currentTarget.checked })}
+            />
+            <span>{s.allowSkip}</span>
+          </label>
           <label class="check">
             <input
               type="checkbox"

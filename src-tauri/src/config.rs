@@ -19,6 +19,8 @@ pub struct Profile {
     pub meeting_detection: bool,
     /// false 时不强制休息，遮罩可以关掉（关掉即跳过这次休息）
     pub force_rest: bool,
+    /// 强制休息时，遮罩上仍提供“跳过这次休息”。不强制休息时总能跳过
+    pub allow_skip: bool,
     /// 遮罩覆盖屏幕的比例（正常模式）
     pub overlay_coverage: f64,
     /// 紧急模式下（遮罩缩小后）相对 overlay_coverage 的缩放因子，小于 1 保证比正常模式小
@@ -30,22 +32,29 @@ pub struct Profile {
 impl Profile {
     /// 内置等级 high、medium、low 的方案，与 src/lib/config.ts 的 BUILTIN_PROFILES 一致
     pub fn builtin(level: &str) -> Option<Self> {
-        let (max_postpones, urgent_mode, meeting_detection, force_rest, overlay_coverage, movable) = match level {
-            "high" => (0, false, false, true, 1.0, false),
-            "medium" => (3, true, true, true, 1.0, true),
-            "low" => (3, true, true, false, 0.8, true),
-            _ => return None,
-        };
+        let (max_postpones, urgent_mode, meeting_detection, force_rest, allow_skip, overlay_coverage, movable) =
+            match level {
+                "high" => (0, false, false, true, false, 1.0, false),
+                "medium" => (3, true, true, true, false, 1.0, true),
+                "low" => (3, true, true, false, true, 0.8, true),
+                _ => return None,
+            };
         Some(Self {
             name: String::new(),
             max_postpones,
             urgent_mode,
             meeting_detection,
             force_rest,
+            allow_skip,
             overlay_coverage,
             urgent_scale: 0.5,
             movable,
         })
+    }
+
+    /// 遮罩上提供“跳过这次休息”
+    pub fn can_skip(&self) -> bool {
+        self.allow_skip || !self.force_rest
     }
 
     /// 遮罩覆盖屏幕的实际比例，`urgent` 为紧急模式（遮罩缩小）时的比例
@@ -156,13 +165,14 @@ impl Config {
         for p in &self.profiles {
             text += &format!(
                 "\n[[profiles]]\nname = {}\nmax_postpones = {}\nurgent_mode = {}\n\
-                 meeting_detection = {}\nforce_rest = {}\n\
+                 meeting_detection = {}\nforce_rest = {}\nallow_skip = {}\n\
                  overlay_coverage = {:?}\nurgent_scale = {:?}\nmovable = {}\n",
                 quote(&p.name),
                 p.max_postpones,
                 p.urgent_mode,
                 p.meeting_detection,
                 p.force_rest,
+                p.allow_skip,
                 p.overlay_coverage,
                 p.urgent_scale,
                 p.movable,
@@ -257,7 +267,8 @@ mod tests {
                     max_postpones: 1,
                     urgent_mode: false,
                     meeting_detection: true,
-                    force_rest: false,
+                    force_rest: true,
+                    allow_skip: true,
                     overlay_coverage: 0.8,
                     urgent_scale: 0.3,
                     movable: false,

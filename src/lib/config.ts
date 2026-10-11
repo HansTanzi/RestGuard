@@ -11,6 +11,8 @@ export interface Profile {
   meeting_detection: boolean;
   // false 时遮罩可以关掉
   force_rest: boolean;
+  // 强制休息时，遮罩上仍提供“跳过这次休息”。不强制休息时总能跳过
+  allow_skip: boolean;
   // 遮罩覆盖屏幕的比例（正常模式）
   overlay_coverage: number;
   // 紧急模式（遮罩缩小后）相对正常模式的缩放因子，小于 1 保证比正常模式小
@@ -30,6 +32,7 @@ export const BUILTIN_PROFILES: Record<BuiltinLevel, Profile> = {
     urgent_mode: false,
     meeting_detection: false,
     force_rest: true,
+    allow_skip: false,
     overlay_coverage: 1,
     urgent_scale: 0.5,
     movable: false,
@@ -40,6 +43,7 @@ export const BUILTIN_PROFILES: Record<BuiltinLevel, Profile> = {
     urgent_mode: true,
     meeting_detection: true,
     force_rest: true,
+    allow_skip: false,
     overlay_coverage: 1,
     urgent_scale: 0.5,
     movable: true,
@@ -50,6 +54,7 @@ export const BUILTIN_PROFILES: Record<BuiltinLevel, Profile> = {
     urgent_mode: true,
     meeting_detection: true,
     force_rest: false,
+    allow_skip: true,
     overlay_coverage: 0.8,
     urgent_scale: 0.5,
     movable: true,

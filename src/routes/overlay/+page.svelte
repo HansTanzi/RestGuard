@@ -145,7 +145,7 @@
           {s.inMeeting(snap.meetingApp)}
         </button>
       {/if}
-      {#if resting && !snap.forced}
+      {#if resting && snap.canSkip}
         <button class="ghost" disabled={busy} onclick={() => run("dismiss_break")}>
           {s.skipBreak}
         </button>

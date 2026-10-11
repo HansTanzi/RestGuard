@@ -142,10 +142,10 @@ fn in_meeting(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::in_meeting)
 }
 
-/// 不强制休息时遮罩上的“跳过这次休息”
+/// 遮罩上的“跳过这次休息”，强制等级不允许跳过时拒绝
 #[tauri::command]
 fn dismiss_break(app: AppHandle) -> Result<(), String> {
-    end_rest(&app, Timer::dismiss)
+    end_rest(&app, Timer::skip)
 }
 
 /// 遮罩上的“缩小窗口”按钮：紧急时缩小遮罩处理一下手头的事，但不结束休息。

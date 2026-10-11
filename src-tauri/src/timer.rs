@@ -39,6 +39,8 @@ pub struct Snapshot {
     pub meeting_app: Option<String>,
     /// 强制休息；false 时遮罩可以关掉
     pub forced: bool,
+    /// 遮罩上提供“跳过这次休息”
+    pub can_skip: bool,
     /// 遮罩上提供“有急事，缩小一下”
     pub can_shrink: bool,
     /// 遮罩没有占满屏幕时可以在本屏幕内拖动
@@ -196,6 +198,16 @@ impl Timer {
         true
     }
 
+    /// 遮罩上点击“跳过这次休息”。强制等级不允许跳过时拒绝
+    pub fn skip(&mut self, now: Instant) -> bool {
+        if self.phase == Phase::Working || !self.profile.can_skip() {
+            return false;
+        }
+        self.postpones_used = 0;
+        self.begin_work(now, self.work);
+        true
+    }
+
     /// 开发调试用：无论休息是否结束，直接回到工作
     pub fn skip_rest(&mut self, now: Instant) -> bool {
         if self.phase == Phase::Working {
@@ -235,6 +247,7 @@ impl Timer {
                 .then(|| self.meeting_app.clone())
                 .flatten(),
             forced: self.profile.force_rest,
+            can_skip: self.phase != Phase::Working && self.profile.can_skip(),
             can_shrink: self.phase != Phase::Working
                 && self.profile.force_rest
                 && self.profile.urgent_mode,
@@ -453,7 +466,36 @@ mod tests {
         assert!(!snap.can_postpone);
         assert!(!snap.can_shrink);
         assert!(snap.forced);
+        assert!(!snap.can_skip);
         assert!(!t.dismiss(t0 + 60 * MIN), "强制休息不能关掉");
+        assert!(!t.skip(t0 + 60 * MIN), "高等级不能跳过");
+    }
+
+    #[test]
+    fn forced_break_can_be_skipped_when_allowed() {
+        let t0 = Instant::now();
+        let cfg = Config {
+            level: "Mine".into(),
+            profiles: vec![Profile {
+                name: "Mine".into(),
+                allow_skip: true,
+                ..Profile::default()
+            }],
+            ..Config::default()
+        };
+        let mut t = Timer::new(&cfg, t0);
+        assert!(!t.skip(t0), "工作中无需跳过");
+        assert!(!t.snapshot(t0).can_skip);
+        let now = t0 + 60 * MIN;
+        assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
+        let snap = t.snapshot(now);
+        assert!(snap.forced);
+        assert!(snap.can_skip);
+        assert!(!t.dismiss(now), "允许跳过也不能直接关掉遮罩");
+        assert!(t.skip(now + MIN));
+        let snap = t.snapshot(now + MIN);
+        assert_eq!(snap.phase, Phase::Working);
+        assert_eq!(snap.remaining_secs, 60 * 60);
     }
 
     #[test]
@@ -489,6 +531,7 @@ mod tests {
         assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
         let snap = t.snapshot(now);
         assert!(!snap.forced);
+        assert!(snap.can_skip);
         assert!(!snap.can_shrink);
         assert!(t.dismiss(now + MIN));
         let snap = t.snapshot(now + MIN);

@@ -13,6 +13,8 @@ export interface Snapshot {
   meetingApp: string | null;
   /** 强制休息；false 时遮罩可以关掉 */
   forced: boolean;
+  /** 遮罩上提供“跳过这次休息” */
+  canSkip: boolean;
   /** 遮罩上提供“有急事，缩小一下” */
   canShrink: boolean;
   /** 遮罩没有占满屏幕时可以在本屏幕内拖动 */

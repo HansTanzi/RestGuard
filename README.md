@@ -95,8 +95,6 @@ Settings are stored in `config.toml`, created on first run. You can also edit it
 work_minutes = 60.0      # how long to work before a forced break
 rest_minutes = 10.0      # how long each break lasts
 postpone_minutes = 5.0   # how long each postpone lasts
-overlay_coverage = 1.0   # fraction of each screen covered, 0.1 ~ 1.0
-urgent_scale = 0.5       # urgent mode (shrunk overlay) scale relative to the above, 0.1 ~ 0.9
 idle_minutes = 5.0       # no input for this long counts as away, 0 = off
 level = "medium"         # "high", "medium", "low", or the name of a custom profile
 
@@ -106,6 +104,8 @@ max_postpones = 1        # max postpones before a full break is required
 urgent_mode = false      # allow shrinking the overlay
 meeting_detection = true # hold breaks while Zoom, Teams etc. are in use
 force_rest = true        # false = only a closable popup
+overlay_coverage = 1.0   # fraction of each screen covered, 0.1 ~ 1.0
+urgent_scale = 0.5       # urgent mode (shrunk overlay) scale relative to the above, 0.1 ~ 0.9
 ```
 
 ## Platform limitations

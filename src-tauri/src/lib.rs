@@ -36,14 +36,10 @@ struct AppState {
 }
 
 impl AppState {
-    /// 遮罩覆盖屏幕的比例，`urgent` 为紧急模式（遮罩缩小）时的比例
+    /// 遮罩覆盖屏幕的比例，`urgent` 为紧急模式（遮罩缩小）时的比例。
+    /// 以计时器的方案为准：它与这次休息是按同一份方案开始的
     fn overlay_coverage(&self, urgent: bool) -> f64 {
-        let config = self.config.lock().unwrap();
-        if urgent {
-            config.urgent_coverage()
-        } else {
-            config.overlay_coverage
-        }
+        self.timer.lock().unwrap().profile().coverage(urgent)
     }
 }
 

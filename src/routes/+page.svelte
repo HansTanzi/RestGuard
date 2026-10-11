@@ -98,14 +98,7 @@
     const names = new Set(draft.profiles.map((p) => p.name.trim()));
     let n = draft.profiles.length + 1;
     while (names.has(s.defaultProfileName(n))) n++;
-    const { max_postpones, urgent_mode, meeting_detection, force_rest } = profile;
-    draft.profiles.push({
-      name: s.defaultProfileName(n),
-      max_postpones,
-      urgent_mode,
-      meeting_detection,
-      force_rest,
-    });
+    draft.profiles.push({ ...$state.snapshot(profile), name: s.defaultProfileName(n) });
     selected = `custom:${draft.profiles.length - 1}`;
   }
 
@@ -293,6 +286,36 @@
             />
             <span>{s.meetingDetection}</span>
           </label>
+          <label>
+            <span>{s.coverageNormal}</span>
+            <span class="range">
+              <input
+                type="range"
+                min="0.1"
+                max="1"
+                step="0.05"
+                disabled={customIndex < 0 || !profile.force_rest}
+                value={profile.overlay_coverage}
+                oninput={(e) => edit({ overlay_coverage: e.currentTarget.valueAsNumber })}
+              />
+              <output>{Math.round(profile.overlay_coverage * 100)}%</output>
+            </span>
+          </label>
+          <label>
+            <span>{s.urgentScale}</span>
+            <span class="range">
+              <input
+                type="range"
+                min="0.1"
+                max="0.9"
+                step="0.05"
+                disabled={customIndex < 0 || !profile.force_rest || !profile.urgent_mode}
+                value={profile.urgent_scale}
+                oninput={(e) => edit({ urgent_scale: e.currentTarget.valueAsNumber })}
+              />
+              <output>{Math.round(profile.urgent_scale * 100)}%</output>
+            </span>
+          </label>
           {#if customIndex < 0}
             <p class="hint">{s.builtinHint}</p>
           {/if}
@@ -304,36 +327,6 @@
             {/if}
             <button type="button" class="ghost" onclick={addProfile}>{s.newProfile}</button>
           </div>
-        </section>
-
-        <section>
-          <h2>{s.overlay}</h2>
-          <label>
-            <span>{s.coverageNormal}</span>
-            <span class="range">
-              <input
-                type="range"
-                min="0.1"
-                max="1"
-                step="0.05"
-                bind:value={draft.overlay_coverage}
-              />
-              <output>{Math.round(draft.overlay_coverage * 100)}%</output>
-            </span>
-          </label>
-          <label>
-            <span>{s.urgentScale}</span>
-            <span class="range">
-              <input
-                type="range"
-                min="0.1"
-                max="0.9"
-                step="0.05"
-                bind:value={draft.urgent_scale}
-              />
-              <output>{Math.round(draft.urgent_scale * 100)}%</output>
-            </span>
-          </label>
         </section>
 
         <div class="actions">

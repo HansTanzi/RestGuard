@@ -19,15 +19,19 @@ pub struct Profile {
     pub meeting_detection: bool,
     /// false 时不强制休息，只在主屏幕弹出一个可以关掉的窗口
     pub force_rest: bool,
+    /// 遮罩覆盖屏幕的比例（正常模式）
+    pub overlay_coverage: f64,
+    /// 紧急模式下（遮罩缩小后）相对 overlay_coverage 的缩放因子，小于 1 保证比正常模式小
+    pub urgent_scale: f64,
 }
 
 impl Profile {
     /// 内置等级 high、medium、low 的方案，与 src/lib/config.ts 的 BUILTIN_PROFILES 一致
     pub fn builtin(level: &str) -> Option<Self> {
-        let (max_postpones, urgent_mode, meeting_detection, force_rest) = match level {
-            "high" => (0, false, false, true),
-            "medium" => (3, true, true, true),
-            "low" => (3, true, true, false),
+        let (max_postpones, urgent_mode, meeting_detection, force_rest, overlay_coverage) = match level {
+            "high" => (0, false, false, true, 1.0),
+            "medium" => (3, true, true, true, 1.0),
+            "low" => (3, true, true, false, 0.8),
             _ => return None,
         };
         Some(Self {
@@ -36,7 +40,18 @@ impl Profile {
             urgent_mode,
             meeting_detection,
             force_rest,
+            overlay_coverage,
+            urgent_scale: 0.5,
         })
+    }
+
+    /// 遮罩覆盖屏幕的实际比例，`urgent` 为紧急模式（遮罩缩小）时的比例
+    pub fn coverage(&self, urgent: bool) -> f64 {
+        if urgent {
+            self.overlay_coverage * self.urgent_scale
+        } else {
+            self.overlay_coverage
+        }
     }
 }
 
@@ -53,10 +68,6 @@ pub struct Config {
     pub work_minutes: f64,
     pub rest_minutes: f64,
     pub postpone_minutes: f64,
-    /// 遮罩覆盖屏幕的比例（正常模式）
-    pub overlay_coverage: f64,
-    /// 紧急模式下（遮罩缩小后）相对 overlay_coverage 的缩放因子，小于 1 保证比正常模式小
-    pub urgent_scale: f64,
     /// 无操作超过这么久算离开电脑，0 表示关闭空闲检测
     pub idle_minutes: f64,
     /// 当前强制等级：内置等级（见 Profile::builtin），或某个自定义方案的名字
@@ -71,8 +82,6 @@ impl Default for Config {
             work_minutes: 60.0,
             rest_minutes: 10.0,
             postpone_minutes: 5.0,
-            overlay_coverage: 1.0,
-            urgent_scale: 0.5,
             idle_minutes: 5.0,
             level: DEFAULT_LEVEL.to_string(),
             profiles: Vec::new(),
@@ -123,8 +132,6 @@ impl Config {
              # {}\nwork_minutes = {:?}\n\n\
              # {}\nrest_minutes = {:?}\n\n\
              # {}\npostpone_minutes = {:?}\n\n\
-             # {}\noverlay_coverage = {:?}\n\n\
-             # {}\nurgent_scale = {:?}\n\n\
              # {}\nidle_minutes = {:?}\n\n\
              # {}\nlevel = {}\n\n\
              # {}\n",
@@ -136,10 +143,6 @@ impl Config {
             self.rest_minutes,
             c(&comment::POSTPONE),
             self.postpone_minutes,
-            c(&comment::COVERAGE),
-            self.overlay_coverage,
-            c(&comment::URGENT_SCALE),
-            self.urgent_scale,
             c(&comment::IDLE),
             self.idle_minutes,
             c(&comment::LEVEL),
@@ -150,12 +153,15 @@ impl Config {
         for p in &self.profiles {
             text += &format!(
                 "\n[[profiles]]\nname = {}\nmax_postpones = {}\nurgent_mode = {}\n\
-                 meeting_detection = {}\nforce_rest = {}\n",
+                 meeting_detection = {}\nforce_rest = {}\n\
+                 overlay_coverage = {:?}\nurgent_scale = {:?}\n",
                 quote(&p.name),
                 p.max_postpones,
                 p.urgent_mode,
                 p.meeting_detection,
                 p.force_rest,
+                p.overlay_coverage,
+                p.urgent_scale,
             );
         }
         text
@@ -165,10 +171,14 @@ impl Config {
     pub fn sanitized(self) -> Self {
         let d = Self::default();
         let positive = |v: f64, fallback: f64| if v.is_finite() && v > 0.0 { v } else { fallback };
+        let ratio = |v: f64, max: f64, fallback: f64| if v.is_finite() { v.clamp(0.1, max) } else { fallback };
+        let dp = Profile::default();
         // 方案名字用来引用方案：去掉空名字、与内置等级重名的和重复的
         let mut profiles: Vec<Profile> = Vec::new();
         for mut p in self.profiles {
             p.name = p.name.trim().to_string();
+            p.overlay_coverage = ratio(p.overlay_coverage, 1.0, dp.overlay_coverage);
+            p.urgent_scale = ratio(p.urgent_scale, 0.9, dp.urgent_scale);
             let taken = p.name.is_empty()
                 || Profile::builtin(&p.name).is_some()
                 || profiles.iter().any(|q| q.name == p.name);
@@ -182,13 +192,10 @@ impl Config {
         } else {
             d.level
         };
-        let ratio = |v: f64, max: f64, fallback: f64| if v.is_finite() { v.clamp(0.1, max) } else { fallback };
         Self {
             work_minutes: positive(self.work_minutes, d.work_minutes),
             rest_minutes: positive(self.rest_minutes, d.rest_minutes),
             postpone_minutes: positive(self.postpone_minutes, d.postpone_minutes),
-            overlay_coverage: ratio(self.overlay_coverage, 1.0, d.overlay_coverage),
-            urgent_scale: ratio(self.urgent_scale, 0.9, d.urgent_scale),
             idle_minutes: if self.idle_minutes.is_finite() && self.idle_minutes >= 0.0 {
                 self.idle_minutes
             } else {
@@ -197,11 +204,6 @@ impl Config {
             level,
             profiles,
         }
-    }
-
-    /// 紧急模式下遮罩覆盖屏幕的实际比例
-    pub fn urgent_coverage(&self) -> f64 {
-        self.overlay_coverage * self.urgent_scale
     }
 
     /// 当前强制等级对应的方案
@@ -243,8 +245,6 @@ mod tests {
             work_minutes: 25.0,
             rest_minutes: 0.5,
             postpone_minutes: 2.5,
-            overlay_coverage: 0.8,
-            urgent_scale: 0.3,
             idle_minutes: 0.0,
             level: "我的 \"方案\"".into(),
             profiles: vec![
@@ -254,6 +254,8 @@ mod tests {
                     urgent_mode: false,
                     meeting_detection: true,
                     force_rest: false,
+                    overlay_coverage: 0.8,
+                    urgent_scale: 0.3,
                 },
                 Profile {
                     name: "Focus".into(),
@@ -287,11 +289,23 @@ mod tests {
 
     #[test]
     fn invalid_values_are_sanitized() {
-        let cfg: Config = toml::from_str("work_minutes = 0.0\noverlay_coverage = 3.0\nurgent_scale = 1.0").unwrap();
+        let cfg: Config = toml::from_str(
+            "work_minutes = 0.0\n[[profiles]]\nname = \"A\"\noverlay_coverage = 3.0\nurgent_scale = 1.0",
+        )
+        .unwrap();
         let cfg = cfg.sanitized();
         assert_eq!(cfg.work_minutes, 60.0);
-        assert_eq!(cfg.overlay_coverage, 1.0);
-        assert_eq!(cfg.urgent_scale, 0.9);
+        assert_eq!(cfg.profiles[0].overlay_coverage, 1.0);
+        assert_eq!(cfg.profiles[0].urgent_scale, 0.9);
+    }
+
+    #[test]
+    fn coverage_follows_level() {
+        let coverage = |level: &str| Profile::builtin(level).unwrap().coverage(false);
+        assert_eq!(coverage("high"), 1.0);
+        assert_eq!(coverage("medium"), 1.0);
+        assert_eq!(coverage("low"), 0.8);
+        assert_eq!(Profile::builtin("medium").unwrap().coverage(true), 0.5);
     }
 
     #[test]

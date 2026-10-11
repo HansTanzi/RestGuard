@@ -337,39 +337,6 @@ pub mod config {
         id: "Lama setiap penundaan",
     };
 
-
-    pub const COVERAGE: Tr = Tr {
-        zh: "遮罩覆盖每块屏幕的比例，0.1 ~ 1.0",
-        en: "Fraction of each screen covered by the overlay, 0.1 ~ 1.0",
-        hi: "ओवरले हर स्क्रीन का कितना हिस्सा ढके, 0.1 ~ 1.0",
-        es: "Fracción de cada pantalla cubierta por la superposición, 0.1 ~ 1.0",
-        ar: "نسبة ما تغطيه الطبقة من كل شاشة، 0.1 ~ 1.0",
-        fr: "Part de chaque écran couverte par le voile, 0.1 ~ 1.0",
-        bn: "ওভারলে প্রতিটি স্ক্রিনের কত অংশ ঢাকবে, 0.1 ~ 1.0",
-        pt: "Fração de cada tela coberta pela sobreposição, 0.1 ~ 1.0",
-        de: "Anteil jedes Bildschirms, den das Overlay abdeckt, 0.1 ~ 1.0",
-        ja: "各画面をオーバーレイが覆う割合、0.1 ~ 1.0",
-        it: "Frazione di ogni schermo coperta dalla sovrapposizione, 0.1 ~ 1.0",
-        ko: "오버레이가 각 화면을 덮는 비율, 0.1 ~ 1.0",
-        id: "Bagian setiap layar yang ditutupi lapisan, 0.1 ~ 1.0",
-    };
-
-    pub const URGENT_SCALE: Tr = Tr {
-        zh: "紧急模式（缩小遮罩）时相对上面比例的缩放因子，0.1 ~ 0.9",
-        en: "Urgent mode (shrunk overlay) scale relative to the coverage above, 0.1 ~ 0.9",
-        hi: "आपात मोड (छोटा ओवरले) में ऊपर वाले अनुपात के सापेक्ष स्केल, 0.1 ~ 0.9",
-        es: "Escala del modo urgente (superposición reducida) respecto a la cobertura de arriba, 0.1 ~ 0.9",
-        ar: "معامل التصغير في وضع الطوارئ نسبةً إلى التغطية أعلاه، 0.1 ~ 0.9",
-        fr: "Échelle du mode urgence (voile réduit) par rapport à la couverture ci-dessus, 0.1 ~ 0.9",
-        bn: "জরুরি মোডে (ছোট ওভারলে) উপরের অনুপাতের তুলনায় স্কেল, 0.1 ~ 0.9",
-        pt: "Escala do modo urgente (sobreposição reduzida) em relação à cobertura acima, 0.1 ~ 0.9",
-        de: "Skalierung im Notfallmodus (verkleinertes Overlay) relativ zur Abdeckung oben, 0.1 ~ 0.9",
-        ja: "緊急モード（オーバーレイ縮小時）の、上の割合に対する縮小率、0.1 ~ 0.9",
-        it: "Scala in modalità urgente (sovrapposizione ridotta) rispetto alla copertura sopra, 0.1 ~ 0.9",
-        ko: "긴급 모드(오버레이 축소) 때 위 비율에 곱하는 축소 비율, 0.1 ~ 0.9",
-        id: "Skala mode darurat (lapisan diperkecil) relatif terhadap cakupan di atas, 0.1 ~ 0.9",
-    };
-
     pub const IDLE: Tr = Tr {
         zh: "无操作超过多久算离开电脑，离开期间不计工作时间；离开满一次休息时长就当已休息。0 表示关闭",
         en: "Inactivity after which you count as away; away time isn't work, and being away for a full break counts as one. 0 = off",
@@ -403,31 +370,29 @@ pub mod config {
     };
 
     pub const PROFILES: Tr = Tr {
-        zh: "自定义方案，每个 [[profiles]] 一个。max_postpones 完整休息前最多推迟几次；urgent_mode 允许缩小遮罩；meeting_detection 检测会议软件；force_rest 为 false 时只弹出可关闭的窗口",
-        en: "Custom profiles, one [[profiles]] each. max_postpones: postpones before a full break; urgent_mode: allow shrinking the overlay; meeting_detection: detect meeting apps; force_rest = false only shows a closable window",
-        hi: "कस्टम योजनाएँ, हर एक के लिए एक [[profiles]]। max_postpones: पूरे ब्रेक से पहले कितनी बार टालें; urgent_mode: ओवरले छोटा करने दें; meeting_detection: मीटिंग ऐप पहचानें; force_rest = false होने पर केवल बंद की जा सकने वाली विंडो दिखती है",
-        es: "Perfiles personalizados, un [[profiles]] cada uno. max_postpones: aplazamientos antes de un descanso completo; urgent_mode: permitir reducir la superposición; meeting_detection: detectar apps de reuniones; force_rest = false solo muestra una ventana que se puede cerrar",
-        ar: "الأنماط المخصّصة، لكلٍّ منها [[profiles]]. max_postpones: عدد التأجيلات قبل استراحة كاملة؛ urgent_mode: السماح بتصغير الطبقة؛ meeting_detection: اكتشاف تطبيقات الاجتماعات؛ force_rest = false يعرض نافذة قابلة للإغلاق فقط",
-        fr: "Profils personnalisés, un [[profiles]] chacun. max_postpones : reports avant une pause complète ; urgent_mode : autoriser la réduction du voile ; meeting_detection : détecter les applis de réunion ; force_rest = false affiche seulement une fenêtre qu'on peut fermer",
-        bn: "কাস্টম প্রোফাইল, প্রতিটির জন্য একটি [[profiles]]। max_postpones: পূর্ণ বিরতির আগে কতবার পেছানো যাবে; urgent_mode: ওভারলে ছোট করার অনুমতি; meeting_detection: মিটিং অ্যাপ শনাক্ত করা; force_rest = false হলে শুধু বন্ধ করা যায় এমন উইন্ডো দেখায়",
-        pt: "Perfis personalizados, um [[profiles]] cada. max_postpones: adiamentos antes de uma pausa completa; urgent_mode: permitir reduzir a sobreposição; meeting_detection: detectar apps de reunião; force_rest = false só mostra uma janela que pode ser fechada",
-        de: "Eigene Profile, je ein [[profiles]]. max_postpones: Aufschübe vor einer vollständigen Pause; urgent_mode: Verkleinern des Overlays erlauben; meeting_detection: Meeting-Apps erkennen; force_rest = false zeigt nur ein schließbares Fenster",
-        ja: "カスタムプラン。1 つにつき [[profiles]] を 1 つ。max_postpones は完全に休憩するまでの最大延期回数、urgent_mode はオーバーレイの縮小を許可、meeting_detection は会議アプリを検出、force_rest = false なら閉じられるウィンドウを表示するだけ",
-        it: "Profili personalizzati, un [[profiles]] ciascuno. max_postpones: rinvii prima di una pausa completa; urgent_mode: consenti di ridurre la sovrapposizione; meeting_detection: rileva le app per riunioni; force_rest = false mostra solo una finestra chiudibile",
-        ko: "사용자 지정 프로필, 하나당 [[profiles]] 하나. max_postpones: 완전한 휴식 전 최대 미루기 횟수, urgent_mode: 오버레이 축소 허용, meeting_detection: 회의 앱 감지, force_rest = false면 닫을 수 있는 창만 표시",
-        id: "Profil kustom, satu [[profiles]] untuk masing-masing. max_postpones: penundaan sebelum istirahat penuh; urgent_mode: izinkan memperkecil lapisan; meeting_detection: deteksi aplikasi rapat; force_rest = false hanya menampilkan jendela yang bisa ditutup",
+        zh: "自定义方案，每个 [[profiles]] 一个。max_postpones 完整休息前最多推迟几次；urgent_mode 允许缩小遮罩；meeting_detection 检测会议软件；force_rest 为 false 时只弹出可关闭的窗口；overlay_coverage 遮罩覆盖屏幕的比例 0.1 ~ 1.0；urgent_scale 紧急模式时相对 overlay_coverage 的缩放因子 0.1 ~ 0.9",
+        en: "Custom profiles, one [[profiles]] each. max_postpones: postpones before a full break; urgent_mode: allow shrinking the overlay; meeting_detection: detect meeting apps; force_rest = false only shows a closable window; overlay_coverage: fraction of each screen covered, 0.1 ~ 1.0; urgent_scale: urgent mode scale relative to overlay_coverage, 0.1 ~ 0.9",
+        hi: "कस्टम योजनाएँ, हर एक के लिए एक [[profiles]]। max_postpones: पूरे ब्रेक से पहले कितनी बार टालें; urgent_mode: ओवरले छोटा करने दें; meeting_detection: मीटिंग ऐप पहचानें; force_rest = false होने पर केवल बंद की जा सकने वाली विंडो दिखती है; overlay_coverage: ओवरले हर स्क्रीन का कितना हिस्सा ढके, 0.1 ~ 1.0; urgent_scale: आपात मोड में overlay_coverage के सापेक्ष स्केल, 0.1 ~ 0.9",
+        es: "Perfiles personalizados, un [[profiles]] cada uno. max_postpones: aplazamientos antes de un descanso completo; urgent_mode: permitir reducir la superposición; meeting_detection: detectar apps de reuniones; force_rest = false solo muestra una ventana que se puede cerrar; overlay_coverage: fracción de cada pantalla cubierta, 0.1 ~ 1.0; urgent_scale: escala del modo urgente respecto a overlay_coverage, 0.1 ~ 0.9",
+        ar: "الأنماط المخصّصة، لكلٍّ منها [[profiles]]. max_postpones: عدد التأجيلات قبل استراحة كاملة؛ urgent_mode: السماح بتصغير الطبقة؛ meeting_detection: اكتشاف تطبيقات الاجتماعات؛ force_rest = false يعرض نافذة قابلة للإغلاق فقط؛ overlay_coverage: نسبة ما تغطيه الطبقة من كل شاشة، 0.1 ~ 1.0؛ urgent_scale: معامل التصغير في وضع الطوارئ نسبةً إلى overlay_coverage، 0.1 ~ 0.9",
+        fr: "Profils personnalisés, un [[profiles]] chacun. max_postpones : reports avant une pause complète ; urgent_mode : autoriser la réduction du voile ; meeting_detection : détecter les applis de réunion ; force_rest = false affiche seulement une fenêtre qu'on peut fermer ; overlay_coverage : part de chaque écran couverte, 0.1 ~ 1.0 ; urgent_scale : échelle du mode urgence par rapport à overlay_coverage, 0.1 ~ 0.9",
+        bn: "কাস্টম প্রোফাইল, প্রতিটির জন্য একটি [[profiles]]। max_postpones: পূর্ণ বিরতির আগে কতবার পেছানো যাবে; urgent_mode: ওভারলে ছোট করার অনুমতি; meeting_detection: মিটিং অ্যাপ শনাক্ত করা; force_rest = false হলে শুধু বন্ধ করা যায় এমন উইন্ডো দেখায়; overlay_coverage: ওভারলে প্রতিটি স্ক্রিনের কত অংশ ঢাকবে, 0.1 ~ 1.0; urgent_scale: জরুরি মোডে overlay_coverage-এর তুলনায় স্কেল, 0.1 ~ 0.9",
+        pt: "Perfis personalizados, um [[profiles]] cada. max_postpones: adiamentos antes de uma pausa completa; urgent_mode: permitir reduzir a sobreposição; meeting_detection: detectar apps de reunião; force_rest = false só mostra uma janela que pode ser fechada; overlay_coverage: fração de cada tela coberta, 0.1 ~ 1.0; urgent_scale: escala do modo urgente em relação a overlay_coverage, 0.1 ~ 0.9",
+        de: "Eigene Profile, je ein [[profiles]]. max_postpones: Aufschübe vor einer vollständigen Pause; urgent_mode: Verkleinern des Overlays erlauben; meeting_detection: Meeting-Apps erkennen; force_rest = false zeigt nur ein schließbares Fenster; overlay_coverage: Anteil jedes Bildschirms, der abgedeckt wird, 0.1 ~ 1.0; urgent_scale: Skalierung im Notfallmodus relativ zu overlay_coverage, 0.1 ~ 0.9",
+        ja: "カスタムプラン。1 つにつき [[profiles]] を 1 つ。max_postpones は完全に休憩するまでの最大延期回数、urgent_mode はオーバーレイの縮小を許可、meeting_detection は会議アプリを検出、force_rest = false なら閉じられるウィンドウを表示するだけ、overlay_coverage は各画面を覆う割合 0.1 ~ 1.0、urgent_scale は緊急モード時の overlay_coverage に対する縮小率 0.1 ~ 0.9",
+        it: "Profili personalizzati, un [[profiles]] ciascuno. max_postpones: rinvii prima di una pausa completa; urgent_mode: consenti di ridurre la sovrapposizione; meeting_detection: rileva le app per riunioni; force_rest = false mostra solo una finestra chiudibile; overlay_coverage: frazione di ogni schermo coperta, 0.1 ~ 1.0; urgent_scale: scala in modalità urgente rispetto a overlay_coverage, 0.1 ~ 0.9",
+        ko: "사용자 지정 프로필, 하나당 [[profiles]] 하나. max_postpones: 완전한 휴식 전 최대 미루기 횟수, urgent_mode: 오버레이 축소 허용, meeting_detection: 회의 앱 감지, force_rest = false면 닫을 수 있는 창만 표시, overlay_coverage: 각 화면을 덮는 비율 0.1 ~ 1.0, urgent_scale: 긴급 모드 때 overlay_coverage에 곱하는 축소 비율 0.1 ~ 0.9",
+        id: "Profil kustom, satu [[profiles]] untuk masing-masing. max_postpones: penundaan sebelum istirahat penuh; urgent_mode: izinkan memperkecil lapisan; meeting_detection: deteksi aplikasi rapat; force_rest = false hanya menampilkan jendela yang bisa ditutup; overlay_coverage: bagian setiap layar yang ditutupi, 0.1 ~ 1.0; urgent_scale: skala mode darurat relatif terhadap overlay_coverage, 0.1 ~ 0.9",
     };
 
     /// 用于测试：所有注释
     #[cfg(test)]
-    pub const ALL: [&Tr; 10] = [
+    pub const ALL: [&Tr; 8] = [
         &HEADER,
         &UNITS,
         &WORK,
         &REST,
         &POSTPONE,
-        &COVERAGE,
-        &URGENT_SCALE,
         &IDLE,
         &LEVEL,
         &PROFILES,

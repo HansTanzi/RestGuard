@@ -95,8 +95,6 @@ sudo pacman -U ./RestGuard_*_x86_64.pkg.tar.zst
 work_minutes = 60.0      # 连续工作多久后强制休息
 rest_minutes = 10.0      # 每次休息多久
 postpone_minutes = 5.0   # 每次推迟多久
-overlay_coverage = 1.0   # 遮罩覆盖屏幕的比例 0.1 ~ 1.0
-urgent_scale = 0.5       # 紧急模式（缩小遮罩）时相对上面比例的缩放因子 0.1 ~ 0.9
 idle_minutes = 5.0       # 无操作超过这么久算离开电脑，0 表示关闭
 level = "medium"         # 强制等级："high"、"medium"、"low"，或某个自定义方案的名字
 
@@ -106,6 +104,8 @@ max_postpones = 1        # 完整休息前最多推迟几次
 urgent_mode = false      # 允许缩小遮罩（紧急模式）
 meeting_detection = true # Zoom、Teams 等会议软件使用中时暂缓休息
 force_rest = true        # false 表示只弹出可以关掉的窗口
+overlay_coverage = 1.0   # 遮罩覆盖屏幕的比例 0.1 ~ 1.0
+urgent_scale = 0.5       # 紧急模式（缩小遮罩）时相对上面比例的缩放因子 0.1 ~ 0.9
 ```
 
 ## 平台限制

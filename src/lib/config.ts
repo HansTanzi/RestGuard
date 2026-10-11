@@ -11,6 +11,10 @@ export interface Profile {
   meeting_detection: boolean;
   // false 时只弹出可以关掉的窗口
   force_rest: boolean;
+  // 遮罩覆盖屏幕的比例（正常模式）
+  overlay_coverage: number;
+  // 紧急模式（遮罩缩小后）相对正常模式的缩放因子，小于 1 保证比正常模式小
+  urgent_scale: number;
 }
 
 export const BUILTIN_LEVELS = ["high", "medium", "low"] as const;
@@ -18,9 +22,33 @@ export type BuiltinLevel = (typeof BUILTIN_LEVELS)[number];
 
 // 与 src-tauri/src/config.rs 的 Profile::builtin 一致
 export const BUILTIN_PROFILES: Record<BuiltinLevel, Profile> = {
-  high: { name: "", max_postpones: 0, urgent_mode: false, meeting_detection: false, force_rest: true },
-  medium: { name: "", max_postpones: 3, urgent_mode: true, meeting_detection: true, force_rest: true },
-  low: { name: "", max_postpones: 3, urgent_mode: true, meeting_detection: true, force_rest: false },
+  high: {
+    name: "",
+    max_postpones: 0,
+    urgent_mode: false,
+    meeting_detection: false,
+    force_rest: true,
+    overlay_coverage: 1,
+    urgent_scale: 0.5,
+  },
+  medium: {
+    name: "",
+    max_postpones: 3,
+    urgent_mode: true,
+    meeting_detection: true,
+    force_rest: true,
+    overlay_coverage: 1,
+    urgent_scale: 0.5,
+  },
+  low: {
+    name: "",
+    max_postpones: 3,
+    urgent_mode: true,
+    meeting_detection: true,
+    force_rest: false,
+    overlay_coverage: 0.8,
+    urgent_scale: 0.5,
+  },
 };
 
 export function isBuiltinLevel(level: string): level is BuiltinLevel {
@@ -32,9 +60,6 @@ export interface Config {
   work_minutes: number;
   rest_minutes: number;
   postpone_minutes: number;
-  overlay_coverage: number;
-  // 紧急模式（遮罩缩小后）相对正常模式的缩放因子，小于 1 保证比正常模式小
-  urgent_scale: number;
   idle_minutes: number;
   // 内置等级，或某个自定义方案的名字
   level: string;
@@ -45,8 +70,6 @@ export const DEFAULT_CONFIG: Config = {
   work_minutes: 60,
   rest_minutes: 10,
   postpone_minutes: 5,
-  overlay_coverage: 1,
-  urgent_scale: 0.5,
   idle_minutes: 5,
   level: "medium",
   profiles: [],

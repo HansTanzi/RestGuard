@@ -57,6 +57,7 @@ Keep as many custom profiles as you like and switch any time. Work, break, postp
 - Cross-platform: Windows, macOS and Linux, installable and updatable through WinGet, Scoop, Homebrew and APT (see [Install](#install))
 - Tray menu: time remaining, rest now, settings, start at login
 - Single instance
+- Free and open source under the permissive MIT / Apache-2.0 dual license (see [License](#license))
 - Available in Simplified Chinese, English, Hindi, Spanish, Arabic, French, Bengali, Portuguese, German, Japanese, Italian, Korean and Indonesian. The UI language follows the system by default (English if the system language isn't supported); switch it any time from the tray menu's "语言 / Language" submenu
 
 ## Install

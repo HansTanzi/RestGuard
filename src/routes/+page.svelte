@@ -37,6 +37,9 @@
   let selected = $state<string>(DEFAULT_CONFIG.level);
   // 下拉框里“新建自定义…”选项的值，选中时新建方案而不是切换
   const NEW_PROFILE = "new";
+  // 重命名弹窗：确定后才写回 draft
+  let renameDialog = $state<HTMLDialogElement>();
+  let newName = $state("");
   let saving = $state(false);
   let message = $state<{ text: string; error: boolean } | null>(null);
   let messageTimer: ReturnType<typeof setTimeout> | undefined;
@@ -58,14 +61,15 @@
   const positive = (v: number | null) => typeof v === "number" && Number.isFinite(v) && v > 0;
   const count = (v: number | null) => Number.isInteger(v) && v! >= 0;
   // 名字用来引用方案，不能为空、与内置等级重名或彼此重复（与 config.rs 的 sanitized 一致）
-  const badName = (i: number) => {
-    const name = draft.profiles[i].name.trim();
+  const nameInvalid = (raw: string, i: number) => {
+    const name = raw.trim();
     return (
       !name ||
       isBuiltinLevel(name) ||
       draft.profiles.some((p, j) => j !== i && p.name.trim() === name)
     );
   };
+  const badName = (i: number) => nameInvalid(draft.profiles[i].name, i);
   const errors = $derived({
     work_minutes: !positive(draft.work_minutes),
     rest_minutes: !positive(draft.rest_minutes),
@@ -101,6 +105,18 @@
     while (names.has(s.defaultProfileName(n))) n++;
     draft.profiles.push({ ...$state.snapshot(profile), name: s.defaultProfileName(n) });
     selected = `custom:${draft.profiles.length - 1}`;
+  }
+
+  function openRename() {
+    if (customIndex < 0) return;
+    newName = draft.profiles[customIndex].name;
+    renameDialog?.showModal();
+  }
+
+  function rename() {
+    if (customIndex < 0 || nameInvalid(newName, customIndex)) return;
+    draft.profiles[customIndex].name = newName.trim();
+    renameDialog?.close();
   }
 
   function deleteProfile() {
@@ -382,6 +398,9 @@
             <p class="hint">{s.builtinHint}</p>
           {:else}
             <div class="actions profile-actions">
+              <button type="button" class="ghost" onclick={openRename}>
+                {s.renameProfile}
+              </button>
               <button type="button" class="ghost" onclick={deleteProfile}>
                 {s.deleteProfile}
               </button>
@@ -390,6 +409,40 @@
         </section>
       </fieldset>
     </form>
+
+    <!-- 放在设置表单外，回车只提交弹窗自己的表单 -->
+    <dialog bind:this={renameDialog}>
+      <form
+        onsubmit={(e) => {
+          e.preventDefault();
+          rename();
+        }}
+      >
+        <h2>{s.renameProfile}</h2>
+        <label>
+          <span>{s.profileName}</span>
+          <!-- svelte-ignore a11y_autofocus -->
+          <input
+            type="text"
+            autofocus
+            class:invalid={customIndex >= 0 && nameInvalid(newName, customIndex)}
+            bind:value={newName}
+          />
+        </label>
+        <div class="actions profile-actions">
+          <button type="button" class="ghost" onclick={() => renameDialog?.close()}>
+            {s.cancel}
+          </button>
+          <button
+            type="submit"
+            class="primary"
+            disabled={customIndex < 0 || nameInvalid(newName, customIndex)}
+          >
+            {s.confirm}
+          </button>
+        </div>
+      </form>
+    </dialog>
   </main>
 {/if}
 
@@ -502,6 +555,7 @@
   }
 
   input[type="number"],
+  input[type="text"],
   select {
     width: 7.5rem;
     box-sizing: border-box;
@@ -514,6 +568,7 @@
   }
 
   input[type="number"]:focus,
+  input[type="text"]:focus,
   select:focus {
     outline: 2px solid var(--accent);
     outline-offset: -1px;
@@ -568,6 +623,24 @@
 
   .profile-actions {
     margin-top: 0.75rem;
+  }
+
+  dialog {
+    min-width: min(22rem, calc(100vw - 2rem));
+    box-sizing: border-box;
+    padding: 1rem;
+    color: var(--fg);
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.5);
+  }
+
+  dialog input[type="text"] {
+    width: 12rem;
   }
 
   input:disabled {

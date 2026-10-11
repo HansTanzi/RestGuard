@@ -34,7 +34,7 @@ export const BUILTIN_PROFILES: Record<BuiltinLevel, Profile> = {
     force_rest: true,
     allow_skip: false,
     overlay_coverage: 1,
-    urgent_scale: 0.5,
+    urgent_scale: 0.75,
     movable: false,
   },
   medium: {
@@ -45,7 +45,7 @@ export const BUILTIN_PROFILES: Record<BuiltinLevel, Profile> = {
     force_rest: true,
     allow_skip: false,
     overlay_coverage: 1,
-    urgent_scale: 0.5,
+    urgent_scale: 0.75,
     movable: true,
   },
   low: {
@@ -56,7 +56,7 @@ export const BUILTIN_PROFILES: Record<BuiltinLevel, Profile> = {
     force_rest: false,
     allow_skip: true,
     overlay_coverage: 0.8,
-    urgent_scale: 0.5,
+    urgent_scale: 0.75,
     movable: true,
   },
 };

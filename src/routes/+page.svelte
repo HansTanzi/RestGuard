@@ -32,9 +32,11 @@
   // saved 是后端当前生效的配置，draft 是表单里正在编辑的值
   let saved = $state<Config | null>(null);
   let draft = $state<Config>(structuredClone(DEFAULT_CONFIG));
-  // 选中的强制等级：内置等级 id，或 "custom:<下标>"。
-  // 自定义方案按下标而不是名字选中，改名的过程中不会跳到别的方案
+  // 选中的强制方案：内置等级 id，或 "custom:<下标>"。
+  // 自定义方案按下标而不是名字选中，与名字无关
   let selected = $state<string>(DEFAULT_CONFIG.level);
+  // 下拉框里“新建自定义…”选项的值，选中时新建方案而不是切换
+  const NEW_PROFILE = "new";
   let saving = $state(false);
   let message = $state<{ text: string; error: boolean } | null>(null);
   let messageTimer: ReturnType<typeof setTimeout> | undefined;
@@ -69,7 +71,6 @@
     rest_minutes: !positive(draft.rest_minutes),
     postpone_minutes: !positive(draft.postpone_minutes),
     idle_minutes: !(positive(draft.idle_minutes) || draft.idle_minutes === 0),
-    profile_name: customIndex >= 0 && badName(customIndex),
     max_postpones: !count(profile.max_postpones),
   });
   // 切到别的方案后，之前编辑过的方案也要有效
@@ -165,14 +166,57 @@
 
 {#if s}
   <main>
-    <h1>{s.title}</h1>
-
+    <!-- 整页一个表单：标题和保存栏在顶部，分组流动排列 -->
     <form
+      class="flow"
       onsubmit={(e) => {
         e.preventDefault();
         save();
       }}
     >
+      <header>
+        <h1>{s.title}</h1>
+        <p class="message" class:error={message?.error || locked} aria-live="polite">
+          {locked ? s.lockedDuringBreak : (message?.text ?? "")}
+        </p>
+        <div class="actions">
+          <button
+            type="button"
+            class="ghost"
+            disabled={locked}
+            onclick={() => {
+              // 自定义方案是用户自己建的，恢复默认值时保留
+              draft = { ...structuredClone(DEFAULT_CONFIG), profiles: $state.snapshot(draft.profiles) };
+              selected = DEFAULT_CONFIG.level;
+            }}
+          >
+            {s.resetDefaults}
+          </button>
+          <button type="submit" class="primary" disabled={locked || !dirty || saving}>
+            {s.save}
+          </button>
+        </div>
+      </header>
+
+      <!-- 语言和开机自启立即生效，不需要保存；不放进 fieldset，休息期间也能改 -->
+      <section>
+        <h2>{s.general}</h2>
+        <label>
+          <span>{s.language}</span>
+          <select bind:value={lang} onchange={changeLang}>
+            <option value="auto">{s.followSystem}</option>
+            <!-- 语言名称始终用其本身的文字显示，与托盘菜单一致 -->
+            {#each UI_LANGS as id (id)}
+              <option value={id}>{LANG_NAMES[id]}</option>
+            {/each}
+          </select>
+        </label>
+        <label class="check">
+          <input type="checkbox" bind:checked={autostart} onchange={changeAutostart} />
+          <span>{s.autostart}</span>
+        </label>
+      </section>
+
       <fieldset disabled={locked}>
         <section>
           <h2>{s.timing}</h2>
@@ -222,31 +266,44 @@
             <p class="hint accent">{s.workRestartHint}</p>
           {/if}
         </section>
+      </fieldset>
 
+      <fieldset disabled={locked}>
         <!-- 内置等级只读展示，自定义方案可以修改 -->
         <section>
           <h2>{s.enforcement}</h2>
           <label>
             <span>{s.level}</span>
-            <select bind:value={selected}>
+            <select
+              bind:value={
+                () => selected,
+                (v) => (v === NEW_PROFILE ? addProfile() : (selected = v))
+              }
+            >
               {#each BUILTIN_LEVELS as id (id)}
                 <option value={id}>{s.levels[id]}</option>
               {/each}
               {#each draft.profiles as p, i (i)}
                 <option value={`custom:${i}`}>{p.name.trim() || "…"}</option>
               {/each}
+              <option value={NEW_PROFILE}>{s.newProfile}</option>
             </select>
           </label>
-          {#if customIndex >= 0}
-            <label>
-              <span>{s.profileName}</span>
+          <label>
+            <span>{s.coverageNormal}</span>
+            <span class="range">
               <input
-                type="text"
-                class:invalid={errors.profile_name}
-                bind:value={draft.profiles[customIndex].name}
+                type="range"
+                min="0.1"
+                max="1"
+                step="0.05"
+                disabled={customIndex < 0}
+                value={profile.overlay_coverage}
+                oninput={(e) => edit({ overlay_coverage: e.currentTarget.valueAsNumber })}
               />
-            </label>
-          {/if}
+              <output>{Math.round(profile.overlay_coverage * 100)}%</output>
+            </span>
+          </label>
           <label>
             <span>{s.maxPostpones}</span>
             <input
@@ -287,31 +344,8 @@
             />
             <span>{s.urgentMode}</span>
           </label>
-          <label class="check">
-            <input
-              type="checkbox"
-              disabled={customIndex < 0}
-              checked={profile.meeting_detection}
-              onchange={(e) => edit({ meeting_detection: e.currentTarget.checked })}
-            />
-            <span>{s.meetingDetection}</span>
-          </label>
-          <label>
-            <span>{s.coverageNormal}</span>
-            <span class="range">
-              <input
-                type="range"
-                min="0.1"
-                max="1"
-                step="0.05"
-                disabled={customIndex < 0}
-                value={profile.overlay_coverage}
-                oninput={(e) => edit({ overlay_coverage: e.currentTarget.valueAsNumber })}
-              />
-              <output>{Math.round(profile.overlay_coverage * 100)}%</output>
-            </span>
-          </label>
-          <label>
+          <!-- 缩小比例从属于紧急模式，缩进表示 -->
+          <label class="sub">
             <span>{s.urgentScale}</span>
             <span class="range">
               <input
@@ -335,59 +369,27 @@
             />
             <span>{s.movable}</span>
           </label>
+          <label class="check">
+            <input
+              type="checkbox"
+              disabled={customIndex < 0}
+              checked={profile.meeting_detection}
+              onchange={(e) => edit({ meeting_detection: e.currentTarget.checked })}
+            />
+            <span>{s.meetingDetection}</span>
+          </label>
           {#if customIndex < 0}
             <p class="hint">{s.builtinHint}</p>
-          {/if}
-          <div class="actions profile-actions">
-            {#if customIndex >= 0}
+          {:else}
+            <div class="actions profile-actions">
               <button type="button" class="ghost" onclick={deleteProfile}>
                 {s.deleteProfile}
               </button>
-            {/if}
-            <button type="button" class="ghost" onclick={addProfile}>{s.newProfile}</button>
-          </div>
+            </div>
+          {/if}
         </section>
-
-        <div class="actions">
-          <button
-            type="button"
-            class="ghost"
-            onclick={() => {
-              // 自定义方案是用户自己建的，恢复默认值时保留
-              draft = { ...structuredClone(DEFAULT_CONFIG), profiles: $state.snapshot(draft.profiles) };
-              selected = DEFAULT_CONFIG.level;
-            }}
-          >
-            {s.resetDefaults}
-          </button>
-          <button type="submit" class="primary" disabled={!dirty || saving}>
-            {s.save}
-          </button>
-        </div>
-        <p class="message" class:error={message?.error || locked} aria-live="polite">
-          {locked ? s.lockedDuringBreak : (message?.text ?? "")}
-        </p>
       </fieldset>
     </form>
-
-    <!-- 语言和开机自启立即生效，不需要保存 -->
-    <section>
-      <h2>{s.general}</h2>
-      <label>
-        <span>{s.language}</span>
-        <select bind:value={lang} onchange={changeLang}>
-          <option value="auto">{s.followSystem}</option>
-          <!-- 语言名称始终用其本身的文字显示，与托盘菜单一致 -->
-          {#each UI_LANGS as id (id)}
-            <option value={id}>{LANG_NAMES[id]}</option>
-          {/each}
-        </select>
-      </label>
-      <label class="check">
-        <input type="checkbox" bind:checked={autostart} onchange={changeAutostart} />
-        <span>{s.autostart}</span>
-      </label>
-    </section>
   </main>
 {/if}
 
@@ -408,7 +410,8 @@
     --line: rgb(255 255 255 / 0.12);
 
     box-sizing: border-box;
-    max-width: 520px;
+    /* 窗口默认最大化，宽屏上最多三列（见 .flow） */
+    max-width: 1200px;
     margin: 0 auto;
     padding: 1.25rem 1.5rem 1.5rem;
     color: var(--fg);
@@ -423,8 +426,21 @@
     color-scheme: dark;
   }
 
+  /* 标题和保存栏：滚动时固定在顶部 */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    padding: 0.5rem 0;
+    background: var(--bg-1);
+  }
+
   h1 {
-    margin: 0 0 1rem;
+    margin: 0;
     font-size: 1.4rem;
     font-weight: 600;
   }
@@ -449,9 +465,20 @@
     opacity: 0.5;
   }
 
+  /* 分组随窗口宽度流动排列：窄窗口一列，宽窗口多列 */
+  .flow {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .flow > header {
+    grid-column: 1 / -1;
+  }
+
   section {
     padding: 1rem;
-    margin-bottom: 1rem;
     border: 1px solid var(--line);
     border-radius: 10px;
     background: var(--bg-2);
@@ -470,8 +497,11 @@
     gap: 0.6rem;
   }
 
+  label.sub {
+    padding-inline-start: 1.6rem;
+  }
+
   input[type="number"],
-  input[type="text"],
   select {
     width: 7.5rem;
     box-sizing: border-box;
@@ -484,7 +514,6 @@
   }
 
   input[type="number"]:focus,
-  input[type="text"]:focus,
   select:focus {
     outline: 2px solid var(--accent);
     outline-offset: -1px;
@@ -580,9 +609,11 @@
     background: rgb(255 255 255 / 0.06);
   }
 
+  /* 夹在标题和按钮之间，占满剩余宽度；太窄时换到下一行 */
   .message {
+    flex: 1 1 8rem;
     min-height: 1.2em;
-    margin: 0.5rem 0 1rem;
+    margin: 0;
     text-align: end;
     font-size: 0.85rem;
     color: var(--accent);

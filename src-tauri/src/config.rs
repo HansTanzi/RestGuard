@@ -47,7 +47,7 @@ impl Profile {
             force_rest,
             allow_skip,
             overlay_coverage,
-            urgent_scale: 0.5,
+            urgent_scale: 0.75,
             movable,
         })
     }
@@ -321,7 +321,7 @@ mod tests {
         assert_eq!(coverage("high"), 1.0);
         assert_eq!(coverage("medium"), 1.0);
         assert_eq!(coverage("low"), 0.8);
-        assert_eq!(Profile::builtin("medium").unwrap().coverage(true), 0.5);
+        assert_eq!(Profile::builtin("medium").unwrap().coverage(true), 0.75);
     }
 
     #[test]

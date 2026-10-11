@@ -1,7 +1,7 @@
 //! 设置面板：从托盘菜单打开的普通窗口，加载前端根路由（src/routes/+page.svelte）。
 
 use crate::i18n::{t, text};
-use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{window::Color, AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 pub const LABEL: &str = "settings";
 
@@ -21,13 +21,23 @@ pub fn open(app: &AppHandle) {
     // WebviewUrl::default() 即 index.html，对应根路由
     let built = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::default())
         .title(title())
+        // 还原后是这个大小
         .inner_size(440.0, 600.0)
         .min_inner_size(360.0, 480.0)
         .center()
-        .maximizable(false)
+        // 与页面背景（+page.svelte 的 --bg-1）一致，页面加载出来之前不会先闪一下白色
+        .background_color(Color(0x0f, 0x17, 0x2a, 0xff))
+        // 先隐藏创建，最大化后再显示，避免先出现一个窄窗口再变宽
+        .visible(false)
         .build();
-    if let Err(e) = built {
-        eprintln!("创建设置窗口失败：{e}");
+    match built {
+        Ok(window) => {
+            // 默认最大化，分组可以多列排开
+            let _ = window.maximize();
+            let _ = window.show();
+            let _ = window.set_focus();
+        }
+        Err(e) => eprintln!("创建设置窗口失败：{e}"),
     }
 }
 

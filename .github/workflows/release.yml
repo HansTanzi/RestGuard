@@ -10,7 +10,7 @@ permissions:
 # 两个阶段：
 # 1. build-*：编译并上传 GitHub Release 文件。文件已存在时跳过：构建不可复现，重编会改变哈希，
 #    导致已更新的各渠道清单校验失败
-# 2. 分发渠道（scoop、homebrew、winget、msix）：各自一个 job，互不依赖，只从 Release 下载文件，
+# 2. 分发渠道（scoop、homebrew、apt、winget、msix）：各自一个 job，互不依赖，只从 Release 下载文件，
 #    各自检查本渠道是否需要更新。只要对应平台的 Release 文件就绪，一个渠道失败不影响其他渠道
 jobs:
   # 校验版本号，确保 Release 存在（让两个 build job 无需相互等待），并检查各平台文件是否已上传
@@ -300,6 +300,74 @@ jobs:
             git pull --rebase
             sleep 5
           done
+
+  # 生成 APT 源，强推到 HansTanzi/apt-repo 的 gh-pages 分支（GitHub Pages 托管），用户加源后可 apt 安装和升级。
+  # 只放最新版本，每次从头生成并用单个提交覆盖，不保留历史，仓库不会因 .deb 累积变大，也不会有推送冲突。
+  # 需要 secret APT_REPO_DEPLOY_KEY（该仓库有写权限的 deploy key）和 APT_SIGNING_KEY（无密码的 GPG 私钥，签名 Release）。
+  # 不 checkout 目标仓库：新建的空仓库会让 checkout 失败，且旧内容反正全部覆盖。预发布版本跳过
+  apt:
+    needs: [prepare, build-linux]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-linux.result) && !contains(github.ref_name, '-') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build APT repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+          GPG_KEY: ${{ secrets.APT_SIGNING_KEY }}
+        run: |
+          sudo apt-get install -y apt-utils
+          gpg --batch --import <<< "$GPG_KEY"
+
+          site="$RUNNER_TEMP/site"
+          mkdir -p "$site/pool/main" "$site/dists/stable/main/binary-amd64"
+          cd "$site"
+          name="RestGuard_${VERSION}_amd64.deb"
+          gh release download "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY" --pattern "$name" --dir pool/main
+
+          # README 里写的是 apt install rest-guard（Tauri 由 productName 生成的包名），包名变了要同步改文档
+          package=$(dpkg-deb -f "pool/main/$name" Package)
+          if [ "$package" != "rest-guard" ]; then
+            echo "::error::Package name is $package, expected rest-guard; update README install commands"
+            exit 1
+          fi
+
+          apt-ftparchive packages pool > dists/stable/main/binary-amd64/Packages
+          gzip -k9 dists/stable/main/binary-amd64/Packages
+          # 先写到别处再移入：直接重定向到 dists/stable/Release 会让空的 Release 文件也被算进校验列表
+          apt-ftparchive \
+            -o APT::FTPArchive::Release::Origin=RestGuard \
+            -o APT::FTPArchive::Release::Label=RestGuard \
+            -o APT::FTPArchive::Release::Suite=stable \
+            -o APT::FTPArchive::Release::Codename=stable \
+            -o APT::FTPArchive::Release::Architectures=amd64 \
+            -o APT::FTPArchive::Release::Components=main \
+            release dists/stable > "$RUNNER_TEMP/Release"
+          mv "$RUNNER_TEMP/Release" dists/stable/Release
+          gpg --batch --yes --clearsign -o dists/stable/InRelease dists/stable/Release
+          gpg --batch --yes --detach-sign --armor -o dists/stable/Release.gpg dists/stable/Release
+          # 二进制公钥，用户直接下载到 /etc/apt/keyrings，无需 gpg --dearmor
+          gpg --export > restguard.gpg
+          touch .nojekyll
+
+      - name: Push to gh-pages
+        env:
+          DEPLOY_KEY: ${{ secrets.APT_REPO_DEPLOY_KEY }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          key="$RUNNER_TEMP/deploy_key"
+          printf '%s\n' "$DEPLOY_KEY" > "$key"
+          chmod 600 "$key"
+          # BatchMode：私钥有密码或格式不对时直接失败，不会等待输入
+          export GIT_SSH_COMMAND="ssh -i $key -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=accept-new"
+
+          cd "$RUNNER_TEMP/site"
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "restguard ${VERSION}"
+          git push -f git@github.com:HansTanzi/apt-repo.git gh-pages
 
   # 向 microsoft/winget-pkgs 提交新版本 PR，winget-releaser 自行从 Release 读取安装文件。
   # 需要仓库 secret WINGET_TOKEN（classic PAT，public_repo 权限），预发布版本跳过

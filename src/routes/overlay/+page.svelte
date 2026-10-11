@@ -95,7 +95,7 @@
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <main class:movable={shrunk} onmousedown={onMouseDown} in:fade={{ duration: 600 }}>
   {#if snap && s}
-    <!-- 强制等级可以关闭紧急模式；不强制休息时的弹窗本来就不遮挡屏幕 -->
+    <!-- 强制等级可以关闭紧急模式；不强制休息时可以直接跳过，不需要缩小 -->
     {#if snap.canShrink || shrunk}
       <button class="ghost shrink" onclick={toggleShrink}>
         {shrunk ? s.unshrink : s.shrink}

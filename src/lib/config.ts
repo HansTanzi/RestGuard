@@ -9,7 +9,7 @@ export interface Profile {
   urgent_mode: boolean;
   // 会议软件在使用时暂缓休息，休息时提供“我在开会”
   meeting_detection: boolean;
-  // false 时只弹出可以关掉的窗口
+  // false 时遮罩可以关掉
   force_rest: boolean;
   // 遮罩覆盖屏幕的比例（正常模式）
   overlay_coverage: number;

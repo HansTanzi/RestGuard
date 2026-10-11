@@ -11,7 +11,7 @@ export interface Snapshot {
   heldBy: string | null;
   /** 休息开始时正在运行的会议软件，此时遮罩提供“我在开会” */
   meetingApp: string | null;
-  /** 强制休息（全屏遮罩）；false 时只弹出可以关掉的窗口 */
+  /** 强制休息；false 时遮罩可以关掉 */
   forced: boolean;
   /** 遮罩上提供“有急事，缩小一下” */
   canShrink: boolean;

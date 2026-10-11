@@ -14,7 +14,7 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 - Multi-monitor: every screen is covered
 - The overlay can't be closed during a break (Alt+F4 does nothing), and you can't quit from the tray
 - Postpone for 5 minutes, up to 3 times; the count resets after a full break
-- Enforcement levels: **High** (no postpones, no urgent shrink, no meeting-app detection), **Medium** (default, as described here) and **Low** (no forced break, just a popup you can close); you can also create your own named profiles
+- Enforcement levels: **High** (no postpones, no urgent shrink, no meeting-app detection), **Medium** (default, as described here) and **Low** (no forced break, the overlay can be closed); you can also create your own named profiles
 - Idle detection: after 5 minutes without keyboard or mouse input you count as away and the work countdown pauses; being away as long as a break counts as a full break, so you aren't sent to rest right after coming back
 - Tray menu: time remaining, rest now, settings, start at login
 - Single instance
@@ -103,7 +103,7 @@ name = "Focus"
 max_postpones = 1        # max postpones before a full break is required
 urgent_mode = false      # allow shrinking the overlay
 meeting_detection = true # hold breaks while Zoom, Teams etc. are in use
-force_rest = true        # false = only a closable popup
+force_rest = true        # false = the overlay can be closed
 overlay_coverage = 1.0   # fraction of each screen covered, 0.1 ~ 1.0
 urgent_scale = 0.5       # urgent mode (shrunk overlay) scale relative to the above, 0.1 ~ 0.9
 ```

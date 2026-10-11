@@ -294,7 +294,7 @@
                 min="0.1"
                 max="1"
                 step="0.05"
-                disabled={customIndex < 0 || !profile.force_rest}
+                disabled={customIndex < 0}
                 value={profile.overlay_coverage}
                 oninput={(e) => edit({ overlay_coverage: e.currentTarget.valueAsNumber })}
               />

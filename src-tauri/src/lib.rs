@@ -142,7 +142,7 @@ fn in_meeting(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::in_meeting)
 }
 
-/// 不强制休息时弹窗上的“跳过这次休息”
+/// 不强制休息时遮罩上的“跳过这次休息”
 #[tauri::command]
 fn dismiss_break(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::dismiss)
@@ -243,11 +243,7 @@ fn open_overlays(app: &AppHandle) {
         let state = app.state::<AppState>();
         // 以计时器为准：它与这次休息是按同一份方案开始的
         let forced = state.timer.lock().unwrap().profile().force_rest;
-        if forced {
-            overlay::open_all(&app, state.overlay_coverage(false));
-        } else {
-            overlay::open_popup(&app);
-        }
+        overlay::open_all(&app, state.overlay_coverage(false), forced);
     });
 }
 
@@ -327,15 +323,13 @@ pub fn run() {
             }
             match event {
                 // 拦截 Alt+F4 等系统关闭操作，遮罩只能由程序销毁。
-                // 不强制休息时的弹窗可以关掉，关掉即跳过这次休息
+                // 不强制休息时关掉任一遮罩即跳过这次休息（强制休息时 Timer::dismiss 会拒绝）
                 WindowEvent::CloseRequested { api, .. } => {
                     api.prevent_close();
-                    if window.label() == overlay::POPUP_LABEL {
-                        let app = window.app_handle().clone();
-                        thread::spawn(move || {
-                            let _ = end_rest(&app, Timer::dismiss);
-                        });
-                    }
+                    let app = window.app_handle().clone();
+                    thread::spawn(move || {
+                        let _ = end_rest(&app, Timer::dismiss);
+                    });
                 }
                 // 缩小后可拖动，但不能离开所属屏幕
                 WindowEvent::Moved(pos) => overlay::keep_on_home(window, *pos),

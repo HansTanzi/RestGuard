@@ -17,7 +17,7 @@ pub struct Profile {
     pub urgent_mode: bool,
     /// 会议软件在使用时暂缓休息，休息时提供“我在开会”
     pub meeting_detection: bool,
-    /// false 时不强制休息，只在主屏幕弹出一个可以关掉的窗口
+    /// false 时不强制休息，遮罩可以关掉（关掉即跳过这次休息）
     pub force_rest: bool,
     /// 遮罩覆盖屏幕的比例（正常模式）
     pub overlay_coverage: f64,

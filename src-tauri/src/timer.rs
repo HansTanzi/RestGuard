@@ -37,7 +37,7 @@ pub struct Snapshot {
     pub held_by: Option<String>,
     /// 休息开始时正在运行的会议软件，此时遮罩提供“我在开会”
     pub meeting_app: Option<String>,
-    /// 强制休息（全屏遮罩）；false 时只弹出可以关掉的窗口
+    /// 强制休息；false 时遮罩可以关掉
     pub forced: bool,
     /// 遮罩上提供“有急事，缩小一下”
     pub can_shrink: bool,
@@ -182,7 +182,7 @@ impl Timer {
         true
     }
 
-    /// 不强制休息时，关掉弹窗即跳过这次休息
+    /// 不强制休息时，关掉遮罩即跳过这次休息
     pub fn dismiss(&mut self, now: Instant) -> bool {
         if self.phase == Phase::Working || self.profile.force_rest {
             return false;

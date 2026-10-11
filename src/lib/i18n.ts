@@ -58,7 +58,7 @@ export interface Strings {
   inMeeting: (app: string) => string;
   shrink: string;
   unshrink: string;
-  // 不强制休息时的弹窗
+  // 不强制休息时遮罩上的按钮
   skipBreak: string;
 }
 

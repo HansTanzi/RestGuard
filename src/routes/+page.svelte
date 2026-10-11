@@ -263,10 +263,10 @@
             <input
               type="checkbox"
               disabled={customIndex < 0}
-              checked={profile.force_rest}
-              onchange={(e) => edit({ force_rest: e.currentTarget.checked })}
+              checked={!profile.force_rest}
+              onchange={(e) => edit({ force_rest: !e.currentTarget.checked })}
             />
-            <span>{s.forceRest}</span>
+            <span>{s.allowExit}</span>
           </label>
           <!-- 不强制休息时总能跳过 -->
           <label class="check">

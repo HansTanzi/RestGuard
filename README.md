@@ -10,12 +10,51 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 
 ## Features
 
-- Forces a 10-minute break after every 60 minutes of work (configurable)
+### Breaks that actually happen
+
+- Forces a 10-minute break after every 60 minutes of work (both durations adjustable)
 - Multi-monitor: every screen is covered
 - The overlay can't be closed during a break (Alt+F4 does nothing), and you can't quit from the tray
 - Postpone for 5 minutes, up to 3 times; the count resets after a full break
-- Enforcement levels: **High** (no postpones, no urgent shrink, no meeting-app detection), **Medium** (default, as described here) and **Low** (no forced break, the overlay can be closed); you can also create your own named profiles
+- Urgent mode: something can't wait? Shrink the overlay for a moment to save your work while the countdown keeps running
+
+### Three built-in profiles for different needs
+
+| | High | Medium (default) | Low |
+|---|:---:|:---:|:---:|
+| Best for | Strict discipline, beating "just five more minutes" | Everyday work | A gentle nudge |
+| Postpones | 0 | 3 | 3 |
+| Urgent mode (shrink overlay) | ✗ | ✓ | ✓ |
+| Meeting-app detection | ✗ | ✓ | ✓ |
+| Close / skip this break | ✗ | ✗ | ✓ |
+| Screen coverage | 100% | 100% | 80% |
+| Draggable overlay | ✗ | ✓ | ✓ |
+
+### Highly customizable
+
+When the built-ins don't fit, choose **New custom…** in Settings to start from any profile, give it a name (rename or delete it later), and tune each option:
+
+- Number of postpones, whether exiting is allowed, whether skipping this break is allowed
+- Whether urgent mode is available, and how small the overlay shrinks
+- How much of each screen the overlay covers (10% ~ 100%), and whether it can be dragged within its screen
+- Whether to detect meeting apps
+
+Keep as many custom profiles as you like and switch any time. Work, break, postpone and idle durations are shared across profiles. If you prefer editing files by hand, [`config.toml`](#configuration) works too.
+
+### Stays out of the way when it matters
+
+- Meeting detection (Windows, macOS): while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (or, on Windows, using the microphone), the break waits until the meeting is over; during a break you can also click "I'm in a meeting" to be reminded in 15 minutes
 - Idle detection: after 5 minutes without keyboard or mouse input you count as away and the work countdown pauses; being away as long as a break counts as a full break, so you aren't sent to rest right after coming back
+
+### Small and fast
+
+- Built with Rust + Tauri 2 on the system WebView, with no bundled browser engine, so it barely uses any resources while running in the background
+- Tiny: downloads are just 2.5 ~ 4.6 MB (Windows 4.6 MB, macOS 4.0 MB, Linux 2.5 MB)
+- Portable: a single exe on Windows, an unzip-and-run `.app` on macOS; delete it to uninstall
+
+### And more
+
+- Cross-platform: Windows, macOS and Linux, installable and updatable through WinGet, Scoop, Homebrew and APT (see [Install](#install))
 - Tray menu: time remaining, rest now, settings, start at login
 - Single instance
 - Available in Simplified Chinese, English, Hindi, Spanish, Arabic, French, Bengali, Portuguese, German, Japanese, Italian, Korean and Indonesian. The UI language follows the system by default (English if the system language isn't supported); switch it any time from the tray menu's "语言 / Language" submenu

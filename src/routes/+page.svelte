@@ -13,7 +13,16 @@
     type SettingsStrings,
     type UiLang,
   } from "$lib/i18n";
-  import { AUTOSTART_EVENT, DEFAULT_CONFIG, type Config, type LangId } from "$lib/config";
+  import {
+    AUTOSTART_EVENT,
+    BUILTIN_LEVELS,
+    BUILTIN_PROFILES,
+    DEFAULT_CONFIG,
+    isBuiltinLevel,
+    type Config,
+    type LangId,
+    type Profile,
+  } from "$lib/config";
 
   let s = $state<SettingsStrings | null>(null);
   let lang = $state<LangId>("auto");
@@ -22,25 +31,99 @@
 
   // saved 是后端当前生效的配置，draft 是表单里正在编辑的值
   let saved = $state<Config | null>(null);
-  let draft = $state<Config>({ ...DEFAULT_CONFIG });
+  let draft = $state<Config>(structuredClone(DEFAULT_CONFIG));
+  // 选中的强制方案：内置等级 id，或 "custom:<下标>"。
+  // 自定义方案按下标而不是名字选中，与名字无关
+  let selected = $state<string>(DEFAULT_CONFIG.level);
+  // 下拉框里“新建自定义…”选项的值，选中时新建方案而不是切换
+  const NEW_PROFILE = "new";
+  // 重命名弹窗：确定后才写回 draft
+  let renameDialog = $state<HTMLDialogElement>();
+  let newName = $state("");
   let saving = $state(false);
   let message = $state<{ text: string; error: boolean } | null>(null);
   let messageTimer: ReturnType<typeof setTimeout> | undefined;
 
   const locked = $derived(phase !== "working");
+  const customIndex = $derived(selected.startsWith("custom:") ? Number(selected.slice(7)) : -1);
+  const profile = $derived<Profile>(
+    customIndex >= 0
+      ? draft.profiles[customIndex]
+      : BUILTIN_PROFILES[isBuiltinLevel(selected) ? selected : "medium"],
+  );
+  // 要保存的配置：level 换成选中方案的名字
+  const output = $derived<Config>({
+    ...draft,
+    level: customIndex >= 0 ? draft.profiles[customIndex].name.trim() : selected,
+  });
+
   // bind:value 在输入框清空时给出 null
   const positive = (v: number | null) => typeof v === "number" && Number.isFinite(v) && v > 0;
+  const count = (v: number | null) => Number.isInteger(v) && v! >= 0;
+  // 名字用来引用方案，不能为空、与内置等级重名或彼此重复（与 config.rs 的 sanitized 一致）
+  const nameInvalid = (raw: string, i: number) => {
+    const name = raw.trim();
+    return (
+      !name ||
+      isBuiltinLevel(name) ||
+      draft.profiles.some((p, j) => j !== i && p.name.trim() === name)
+    );
+  };
+  const badName = (i: number) => nameInvalid(draft.profiles[i].name, i);
   const errors = $derived({
     work_minutes: !positive(draft.work_minutes),
     rest_minutes: !positive(draft.rest_minutes),
     postpone_minutes: !positive(draft.postpone_minutes),
-    max_postpones: !(Number.isInteger(draft.max_postpones) && draft.max_postpones >= 0),
+    idle_minutes: !(positive(draft.idle_minutes) || draft.idle_minutes === 0),
+    max_postpones: !count(profile.max_postpones),
   });
-  const valid = $derived(!Object.values(errors).some(Boolean));
-  const dirty = $derived(
-    saved !== null &&
-      (Object.keys(saved) as (keyof Config)[]).some((k) => saved![k] !== draft[k]),
+  // 切到别的方案后，之前编辑过的方案也要有效
+  const valid = $derived(
+    !Object.values(errors).some(Boolean) &&
+      draft.profiles.every((p, i) => !badName(i) && count(p.max_postpones)),
   );
+  // 字段顺序都来自后端返回值（新方案也按同样的顺序构造），可以直接比较 JSON
+  const dirty = $derived(saved !== null && JSON.stringify(saved) !== JSON.stringify(output));
+
+  function load(config: Config) {
+    saved = config;
+    draft = structuredClone(config);
+    const i = config.profiles.findIndex((p) => p.name === config.level);
+    selected = i >= 0 ? `custom:${i}` : config.level;
+  }
+
+  // 只有自定义方案可以修改
+  function edit(patch: Partial<Profile>) {
+    if (customIndex >= 0) Object.assign(draft.profiles[customIndex], patch);
+  }
+
+  // 以当前选中的方案为模板新建
+  function addProfile() {
+    if (!s) return;
+    const names = new Set(draft.profiles.map((p) => p.name.trim()));
+    let n = draft.profiles.length + 1;
+    while (names.has(s.defaultProfileName(n))) n++;
+    draft.profiles.push({ ...$state.snapshot(profile), name: s.defaultProfileName(n) });
+    selected = `custom:${draft.profiles.length - 1}`;
+  }
+
+  function openRename() {
+    if (customIndex < 0) return;
+    newName = draft.profiles[customIndex].name;
+    renameDialog?.showModal();
+  }
+
+  function rename() {
+    if (customIndex < 0 || nameInvalid(newName, customIndex)) return;
+    draft.profiles[customIndex].name = newName.trim();
+    renameDialog?.close();
+  }
+
+  function deleteProfile() {
+    if (customIndex < 0) return;
+    draft.profiles.splice(customIndex, 1);
+    selected = DEFAULT_CONFIG.level;
+  }
 
   function applyLang(v: UiLang) {
     s = settingsStrings(v);
@@ -59,10 +142,9 @@
     if (!valid) return flash(s.invalid, true);
     saving = true;
     try {
-      const result = await invoke<Config>("save_config", { config: $state.snapshot(draft) });
+      const result = await invoke<Config>("save_config", { config: $state.snapshot(output) });
       // 后端可能修正了越界的值，以返回值为准
-      saved = result;
-      draft = { ...result };
+      load(result);
       flash(s.saved);
     } catch (e) {
       flash(String(e), true);
@@ -83,10 +165,7 @@
 
   onMount(() => {
     invoke<UiLang>("ui_lang").then(applyLang);
-    invoke<Config>("get_config").then((v) => {
-      saved = v;
-      draft = { ...v };
-    });
+    invoke<Config>("get_config").then(load);
     invoke<boolean>("get_autostart").then((v) => (autostart = v));
     invoke<Snapshot>("get_state").then((v) => (phase = v.phase));
     const unlistens = [
@@ -103,14 +182,57 @@
 
 {#if s}
   <main>
-    <h1>{s.title}</h1>
-
+    <!-- 整页一个表单：标题和保存栏在顶部，分组流动排列 -->
     <form
+      class="flow"
       onsubmit={(e) => {
         e.preventDefault();
         save();
       }}
     >
+      <header>
+        <h1>{s.title}</h1>
+        <p class="message" class:error={message?.error || locked} aria-live="polite">
+          {locked ? s.lockedDuringBreak : (message?.text ?? "")}
+        </p>
+        <div class="actions">
+          <button
+            type="button"
+            class="ghost"
+            disabled={locked}
+            onclick={() => {
+              // 自定义方案是用户自己建的，恢复默认值时保留
+              draft = { ...structuredClone(DEFAULT_CONFIG), profiles: $state.snapshot(draft.profiles) };
+              selected = DEFAULT_CONFIG.level;
+            }}
+          >
+            {s.resetDefaults}
+          </button>
+          <button type="submit" class="primary" disabled={locked || !dirty || saving}>
+            {s.save}
+          </button>
+        </div>
+      </header>
+
+      <!-- 语言和开机自启立即生效，不需要保存；不放进 fieldset，休息期间也能改 -->
+      <section>
+        <h2>{s.general}</h2>
+        <label>
+          <span>{s.language}</span>
+          <select bind:value={lang} onchange={changeLang}>
+            <option value="auto">{s.followSystem}</option>
+            <!-- 语言名称始终用其本身的文字显示，与托盘菜单一致 -->
+            {#each UI_LANGS as id (id)}
+              <option value={id}>{LANG_NAMES[id]}</option>
+            {/each}
+          </select>
+        </label>
+        <label class="check">
+          <input type="checkbox" bind:checked={autostart} onchange={changeAutostart} />
+          <span>{s.autostart}</span>
+        </label>
+      </section>
+
       <fieldset disabled={locked}>
         <section>
           <h2>{s.timing}</h2>
@@ -145,74 +267,182 @@
             />
           </label>
           <label>
-            <span>{s.maxPostpones}</span>
+            <span>{s.idleMinutes}</span>
             <input
               type="number"
               min="0"
-              step="1"
-              class:invalid={errors.max_postpones}
-              bind:value={draft.max_postpones}
+              step="any"
+              class:invalid={errors.idle_minutes}
+              bind:value={draft.idle_minutes}
             />
           </label>
           <p class="hint">{s.minutesHint}</p>
+          <p class="hint">{s.idleHint}</p>
           {#if saved && draft.work_minutes !== saved.work_minutes}
             <p class="hint accent">{s.workRestartHint}</p>
           {/if}
         </section>
+      </fieldset>
 
+      <fieldset disabled={locked}>
+        <!-- 内置等级只读展示，自定义方案可以修改 -->
         <section>
-          <h2>{s.overlay}</h2>
+          <h2>{s.enforcement}</h2>
           <label>
-            <span>{s.coverage}</span>
+            <span>{s.level}</span>
+            <select
+              bind:value={
+                () => selected,
+                (v) => (v === NEW_PROFILE ? addProfile() : (selected = v))
+              }
+            >
+              {#each BUILTIN_LEVELS as id (id)}
+                <option value={id}>{s.levels[id]}</option>
+              {/each}
+              {#each draft.profiles as p, i (i)}
+                <option value={`custom:${i}`}>{p.name.trim() || "…"}</option>
+              {/each}
+              <option value={NEW_PROFILE}>{s.newProfile}</option>
+            </select>
+          </label>
+          <label>
+            <span>{s.coverageNormal}</span>
             <span class="range">
               <input
                 type="range"
                 min="0.1"
                 max="1"
                 step="0.05"
-                bind:value={draft.overlay_coverage}
+                disabled={customIndex < 0}
+                value={profile.overlay_coverage}
+                oninput={(e) => edit({ overlay_coverage: e.currentTarget.valueAsNumber })}
               />
-              <output>{Math.round(draft.overlay_coverage * 100)}%</output>
+              <output>{Math.round(profile.overlay_coverage * 100)}%</output>
             </span>
           </label>
+          <label>
+            <span>{s.maxPostpones}</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              class:invalid={errors.max_postpones}
+              disabled={customIndex < 0}
+              value={profile.max_postpones}
+              oninput={(e) => edit({ max_postpones: e.currentTarget.valueAsNumber })}
+            />
+          </label>
+          <label class="check">
+            <input
+              type="checkbox"
+              disabled={customIndex < 0}
+              checked={!profile.force_rest}
+              onchange={(e) => edit({ force_rest: !e.currentTarget.checked })}
+            />
+            <span>{s.allowExit}</span>
+          </label>
+          <!-- 不强制休息时总能跳过 -->
+          <label class="check">
+            <input
+              type="checkbox"
+              disabled={customIndex < 0 || !profile.force_rest}
+              checked={profile.allow_skip || !profile.force_rest}
+              onchange={(e) => edit({ allow_skip: e.currentTarget.checked })}
+            />
+            <span>{s.allowSkip}</span>
+          </label>
+          <label class="check">
+            <input
+              type="checkbox"
+              disabled={customIndex < 0 || !profile.force_rest}
+              checked={profile.urgent_mode}
+              onchange={(e) => edit({ urgent_mode: e.currentTarget.checked })}
+            />
+            <span>{s.urgentMode}</span>
+          </label>
+          <!-- 缩小比例从属于紧急模式，缩进表示 -->
+          <label class="sub">
+            <span>{s.urgentScale}</span>
+            <span class="range">
+              <input
+                type="range"
+                min="0.1"
+                max="0.9"
+                step="0.05"
+                disabled={customIndex < 0 || !profile.force_rest || !profile.urgent_mode}
+                value={profile.urgent_scale}
+                oninput={(e) => edit({ urgent_scale: e.currentTarget.valueAsNumber })}
+              />
+              <output>{Math.round(profile.urgent_scale * 100)}%</output>
+            </span>
+          </label>
+          <label class="check">
+            <input
+              type="checkbox"
+              disabled={customIndex < 0}
+              checked={profile.movable}
+              onchange={(e) => edit({ movable: e.currentTarget.checked })}
+            />
+            <span>{s.movable}</span>
+          </label>
+          <label class="check">
+            <input
+              type="checkbox"
+              disabled={customIndex < 0}
+              checked={profile.meeting_detection}
+              onchange={(e) => edit({ meeting_detection: e.currentTarget.checked })}
+            />
+            <span>{s.meetingDetection}</span>
+          </label>
+          {#if customIndex < 0}
+            <p class="hint">{s.builtinHint}</p>
+          {:else}
+            <div class="actions profile-actions">
+              <button type="button" class="ghost" onclick={openRename}>
+                {s.renameProfile}
+              </button>
+              <button type="button" class="ghost" onclick={deleteProfile}>
+                {s.deleteProfile}
+              </button>
+            </div>
+          {/if}
         </section>
-
-        <div class="actions">
-          <button
-            type="button"
-            class="ghost"
-            onclick={() => (draft = { ...DEFAULT_CONFIG })}
-          >
-            {s.resetDefaults}
-          </button>
-          <button type="submit" class="primary" disabled={!dirty || saving}>
-            {s.save}
-          </button>
-        </div>
-        <p class="message" class:error={message?.error || locked} aria-live="polite">
-          {locked ? s.lockedDuringBreak : (message?.text ?? "")}
-        </p>
       </fieldset>
     </form>
 
-    <!-- 语言和开机自启立即生效，不需要保存 -->
-    <section>
-      <h2>{s.general}</h2>
-      <label>
-        <span>{s.language}</span>
-        <select bind:value={lang} onchange={changeLang}>
-          <option value="auto">{s.followSystem}</option>
-          <!-- 语言名称始终用其本身的文字显示，与托盘菜单一致 -->
-          {#each UI_LANGS as id (id)}
-            <option value={id}>{LANG_NAMES[id]}</option>
-          {/each}
-        </select>
-      </label>
-      <label class="check">
-        <input type="checkbox" bind:checked={autostart} onchange={changeAutostart} />
-        <span>{s.autostart}</span>
-      </label>
-    </section>
+    <!-- 放在设置表单外，回车只提交弹窗自己的表单 -->
+    <dialog bind:this={renameDialog}>
+      <form
+        onsubmit={(e) => {
+          e.preventDefault();
+          rename();
+        }}
+      >
+        <h2>{s.renameProfile}</h2>
+        <label>
+          <span>{s.profileName}</span>
+          <!-- svelte-ignore a11y_autofocus -->
+          <input
+            type="text"
+            autofocus
+            class:invalid={customIndex >= 0 && nameInvalid(newName, customIndex)}
+            bind:value={newName}
+          />
+        </label>
+        <div class="actions profile-actions">
+          <button type="button" class="ghost" onclick={() => renameDialog?.close()}>
+            {s.cancel}
+          </button>
+          <button
+            type="submit"
+            class="primary"
+            disabled={customIndex < 0 || nameInvalid(newName, customIndex)}
+          >
+            {s.confirm}
+          </button>
+        </div>
+      </form>
+    </dialog>
   </main>
 {/if}
 
@@ -233,7 +463,8 @@
     --line: rgb(255 255 255 / 0.12);
 
     box-sizing: border-box;
-    max-width: 520px;
+    /* 窗口默认最大化，宽屏上最多三列（见 .flow） */
+    max-width: 1200px;
     margin: 0 auto;
     padding: 1.25rem 1.5rem 1.5rem;
     color: var(--fg);
@@ -248,8 +479,21 @@
     color-scheme: dark;
   }
 
+  /* 标题和保存栏：滚动时固定在顶部 */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    padding: 0.5rem 0;
+    background: var(--bg-1);
+  }
+
   h1 {
-    margin: 0 0 1rem;
+    margin: 0;
     font-size: 1.4rem;
     font-weight: 600;
   }
@@ -274,9 +518,20 @@
     opacity: 0.5;
   }
 
+  /* 分组随窗口宽度流动排列：窄窗口一列，宽窗口多列 */
+  .flow {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .flow > header {
+    grid-column: 1 / -1;
+  }
+
   section {
     padding: 1rem;
-    margin-bottom: 1rem;
     border: 1px solid var(--line);
     border-radius: 10px;
     background: var(--bg-2);
@@ -295,7 +550,12 @@
     gap: 0.6rem;
   }
 
+  label.sub {
+    padding-inline-start: 1.6rem;
+  }
+
   input[type="number"],
+  input[type="text"],
   select {
     width: 7.5rem;
     box-sizing: border-box;
@@ -308,6 +568,7 @@
   }
 
   input[type="number"]:focus,
+  input[type="text"]:focus,
   select:focus {
     outline: 2px solid var(--accent);
     outline-offset: -1px;
@@ -360,6 +621,32 @@
     gap: 0.75rem;
   }
 
+  .profile-actions {
+    margin-top: 0.75rem;
+  }
+
+  dialog {
+    min-width: min(22rem, calc(100vw - 2rem));
+    box-sizing: border-box;
+    padding: 1rem;
+    color: var(--fg);
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.5);
+  }
+
+  dialog input[type="text"] {
+    width: 12rem;
+  }
+
+  input:disabled {
+    opacity: 0.6;
+  }
+
   button {
     font: inherit;
     padding: 0.45rem 1.4rem;
@@ -395,9 +682,11 @@
     background: rgb(255 255 255 / 0.06);
   }
 
+  /* 夹在标题和按钮之间，占满剩余宽度；太窄时换到下一行 */
   .message {
+    flex: 1 1 8rem;
     min-height: 1.2em;
-    margin: 0.5rem 0 1rem;
+    margin: 0;
     text-align: end;
     font-size: 0.85rem;
     color: var(--accent);

@@ -337,47 +337,64 @@ pub mod config {
         id: "Lama setiap penundaan",
     };
 
-    pub const MAX_POSTPONES: Tr = Tr {
-        zh: "完整休息一次之前，最多推迟几次",
-        en: "Max postpones before a full break is required",
-        hi: "पूरा ब्रेक लेने से पहले अधिकतम कितनी बार टाल सकते हैं",
-        es: "Máximo de aplazamientos antes de exigir un descanso completo",
-        ar: "أقصى عدد من التأجيلات قبل فرض استراحة كاملة",
-        fr: "Nombre maximal de reports avant une pause complète obligatoire",
-        bn: "পূর্ণ বিরতির আগে সর্বোচ্চ কতবার পেছানো যাবে",
-        pt: "Máximo de adiamentos antes de exigir uma pausa completa",
-        de: "Maximale Anzahl an Aufschüben vor einer vollständigen Pause",
-        ja: "完全に休憩するまでに延期できる最大回数",
-        it: "Numero massimo di rinvii prima di una pausa completa",
-        ko: "완전한 휴식 전까지 미룰 수 있는 최대 횟수",
-        id: "Jumlah penundaan maksimum sebelum istirahat penuh diwajibkan",
+    pub const IDLE: Tr = Tr {
+        zh: "无操作超过多久算离开电脑，离开期间不计工作时间；离开满一次休息时长就当已休息。0 表示关闭",
+        en: "Inactivity after which you count as away; away time isn't work, and being away for a full break counts as one. 0 = off",
+        hi: "कितनी देर निष्क्रिय रहने पर आपको दूर माना जाए; दूर का समय काम नहीं गिना जाता, और पूरे ब्रेक जितनी देर दूर रहना ब्रेक माना जाता है। 0 = बंद",
+        es: "Inactividad tras la que cuentas como ausente; ese tiempo no es trabajo, y ausentarte lo que dura un descanso cuenta como uno. 0 = desactivado",
+        ar: "مدة الخمول التي تُعدّ بعدها بعيدًا؛ وقت الغياب لا يُحسب عملًا، والغياب بطول استراحة كاملة يُحسب استراحة. 0 = إيقاف",
+        fr: "Inactivité au-delà de laquelle vous êtes considéré absent ; ce temps ne compte pas comme travail, et une absence aussi longue qu'une pause compte comme une pause. 0 = désactivé",
+        bn: "কতক্ষণ নিষ্ক্রিয় থাকলে আপনাকে দূরে ধরা হবে; দূরে থাকার সময় কাজ নয়, আর পুরো বিরতির সমান সময় দূরে থাকলে বিরতি ধরা হয়। 0 = বন্ধ",
+        pt: "Inatividade após a qual você conta como ausente; esse tempo não é trabalho, e ficar ausente por uma pausa inteira conta como pausa. 0 = desativado",
+        de: "Inaktivität, ab der Sie als abwesend gelten; Abwesenheit zählt nicht als Arbeit, und so lange weg wie eine Pause zählt als Pause. 0 = aus",
+        ja: "操作がないまま何分たつと離席とみなすか。離席中は作業時間に数えず、休憩時間分離席したら休憩済みとみなします。0 で無効",
+        it: "Inattività dopo cui risulti assente; quel tempo non conta come lavoro, e un'assenza lunga quanto una pausa conta come pausa. 0 = disattivato",
+        ko: "입력이 없을 때 자리 비움으로 보는 시간입니다. 자리 비운 시간은 작업으로 치지 않고, 휴식 시간만큼 비우면 휴식한 것으로 봅니다. 0 = 끄기",
+        id: "Lama tanpa aktivitas hingga Anda dianggap pergi; waktu pergi tidak dihitung kerja, dan pergi selama satu istirahat penuh dihitung istirahat. 0 = mati",
     };
 
-    pub const COVERAGE: Tr = Tr {
-        zh: "遮罩覆盖每块屏幕的比例，0.1 ~ 1.0",
-        en: "Fraction of each screen covered by the overlay, 0.1 ~ 1.0",
-        hi: "ओवरले हर स्क्रीन का कितना हिस्सा ढके, 0.1 ~ 1.0",
-        es: "Fracción de cada pantalla cubierta por la superposición, 0.1 ~ 1.0",
-        ar: "نسبة ما تغطيه الطبقة من كل شاشة، 0.1 ~ 1.0",
-        fr: "Part de chaque écran couverte par le voile, 0.1 ~ 1.0",
-        bn: "ওভারলে প্রতিটি স্ক্রিনের কত অংশ ঢাকবে, 0.1 ~ 1.0",
-        pt: "Fração de cada tela coberta pela sobreposição, 0.1 ~ 1.0",
-        de: "Anteil jedes Bildschirms, den das Overlay abdeckt, 0.1 ~ 1.0",
-        ja: "各画面をオーバーレイが覆う割合、0.1 ~ 1.0",
-        it: "Frazione di ogni schermo coperta dalla sovrapposizione, 0.1 ~ 1.0",
-        ko: "오버레이가 각 화면을 덮는 비율, 0.1 ~ 1.0",
-        id: "Bagian setiap layar yang ditutupi lapisan, 0.1 ~ 1.0",
+    pub const LEVEL: Tr = Tr {
+        zh: "强制等级：high（高）、medium（中）、low（低），或下面某个自定义方案的名字",
+        en: "Enforcement level: high, medium, low, or the name of a custom profile below",
+        hi: "सख़्ती का स्तर: high (उच्च), medium (मध्यम), low (निम्न), या नीचे दी गई किसी कस्टम योजना का नाम",
+        es: "Nivel de rigor: high (alto), medium (medio), low (bajo) o el nombre de un perfil personalizado de abajo",
+        ar: "مستوى الإلزام: high (مرتفع) أو medium (متوسط) أو low (منخفض)، أو اسم أحد الأنماط المخصّصة أدناه",
+        fr: "Niveau de contrainte : high (élevé), medium (moyen), low (faible), ou le nom d'un profil personnalisé ci-dessous",
+        bn: "কড়াকড়ির মাত্রা: high (উচ্চ), medium (মাঝারি), low (নিম্ন), অথবা নিচের কোনো কাস্টম প্রোফাইলের নাম",
+        pt: "Nível de rigor: high (alto), medium (médio), low (baixo) ou o nome de um perfil personalizado abaixo",
+        de: "Strenge: high (hoch), medium (mittel), low (niedrig) oder der Name eines eigenen Profils unten",
+        ja: "強制レベル：high（高）、medium（中）、low（低）、または下にあるカスタムプランの名前",
+        it: "Livello di rigore: high (alto), medium (medio), low (basso) o il nome di un profilo personalizzato qui sotto",
+        ko: "강제 수준: high(높음), medium(보통), low(낮음) 또는 아래 사용자 지정 프로필의 이름",
+        id: "Tingkat ketegasan: high (tinggi), medium (sedang), low (rendah), atau nama profil kustom di bawah",
+    };
+
+    pub const PROFILES: Tr = Tr {
+        zh: "自定义方案，每个 [[profiles]] 一个。max_postpones 完整休息前最多推迟几次；urgent_mode 允许缩小遮罩；meeting_detection 检测会议软件；force_rest 为 false 时只弹出可关闭的窗口；allow_skip 强制休息时仍提供“跳过这次休息”；overlay_coverage 遮罩覆盖屏幕的比例 0.1 ~ 1.0；urgent_scale 紧急模式时相对 overlay_coverage 的缩放因子 0.1 ~ 0.9；movable 遮罩未占满屏幕时能否在本屏幕内拖动",
+        en: "Custom profiles, one [[profiles]] each. max_postpones: postpones before a full break; urgent_mode: allow shrinking the overlay; meeting_detection: detect meeting apps; force_rest = false only shows a closable window; allow_skip: still offer \"Skip this break\" when breaks are forced;overlay_coverage: fraction of each screen covered, 0.1 ~ 1.0; urgent_scale: urgent mode scale relative to overlay_coverage, 0.1 ~ 0.9; movable: allow dragging the overlay within its screen when not full screen",
+        hi: "कस्टम योजनाएँ, हर एक के लिए एक [[profiles]]। max_postpones: पूरे ब्रेक से पहले कितनी बार टालें; urgent_mode: ओवरले छोटा करने दें; meeting_detection: मीटिंग ऐप पहचानें; force_rest = false होने पर केवल बंद की जा सकने वाली विंडो दिखती है; allow_skip: ब्रेक अनिवार्य होने पर भी \"यह ब्रेक छोड़ें\" दिखाएँ;overlay_coverage: ओवरले हर स्क्रीन का कितना हिस्सा ढके, 0.1 ~ 1.0; urgent_scale: आपात मोड में overlay_coverage के सापेक्ष स्केल, 0.1 ~ 0.9; movable: पूरी स्क्रीन न होने पर ओवरले को उसकी स्क्रीन के भीतर खींचने दें",
+        es: "Perfiles personalizados, un [[profiles]] cada uno. max_postpones: aplazamientos antes de un descanso completo; urgent_mode: permitir reducir la superposición; meeting_detection: detectar apps de reuniones; force_rest = false solo muestra una ventana que se puede cerrar; allow_skip: ofrecer \"Saltar este descanso\" aunque los descansos sean forzados;overlay_coverage: fracción de cada pantalla cubierta, 0.1 ~ 1.0; urgent_scale: escala del modo urgente respecto a overlay_coverage, 0.1 ~ 0.9; movable: permitir arrastrar la superposición dentro de su pantalla si no la ocupa entera",
+        ar: "الأنماط المخصّصة، لكلٍّ منها [[profiles]]. max_postpones: عدد التأجيلات قبل استراحة كاملة؛ urgent_mode: السماح بتصغير الطبقة؛ meeting_detection: اكتشاف تطبيقات الاجتماعات؛ force_rest = false يعرض نافذة قابلة للإغلاق فقط؛ allow_skip: إظهار \"تخطَّ هذه الاستراحة\" حتى عند فرض الاستراحة؛overlay_coverage: نسبة ما تغطيه الطبقة من كل شاشة، 0.1 ~ 1.0؛ urgent_scale: معامل التصغير في وضع الطوارئ نسبةً إلى overlay_coverage، 0.1 ~ 0.9؛ movable: السماح بسحب الطبقة داخل شاشتها عندما لا تملأ الشاشة",
+        fr: "Profils personnalisés, un [[profiles]] chacun. max_postpones : reports avant une pause complète ; urgent_mode : autoriser la réduction du voile ; meeting_detection : détecter les applis de réunion ; force_rest = false affiche seulement une fenêtre qu'on peut fermer ; allow_skip : proposer « Passer cette pause » même quand les pauses sont imposées ;overlay_coverage : part de chaque écran couverte, 0.1 ~ 1.0 ; urgent_scale : échelle du mode urgence par rapport à overlay_coverage, 0.1 ~ 0.9 ; movable : autoriser le déplacement du voile sur son écran s'il ne le couvre pas entièrement",
+        bn: "কাস্টম প্রোফাইল, প্রতিটির জন্য একটি [[profiles]]। max_postpones: পূর্ণ বিরতির আগে কতবার পেছানো যাবে; urgent_mode: ওভারলে ছোট করার অনুমতি; meeting_detection: মিটিং অ্যাপ শনাক্ত করা; force_rest = false হলে শুধু বন্ধ করা যায় এমন উইন্ডো দেখায়; allow_skip: বিরতি বাধ্যতামূলক হলেও \"এই বিরতি বাদ দিন\" দেখানো;overlay_coverage: ওভারলে প্রতিটি স্ক্রিনের কত অংশ ঢাকবে, 0.1 ~ 1.0; urgent_scale: জরুরি মোডে overlay_coverage-এর তুলনায় স্কেল, 0.1 ~ 0.9; movable: পুরো স্ক্রিন না ঢাকলে ওভারলেটি নিজের স্ক্রিনের মধ্যে টেনে সরানো যাবে",
+        pt: "Perfis personalizados, um [[profiles]] cada. max_postpones: adiamentos antes de uma pausa completa; urgent_mode: permitir reduzir a sobreposição; meeting_detection: detectar apps de reunião; force_rest = false só mostra uma janela que pode ser fechada; allow_skip: oferecer \"Pular esta pausa\" mesmo com pausas forçadas;overlay_coverage: fração de cada tela coberta, 0.1 ~ 1.0; urgent_scale: escala do modo urgente em relação a overlay_coverage, 0.1 ~ 0.9; movable: permitir arrastar a sobreposição dentro da tela quando não a ocupa toda",
+        de: "Eigene Profile, je ein [[profiles]]. max_postpones: Aufschübe vor einer vollständigen Pause; urgent_mode: Verkleinern des Overlays erlauben; meeting_detection: Meeting-Apps erkennen; force_rest = false zeigt nur ein schließbares Fenster; allow_skip: \"Diese Pause überspringen\" auch bei erzwungenen Pausen anbieten;overlay_coverage: Anteil jedes Bildschirms, der abgedeckt wird, 0.1 ~ 1.0; urgent_scale: Skalierung im Notfallmodus relativ zu overlay_coverage, 0.1 ~ 0.9; movable: Overlay innerhalb seines Bildschirms verschieben erlauben, wenn nicht im Vollbild",
+        ja: "カスタムプラン。1 つにつき [[profiles]] を 1 つ。max_postpones は完全に休憩するまでの最大延期回数、urgent_mode はオーバーレイの縮小を許可、meeting_detection は会議アプリを検出、force_rest = false なら閉じられるウィンドウを表示するだけ、allow_skip は休憩を強制していても「今回の休憩をスキップ」を表示、overlay_coverage は各画面を覆う割合 0.1 ~ 1.0、urgent_scale は緊急モード時の overlay_coverage に対する縮小率 0.1 ~ 0.9、movable は全画面でないときに同じ画面内でドラッグ可能にする",
+        it: "Profili personalizzati, un [[profiles]] ciascuno. max_postpones: rinvii prima di una pausa completa; urgent_mode: consenti di ridurre la sovrapposizione; meeting_detection: rileva le app per riunioni; force_rest = false mostra solo una finestra chiudibile; allow_skip: offri \"Salta questa pausa\" anche con pause imposte;overlay_coverage: frazione di ogni schermo coperta, 0.1 ~ 1.0; urgent_scale: scala in modalità urgente rispetto a overlay_coverage, 0.1 ~ 0.9; movable: consenti di trascinare la sovrapposizione nel suo schermo se non a schermo intero",
+        ko: "사용자 지정 프로필, 하나당 [[profiles]] 하나. max_postpones: 완전한 휴식 전 최대 미루기 횟수, urgent_mode: 오버레이 축소 허용, meeting_detection: 회의 앱 감지, force_rest = false면 닫을 수 있는 창만 표시, allow_skip: 휴식을 강제해도 \"이번 휴식 건너뛰기\" 제공,overlay_coverage: 각 화면을 덮는 비율 0.1 ~ 1.0, urgent_scale: 긴급 모드 때 overlay_coverage에 곱하는 축소 비율 0.1 ~ 0.9, movable: 전체 화면이 아닐 때 오버레이를 해당 화면 안에서 드래그 허용",
+        id: "Profil kustom, satu [[profiles]] untuk masing-masing. max_postpones: penundaan sebelum istirahat penuh; urgent_mode: izinkan memperkecil lapisan; meeting_detection: deteksi aplikasi rapat; force_rest = false hanya menampilkan jendela yang bisa ditutup; allow_skip: tetap tampilkan \"Lewati istirahat ini\" saat istirahat dipaksa;overlay_coverage: bagian setiap layar yang ditutupi, 0.1 ~ 1.0; urgent_scale: skala mode darurat relatif terhadap overlay_coverage, 0.1 ~ 0.9; movable: izinkan menyeret lapisan di dalam layarnya saat tidak layar penuh",
     };
 
     /// 用于测试：所有注释
     #[cfg(test)]
-    pub const ALL: [&Tr; 7] = [
+    pub const ALL: [&Tr; 8] = [
         &HEADER,
         &UNITS,
         &WORK,
         &REST,
         &POSTPONE,
-        &MAX_POSTPONES,
-        &COVERAGE,
+        &IDLE,
+        &LEVEL,
+        &PROFILES,
     ];
 }

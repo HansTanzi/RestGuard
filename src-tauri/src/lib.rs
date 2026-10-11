@@ -2,6 +2,7 @@ mod about;
 mod bypass;
 mod config;
 mod i18n;
+mod idle;
 #[cfg(windows)]
 mod msix;
 mod overlay;
@@ -35,8 +36,10 @@ struct AppState {
 }
 
 impl AppState {
-    fn overlay_coverage(&self) -> f64 {
-        self.config.lock().unwrap().overlay_coverage
+    /// 遮罩覆盖屏幕的比例，`urgent` 为紧急模式（遮罩缩小）时的比例。
+    /// 以计时器的方案为准：它与这次休息是按同一份方案开始的
+    fn overlay_coverage(&self, urgent: bool) -> f64 {
+        self.timer.lock().unwrap().profile().coverage(urgent)
     }
 }
 
@@ -139,14 +142,25 @@ fn in_meeting(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::in_meeting)
 }
 
+/// 遮罩上的“跳过这次休息”，强制等级不允许跳过时拒绝
+#[tauri::command]
+fn dismiss_break(app: AppHandle) -> Result<(), String> {
+    end_rest(&app, Timer::skip)
+}
+
 /// 遮罩上的“缩小窗口”按钮：紧急时缩小遮罩处理一下手头的事，但不结束休息。
+/// 当前强制等级不允许紧急模式时拒绝缩小。
 /// 用 async 让它跑在主线程之外，避免在 Windows 上调整窗口时卡住
 #[tauri::command]
-async fn set_overlay_shrunk(app: AppHandle, shrunk: bool) {
-    let coverage = app.state::<AppState>().overlay_coverage();
-    overlay::set_shrunk(&app, coverage, shrunk);
+async fn set_overlay_shrunk(app: AppHandle, shrunk: bool) -> Result<(), String> {
+    if shrunk && !get_state(app.clone()).can_shrink {
+        return Err("当前强制等级不允许紧急模式".into());
+    }
+    let coverage = app.state::<AppState>().overlay_coverage(shrunk);
+    overlay::set_coverage(&app, coverage);
     // 通知所有遮罩（包括副屏）切换可拖动状态
     let _ = app.emit(SHRINK_EVENT, shrunk);
+    Ok(())
 }
 
 /// 仅开发构建可用：遮罩上按 Esc 直接结束休息，方便调试
@@ -226,8 +240,10 @@ fn open_overlays(app: &AppHandle) {
     let app = app.clone();
     // 见 overlay::open_all 的说明：不能在事件回调线程里直接创建窗口
     thread::spawn(move || {
-        let coverage = app.state::<AppState>().overlay_coverage();
-        overlay::open_all(&app, coverage);
+        let state = app.state::<AppState>();
+        // 以计时器为准：它与这次休息是按同一份方案开始的
+        let profile = state.timer.lock().unwrap().profile().clone();
+        overlay::open_all(&app, profile.coverage(false), profile.force_rest, profile.movable);
     });
 }
 
@@ -239,19 +255,25 @@ fn broadcast(app: &AppHandle, snap: &Snapshot) {
 fn spawn_ticker(app: AppHandle) {
     thread::spawn(move || loop {
         thread::sleep(Duration::from_millis(500));
+        // 在加锁前查询：Linux 上需要启动外部进程
+        let idle = idle::idle_time();
         let (event, snap) = {
             let state = app.state::<AppState>();
             let mut timer = state.timer.lock().unwrap();
             let now = Instant::now();
-            // 只在休息到点后才检测前台应用
-            let held = if timer.rest_due(now) {
+            if let Some(idle) = idle {
+                timer.idle(now, idle);
+            }
+            // 只在休息到点后才检测前台应用；强制等级可以关闭会议软件检测
+            let detect = timer.profile().meeting_detection;
+            let held = if detect && timer.rest_due(now) {
                 bypass::active_app()
             } else {
                 None
             };
             timer.hold(held);
             let event = timer.tick(now);
-            if event == Some(TimerEvent::RestStarted) {
+            if detect && event == Some(TimerEvent::RestStarted) {
                 timer.set_meeting_app(bypass::running_app());
             }
             (event, timer.snapshot(now))
@@ -300,9 +322,16 @@ pub fn run() {
                 return;
             }
             match event {
-                // 拦截 Alt+F4 等系统关闭操作，遮罩只能由程序销毁
-                WindowEvent::CloseRequested { api, .. } => api.prevent_close(),
-                // 缩小后可拖动，但不能离开所属屏幕
+                // 拦截 Alt+F4 等系统关闭操作，遮罩只能由程序销毁。
+                // 不强制休息时关掉任一遮罩即跳过这次休息（强制休息时 Timer::dismiss 会拒绝）
+                WindowEvent::CloseRequested { api, .. } => {
+                    api.prevent_close();
+                    let app = window.app_handle().clone();
+                    thread::spawn(move || {
+                        let _ = end_rest(&app, Timer::dismiss);
+                    });
+                }
+                // 强制等级允许时可拖动，但不能离开所属屏幕
                 WindowEvent::Moved(pos) => overlay::keep_on_home(window, *pos),
                 _ => {}
             }
@@ -321,6 +350,7 @@ pub fn run() {
             start_work,
             postpone,
             in_meeting,
+            dismiss_break,
             set_overlay_shrunk,
             dev_skip_rest
         ])

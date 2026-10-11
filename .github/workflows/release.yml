@@ -10,7 +10,7 @@ permissions:
 # 两个阶段：
 # 1. build-*：编译并上传 GitHub Release 文件。文件已存在时跳过：构建不可复现，重编会改变哈希，
 #    导致已更新的各渠道清单校验失败
-# 2. 分发渠道（scoop、homebrew、winget、msix）：各自一个 job，互不依赖，只从 Release 下载文件，
+# 2. 分发渠道（scoop、homebrew、apt、winget、msix）：各自一个 job，互不依赖，只从 Release 下载文件，
 #    各自检查本渠道是否需要更新。只要对应平台的 Release 文件就绪，一个渠道失败不影响其他渠道
 jobs:
   # 校验版本号，确保 Release 存在（让两个 build job 无需相互等待），并检查各平台文件是否已上传
@@ -174,6 +174,15 @@ jobs:
       # x86_64 的 .deb（Debian/Ubuntu）和 .rpm（Fedora/openSUSE），都使用系统的 webkit2gtk
       - run: pnpm tauri build --bundles deb rpm
 
+      # README 和 HansTanzi/apt 里写的是 apt install rest-guard（Tauri 由 productName 生成的包名），变了要同步改文档
+      - name: Check deb package name
+        run: |
+          package=$(dpkg-deb -f "src-tauri/target/release/bundle/deb/RestGuard_${{ needs.prepare.outputs.version }}_amd64.deb" Package)
+          if [ "$package" != "rest-guard" ]; then
+            echo "::error::Package name is $package, expected rest-guard; update the apt install commands in the READMEs"
+            exit 1
+          fi
+
       # Arch 的 .pkg.tar.zst，由 .deb 重新打包
       - run: bash scripts/arch-package.sh "${{ needs.prepare.outputs.version }}"
 
@@ -300,6 +309,24 @@ jobs:
             git pull --rebase
             sleep 5
           done
+
+  # 通知 HansTanzi/apt 重新生成 APT 源：它从各应用的最新 Release 下载 .deb，签名后部署到 GitHub Pages。
+  # 签名密钥只在 apt 仓库中。需要 secret APT_DISPATCH_TOKEN（仅限 HansTanzi/apt、只有 Actions 读写权限的
+  # fine-grained PAT；不要给 Contents 写权限，否则令牌泄露后可改 apps.txt 发布任意包），未配置时跳过。预发布版本跳过
+  apt:
+    needs: [prepare, build-linux]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-linux.result) && !contains(github.ref_name, '-') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger APT repository update
+        env:
+          GH_TOKEN: ${{ secrets.APT_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::notice::APT_DISPATCH_TOKEN is not set"
+            exit 0
+          fi
+          gh workflow run publish.yml -R HansTanzi/apt
 
   # 向 microsoft/winget-pkgs 提交新版本 PR，winget-releaser 自行从 Release 读取安装文件。
   # 需要仓库 secret WINGET_TOKEN（classic PAT，public_repo 权限），预发布版本跳过

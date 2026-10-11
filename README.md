@@ -10,12 +10,54 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 
 ## Features
 
-- Forces a 10-minute break after every 60 minutes of work (configurable)
+### Breaks that actually happen
+
+- Forces a 10-minute break after every 60 minutes of work (both durations adjustable)
 - Multi-monitor: every screen is covered
 - The overlay can't be closed during a break (Alt+F4 does nothing), and you can't quit from the tray
 - Postpone for 5 minutes, up to 3 times; the count resets after a full break
+- Urgent mode: something can't wait? Shrink the overlay for a moment to save your work while the countdown keeps running
+
+### Three built-in profiles for different needs
+
+| | High | Medium (default) | Low |
+|---|:---:|:---:|:---:|
+| Best for | Strict discipline, beating "just five more minutes" | Everyday work | A gentle nudge |
+| Postpones | 0 | 3 | 3 |
+| Urgent mode (shrink overlay) | ✗ | ✓ | ✓ |
+| Meeting-app detection | ✗ | ✓ | ✓ |
+| Close / skip this break | ✗ | ✗ | ✓ |
+| Screen coverage | 100% | 100% | 80% |
+| Draggable overlay | ✗ | ✓ | ✓ |
+
+### Highly customizable
+
+When the built-ins don't fit, choose **New custom…** in Settings to start from any profile, give it a name (rename or delete it later), and tune each option:
+
+- Number of postpones, whether exiting is allowed, whether skipping this break is allowed
+- Whether urgent mode is available, and how small the overlay shrinks
+- How much of each screen the overlay covers (10% ~ 100%), and whether it can be dragged within its screen
+- Whether to detect meeting apps
+
+Keep as many custom profiles as you like and switch any time. Work, break, postpone and idle durations are shared across profiles. If you prefer editing files by hand, [`config.toml`](#configuration) works too.
+
+### Stays out of the way when it matters
+
+- Meeting detection (Windows, macOS): while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (or, on Windows, using the microphone), the break waits until the meeting is over; during a break you can also click "I'm in a meeting" to be reminded in 15 minutes
+- Idle detection: after 5 minutes without keyboard or mouse input you count as away and the work countdown pauses; being away as long as a break counts as a full break, so you aren't sent to rest right after coming back
+
+### Small and fast
+
+- Built with Rust + Tauri 2 on the system WebView, with no bundled browser engine, so it barely uses any resources while running in the background
+- Tiny: downloads are just 2.5 ~ 4.6 MB (Windows 4.6 MB, macOS 4.0 MB, Linux 2.5 MB)
+- Portable: a single exe on Windows, an unzip-and-run `.app` on macOS; delete it to uninstall
+
+### And more
+
+- Cross-platform: Windows, macOS and Linux, installable and updatable through WinGet, Scoop, Homebrew and APT (see [Install](#install))
 - Tray menu: time remaining, rest now, settings, start at login
 - Single instance
+- Free and open source under the permissive MIT / Apache-2.0 dual license (see [License](#license))
 - Available in Simplified Chinese, English, Hindi, Spanish, Arabic, French, Bengali, Portuguese, German, Japanese, Italian, Korean and Indonesian. The UI language follows the system by default (English if the system language isn't supported); switch it any time from the tray menu's "语言 / Language" submenu
 
 ## Install
@@ -51,13 +93,18 @@ RestGuard lives in the menu bar and has no Dock icon. The app isn't notarized by
 
 ### Linux
 
-On x86_64, download from [Releases](https://github.com/HansTanzi/RestGuard/releases/latest). On Debian/Ubuntu, install the `.deb`:
+On Debian/Ubuntu (x86_64), add the [APT repository](https://github.com/HansTanzi/apt), then install and update with `apt`:
 
 ```sh
-sudo apt install ./RestGuard_*_amd64.deb
+sudo install -d /etc/apt/keyrings
+curl -fsSL https://hanstanzi.github.io/apt/hanstanzi.gpg | sudo tee /etc/apt/keyrings/hanstanzi.gpg > /dev/null
+echo "deb [signed-by=/etc/apt/keyrings/hanstanzi.gpg] https://hanstanzi.github.io/apt stable main" | sudo tee /etc/apt/sources.list.d/hanstanzi.list
+sudo apt update && sudo apt install rest-guard
 ```
 
-On Fedora/openSUSE, install the `.rpm`:
+Later versions arrive with `sudo apt update && sudo apt upgrade`. You can also install the `.deb` from [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) directly (`sudo apt install ./RestGuard_*_amd64.deb`), but then it won't update.
+
+For other distros, download from [Releases](https://github.com/HansTanzi/RestGuard/releases/latest). On Fedora/openSUSE, install the `.rpm`:
 
 ```sh
 sudo dnf install ./RestGuard_*_x86_64.rpm      # Fedora
@@ -74,7 +121,7 @@ The overlay needs X11 (see [Platform limitations](#platform-limitations)).
 
 ## Configuration
 
-Open **Settings…** from the tray menu to change durations, postpone limits, overlay coverage, language and start-at-login. Changes apply immediately (settings are locked during a break). Changing the work duration restarts the current work countdown.
+Open **Settings…** from the tray menu to change durations, the enforcement level, overlay coverage, language and start-at-login. Changes apply immediately (settings are locked during a break). Changing the work duration restarts the current work countdown.
 
 Settings are stored in `config.toml`, created on first run. You can also edit it by hand; restart the app afterwards.
 
@@ -88,13 +135,25 @@ Settings are stored in `config.toml`, created on first run. You can also edit it
 work_minutes = 60.0      # how long to work before a forced break
 rest_minutes = 10.0      # how long each break lasts
 postpone_minutes = 5.0   # how long each postpone lasts
-max_postpones = 3        # max postpones before a full break is required
+idle_minutes = 5.0       # no input for this long counts as away, 0 = off
+level = "medium"         # "high", "medium", "low", or the name of a custom profile
+
+[[profiles]]             # a custom profile; add one [[profiles]] per profile
+name = "Focus"
+max_postpones = 1        # max postpones before a full break is required
+urgent_mode = false      # allow shrinking the overlay
+meeting_detection = true # hold breaks while Zoom, Teams etc. are in use
+force_rest = true        # false = the overlay can be closed
+allow_skip = false       # still offer "Skip this break" when breaks are forced
 overlay_coverage = 1.0   # fraction of each screen covered, 0.1 ~ 1.0
+urgent_scale = 0.5       # urgent mode (shrunk overlay) scale relative to the above, 0.1 ~ 0.9
+movable = false          # allow dragging the overlay within its own screen when it isn't full screen
 ```
 
 ## Platform limitations
 
 - **macOS**: system-level actions such as Force Quit (`Cmd+Option+Esc`) can't be blocked
+- **Linux**: idle detection needs GNOME or a desktop implementing `org.freedesktop.ScreenSaver` (e.g. KDE Plasma), plus `gdbus`; otherwise it's off
 - **Linux Wayland**: the protocol doesn't let apps keep themselves on top or position their own windows, so the overlay may not work; X11 is fine
 
 ## Development
@@ -110,7 +169,7 @@ cd src-tauri && cargo test
 
 Dev builds read `config.dev.toml` and `language.dev` (same directory as `config.toml`), so you can use short durations or switch languages without touching the installed app. Press `Esc` on the overlay to end a break immediately. Quit the installed RestGuard first, otherwise the single-instance check makes the dev build exit right away.
 
-To release, run `pnpm release <version>` (e.g. `pnpm release 0.2.0`) on a clean `dev` branch. It bumps the version in `package.json`, `tauri.conf.json`, `Cargo.toml` and `Cargo.lock`, commits, and pushes a `v<version>` tag. GitHub Actions then builds the exe, a universal macOS `.app`, and the Linux `.deb`, `.rpm` and Arch `.pkg.tar.zst` (repackaged from the `.deb` with `src-tauri/arch/PKGBUILD`), creates the Release, and pushes the updated `bucket/restguard.json` to [HansTanzi/scoop-bucket](https://github.com/HansTanzi/scoop-bucket) and `Casks/restguard.rb` to [HansTanzi/homebrew-tap](https://github.com/HansTanzi/homebrew-tap). This needs the repository secrets `SCOOP_BUCKET_DEPLOY_KEY` and `HOMEBREW_TAP_DEPLOY_KEY`: the private halves of deploy keys with write access on those repos. For stable versions it also opens a PR to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) via [winget-releaser](https://github.com/vedantmgoyal9/winget-releaser); this needs a `WINGET_TOKEN` repository secret (a classic PAT with `public_repo` scope) and a fork of `winget-pkgs` under the token owner's account. The very first WinGet version must be submitted by hand, e.g. `komac new HansTanzi.RestGuard --version <version> --urls <exe release URL>` with [Komac](https://github.com/russellbanks/Komac) (pick the `portable` installer type and add `Microsoft.EdgeWebView2Runtime` as a package dependency).
+To release, run `pnpm release <version>` (e.g. `pnpm release 0.2.0`) on a clean `dev` branch. It bumps the version in `package.json`, `tauri.conf.json`, `Cargo.toml` and `Cargo.lock`, commits, and pushes a `v<version>` tag. GitHub Actions then builds the exe, a universal macOS `.app`, and the Linux `.deb`, `.rpm` and Arch `.pkg.tar.zst` (repackaged from the `.deb` with `src-tauri/arch/PKGBUILD`), creates the Release, and pushes the updated `bucket/restguard.json` to [HansTanzi/scoop-bucket](https://github.com/HansTanzi/scoop-bucket) and `Casks/restguard.rb` to [HansTanzi/homebrew-tap](https://github.com/HansTanzi/homebrew-tap). This needs the repository secrets `SCOOP_BUCKET_DEPLOY_KEY` and `HOMEBREW_TAP_DEPLOY_KEY`: the private halves of deploy keys with write access on those repos. For stable versions it also triggers [HansTanzi/apt](https://github.com/HansTanzi/apt) to rebuild the APT repository from the latest releases; this needs an `APT_DISPATCH_TOKEN` repository secret (a fine-grained PAT limited to that repo with only Actions read and write). The signing key and setup are described in that repo. For stable versions it also opens a PR to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) via [winget-releaser](https://github.com/vedantmgoyal9/winget-releaser); this needs a `WINGET_TOKEN` repository secret (a classic PAT with `public_repo` scope) and a fork of `winget-pkgs` under the token owner's account. The very first WinGet version must be submitted by hand, e.g. `komac new HansTanzi.RestGuard --version <version> --urls <exe release URL>` with [Komac](https://github.com/russellbanks/Komac) (pick the `portable` installer type and add `Microsoft.EdgeWebView2Runtime` as a package dependency).
 
 ### Microsoft Store
 

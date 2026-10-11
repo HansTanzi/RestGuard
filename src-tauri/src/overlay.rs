@@ -1,4 +1,4 @@
-//! 休息遮罩：每块显示器一个无边框、置顶、关不掉的窗口。
+//! 休息遮罩：每块显示器一个无边框、置顶的窗口。强制休息时关不掉，否则关掉即跳过这次休息。
 
 use std::{
     collections::HashMap,
@@ -61,16 +61,26 @@ fn size(w: f64, h: f64) -> Size {
     }
 }
 
-/// 每个遮罩所属的显示器。缩小后窗口可拖动，但只能留在这块屏幕上
-static HOMES: LazyLock<Mutex<HashMap<String, Rect>>> = LazyLock::new(Default::default);
+/// 遮罩的布局，窗口移动后据此约束位置
+#[derive(Default)]
+struct Layout {
+    /// 每个遮罩所属的显示器。可拖动时也只能留在这块屏幕上
+    homes: HashMap<String, Rect>,
+    /// 当前覆盖比例，不可拖动时窗口固定在按它居中的位置
+    coverage: f64,
+    movable: bool,
+}
+
+static LAYOUT: LazyLock<Mutex<Layout>> = LazyLock::new(Default::default);
 
 pub fn is_overlay(label: &str) -> bool {
     label.starts_with(PREFIX)
 }
 
-/// 在所有显示器上打开遮罩。
+/// 在所有显示器上打开遮罩。`forced` 为 false 时窗口可以用 Alt+F4 等关掉（关掉即跳过这次休息）；
+/// `movable` 为 false 时窗口固定在屏幕中央，拖动或用快捷键移动都会被拉回。
 /// 在 Windows 上，事件回调或同步 command 里创建窗口会死锁，所以调用方要放在独立线程。
-pub fn open_all(app: &AppHandle, coverage: f64) {
+pub fn open_all(app: &AppHandle, coverage: f64, forced: bool, movable: bool) {
     let monitors = match app.available_monitors() {
         Ok(m) if !m.is_empty() => m,
         Ok(_) => {
@@ -88,6 +98,11 @@ pub fn open_all(app: &AppHandle, coverage: f64) {
         .flatten()
         .map(|m| *m.position())
         .unwrap_or(*monitors[0].position());
+    {
+        let mut layout = LAYOUT.lock().unwrap();
+        layout.coverage = coverage;
+        layout.movable = movable;
+    }
 
     for (i, monitor) in monitors.iter().enumerate() {
         let is_primary = *monitor.position() == primary_pos;
@@ -102,7 +117,7 @@ pub fn open_all(app: &AppHandle, coverage: f64) {
 
         let home = Rect::of_monitor(monitor);
         // 先登记再建窗口，创建过程中触发的 Moved 事件也能被约束
-        HOMES.lock().unwrap().insert(label.clone(), home);
+        LAYOUT.lock().unwrap().homes.insert(label.clone(), home);
 
         let built = WebviewWindowBuilder::new(app, &label, WebviewUrl::App("overlay".into()))
             .title("RestGuard")
@@ -113,7 +128,7 @@ pub fn open_all(app: &AppHandle, coverage: f64) {
             .resizable(false)
             .minimizable(false)
             .maximizable(false)
-            .closable(false)
+            .closable(!forced)
             .visible(false)
             .build();
 
@@ -130,7 +145,7 @@ pub fn open_all(app: &AppHandle, coverage: f64) {
                 }
             }
             Err(e) => {
-                HOMES.lock().unwrap().remove(&label);
+                LAYOUT.lock().unwrap().homes.remove(&label);
                 eprintln!("创建遮罩窗口 {label} 失败：{e}");
             }
         }
@@ -172,14 +187,18 @@ pub fn close_all(app: &AppHandle) {
             let _ = window.destroy();
         }
     }
-    HOMES.lock().unwrap().clear();
+    LAYOUT.lock().unwrap().homes.clear();
 }
 
-/// 紧急模式：把所有遮罩的宽高缩小一半（仍居中置顶），露出四周以便保存文件等；
-/// `shrunk = false` 时恢复原大小并回到屏幕中央
-pub fn set_shrunk(app: &AppHandle, coverage: f64, shrunk: bool) {
-    let coverage = if shrunk { coverage * 0.5 } else { coverage };
-    let homes = HOMES.lock().unwrap().clone();
+/// 把所有遮罩按比例缩放（仍居中置顶）。紧急模式传入较小的比例，露出四周以便保存文件等；
+/// 退出时传回正常比例，恢复原大小并回到屏幕中央
+pub fn set_coverage(app: &AppHandle, coverage: f64) {
+    // 先更新比例再移动窗口，随之触发的 Moved 按新位置约束
+    let homes = {
+        let mut layout = LAYOUT.lock().unwrap();
+        layout.coverage = coverage;
+        layout.homes.clone()
+    };
     for (label, window) in app.webview_windows() {
         if let Some(&home) = homes.get(&label) {
             let area = cover_rect(home, coverage);
@@ -189,22 +208,32 @@ pub fn set_shrunk(app: &AppHandle, coverage: f64, shrunk: bool) {
     }
 }
 
-/// 窗口移动后调用：如果被拖出（或用 Win+Shift+方向键移出）所属屏幕，就拉回屏幕内
+/// 窗口移动后调用：如果被拖出（或用 Win+Shift+方向键移出）所属屏幕，就拉回屏幕内；
+/// 不可拖动时拉回屏幕中央
 pub fn keep_on_home(window: &Window, pos: PhysicalPosition<i32>) {
-    let Some(home) = HOMES.lock().unwrap().get(window.label()).copied() else {
-        return;
+    let (home, coverage, movable) = {
+        let layout = LAYOUT.lock().unwrap();
+        let Some(&home) = layout.homes.get(window.label()) else {
+            return;
+        };
+        (home, layout.coverage, layout.movable)
     };
     let (Ok(win_size), Ok(scale)) = (window.outer_size(), window.scale_factor()) else {
         return;
     };
     let s = unit_scale(scale);
     let (x, y) = (pos.x as f64 / s, pos.y as f64 / s);
-    let (w, h) = (win_size.width as f64 / s, win_size.height as f64 / s);
-    // 窗口比屏幕大时贴住左/上边
-    let clamp = |v: f64, origin: f64, screen: f64, len: f64| {
-        v.clamp(origin, origin + (screen - len).max(0.0))
+    let (fx, fy) = if movable {
+        let (w, h) = (win_size.width as f64 / s, win_size.height as f64 / s);
+        // 窗口比屏幕大时贴住左/上边
+        let clamp = |v: f64, origin: f64, screen: f64, len: f64| {
+            v.clamp(origin, origin + (screen - len).max(0.0))
+        };
+        (clamp(x, home.x, home.w, w), clamp(y, home.y, home.h, h))
+    } else {
+        let area = cover_rect(home, coverage);
+        (area.x, area.y)
     };
-    let (fx, fy) = (clamp(x, home.x, home.w, w), clamp(y, home.y, home.h, h));
     // 忽略取整误差，避免反复触发 Moved
     if (fx - x).abs() >= 0.5 || (fy - y).abs() >= 0.5 {
         let _ = window.set_position(position(fx, fy));

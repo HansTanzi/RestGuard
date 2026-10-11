@@ -1,6 +1,6 @@
 //! 工作/休息的状态机。不依赖 Tauri，所有方法都显式传入当前时间，便于测试。
 
-use crate::config::Config;
+use crate::config::{Config, Profile};
 use serde::Serialize;
 use std::time::{Duration, Instant};
 
@@ -37,13 +37,26 @@ pub struct Snapshot {
     pub held_by: Option<String>,
     /// 休息开始时正在运行的会议软件，此时遮罩提供“我在开会”
     pub meeting_app: Option<String>,
+    /// 强制休息；false 时遮罩可以关掉
+    pub forced: bool,
+    /// 遮罩上提供“跳过这次休息”
+    pub can_skip: bool,
+    /// 遮罩上提供“有急事，缩小一下”
+    pub can_shrink: bool,
+    /// 遮罩没有占满屏幕时可以在本屏幕内拖动
+    pub movable: bool,
+    /// 正常模式下遮罩占满屏幕（此时即使 movable 也拖不动）
+    pub full_screen: bool,
 }
 
 pub struct Timer {
     work: Duration,
     rest: Duration,
     postpone: Duration,
-    max_postpones: u32,
+    /// 当前强制等级的方案
+    profile: Profile,
+    /// 无操作超过这么久算离开，None 表示关闭空闲检测
+    idle_threshold: Option<Duration>,
 
     phase: Phase,
     started: Instant,
@@ -53,6 +66,8 @@ pub struct Timer {
     voluntary: bool,
     held_by: Option<String>,
     meeting_app: Option<String>,
+    /// 用户离开期间冻结的工作剩余时间
+    away_remaining: Option<Duration>,
 }
 
 impl Timer {
@@ -61,7 +76,8 @@ impl Timer {
             work: cfg.work(),
             rest: cfg.rest(),
             postpone: cfg.postpone(),
-            max_postpones: cfg.max_postpones,
+            profile: cfg.profile(),
+            idle_threshold: cfg.idle(),
             phase: Phase::Working,
             started: now,
             deadline: now + cfg.work(),
@@ -69,6 +85,35 @@ impl Timer {
             voluntary: false,
             held_by: None,
             meeting_app: None,
+            away_remaining: None,
+        }
+    }
+
+    /// 告知用户已多久没有操作。需在 tick 之前调用。
+    /// 工作期间离开超过阈值时暂停倒计时（离开的整段时间都不算工作）；
+    /// 离开时间达到一次休息的长度，就当已经完整休息过，回来后重新开始计时
+    pub fn idle(&mut self, now: Instant, idle: Duration) {
+        if self.phase != Phase::Working {
+            return;
+        }
+        let Some(threshold) = self.idle_threshold else {
+            self.away_remaining = None;
+            return;
+        };
+        if idle < threshold {
+            // 回来了，从冻结的剩余时间继续
+            self.away_remaining = None;
+        } else if idle >= self.rest {
+            self.postpones_used = 0;
+            self.begin_work(now, self.work);
+        } else {
+            let remaining = *self.away_remaining.get_or_insert_with(|| {
+                let left_at = now.checked_sub(idle).unwrap_or(self.started);
+                self.deadline.saturating_duration_since(left_at)
+            });
+            let total = self.deadline - self.started;
+            self.deadline = now + remaining;
+            self.started = self.deadline.checked_sub(total).unwrap_or(now);
         }
     }
 
@@ -143,6 +188,26 @@ impl Timer {
         true
     }
 
+    /// 不强制休息时，关掉遮罩即跳过这次休息
+    pub fn dismiss(&mut self, now: Instant) -> bool {
+        if self.phase == Phase::Working || self.profile.force_rest {
+            return false;
+        }
+        self.postpones_used = 0;
+        self.begin_work(now, self.work);
+        true
+    }
+
+    /// 遮罩上点击“跳过这次休息”。强制等级不允许跳过时拒绝
+    pub fn skip(&mut self, now: Instant) -> bool {
+        if self.phase == Phase::Working || !self.profile.can_skip() {
+            return false;
+        }
+        self.postpones_used = 0;
+        self.begin_work(now, self.work);
+        true
+    }
+
     /// 开发调试用：无论休息是否结束，直接回到工作
     pub fn skip_rest(&mut self, now: Instant) -> bool {
         if self.phase == Phase::Working {
@@ -160,7 +225,8 @@ impl Timer {
         self.work = cfg.work();
         self.rest = cfg.rest();
         self.postpone = cfg.postpone();
-        self.max_postpones = cfg.max_postpones;
+        self.profile = cfg.profile();
+        self.idle_threshold = cfg.idle();
         // 推迟次数清零前，postpones_used > 0 说明当前处于推迟后的倒计时
         if self.phase == Phase::Working && self.postpones_used == 0 && work_changed {
             self.begin_work(now, self.work);
@@ -174,17 +240,30 @@ impl Timer {
             remaining_secs: ceil_secs(remaining),
             total_secs: ceil_secs(self.deadline - self.started),
             can_postpone: self.can_postpone(),
-            postpones_left: self.max_postpones.saturating_sub(self.postpones_used),
+            postpones_left: self.profile.max_postpones.saturating_sub(self.postpones_used),
             held_by: self.held_by.clone(),
             meeting_app: self
                 .can_claim_meeting()
                 .then(|| self.meeting_app.clone())
                 .flatten(),
+            forced: self.profile.force_rest,
+            can_skip: self.phase != Phase::Working && self.profile.can_skip(),
+            can_shrink: self.phase != Phase::Working
+                && self.profile.force_rest
+                && self.profile.urgent_mode,
+            movable: self.profile.movable,
+            full_screen: self.profile.overlay_coverage >= 1.0,
         }
     }
 
+    pub fn profile(&self) -> &Profile {
+        &self.profile
+    }
+
     fn can_postpone(&self) -> bool {
-        self.phase == Phase::Resting && !self.voluntary && self.postpones_used < self.max_postpones
+        self.phase == Phase::Resting
+            && !self.voluntary
+            && self.postpones_used < self.profile.max_postpones
     }
 
     fn can_claim_meeting(&self) -> bool {
@@ -196,6 +275,7 @@ impl Timer {
         self.voluntary = voluntary;
         self.held_by = None;
         self.meeting_app = None;
+        self.away_remaining = None;
         self.started = now;
         self.deadline = now + self.rest;
     }
@@ -205,6 +285,7 @@ impl Timer {
         self.voluntary = false;
         self.held_by = None;
         self.meeting_app = None;
+        self.away_remaining = None;
         self.started = now;
         self.deadline = now + length;
     }
@@ -372,16 +453,170 @@ mod tests {
     }
 
     #[test]
-    fn lowering_max_postpones_takes_effect() {
+    fn switching_level_takes_effect() {
         let t0 = Instant::now();
         let mut t = timer(t0);
         let cfg = Config {
-            max_postpones: 0,
+            level: "high".into(),
             ..Config::default()
         };
         t.apply_config(&cfg, t0);
         t.tick(t0 + 60 * MIN);
-        assert!(!t.snapshot(t0 + 60 * MIN).can_postpone);
+        let snap = t.snapshot(t0 + 60 * MIN);
+        assert!(!snap.can_postpone);
+        assert!(!snap.can_shrink);
+        assert!(snap.forced);
+        assert!(!snap.can_skip);
+        assert!(!t.dismiss(t0 + 60 * MIN), "强制休息不能关掉");
+        assert!(!t.skip(t0 + 60 * MIN), "高等级不能跳过");
+    }
+
+    #[test]
+    fn forced_break_can_be_skipped_when_allowed() {
+        let t0 = Instant::now();
+        let cfg = Config {
+            level: "Mine".into(),
+            profiles: vec![Profile {
+                name: "Mine".into(),
+                allow_skip: true,
+                ..Profile::default()
+            }],
+            ..Config::default()
+        };
+        let mut t = Timer::new(&cfg, t0);
+        assert!(!t.skip(t0), "工作中无需跳过");
+        assert!(!t.snapshot(t0).can_skip);
+        let now = t0 + 60 * MIN;
+        assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
+        let snap = t.snapshot(now);
+        assert!(snap.forced);
+        assert!(snap.can_skip);
+        assert!(!t.dismiss(now), "允许跳过也不能直接关掉遮罩");
+        assert!(t.skip(now + MIN));
+        let snap = t.snapshot(now + MIN);
+        assert_eq!(snap.phase, Phase::Working);
+        assert_eq!(snap.remaining_secs, 60 * 60);
+    }
+
+    #[test]
+    fn custom_profile_postpones() {
+        let t0 = Instant::now();
+        let cfg = Config {
+            level: "Mine".into(),
+            profiles: vec![Profile {
+                name: "Mine".into(),
+                max_postpones: 1,
+                ..Profile::default()
+            }],
+            ..Config::default()
+        };
+        let mut t = Timer::new(&cfg, t0);
+        let now = t0 + 60 * MIN;
+        t.tick(now);
+        assert!(t.postpone(now));
+        t.tick(now + 5 * MIN);
+        assert!(!t.snapshot(now + 5 * MIN).can_postpone);
+    }
+
+    #[test]
+    fn unforced_break_can_be_dismissed() {
+        let t0 = Instant::now();
+        let cfg = Config {
+            level: "low".into(),
+            ..Config::default()
+        };
+        let mut t = Timer::new(&cfg, t0);
+        assert!(!t.dismiss(t0), "工作中没有可关的弹窗");
+        let now = t0 + 60 * MIN;
+        assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
+        let snap = t.snapshot(now);
+        assert!(!snap.forced);
+        assert!(snap.can_skip);
+        assert!(!snap.can_shrink);
+        assert!(t.dismiss(now + MIN));
+        let snap = t.snapshot(now + MIN);
+        assert_eq!(snap.phase, Phase::Working);
+        assert_eq!(snap.remaining_secs, 60 * 60);
+    }
+
+    #[test]
+    fn short_absence_pauses_countdown() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        // 工作 20 分钟后离开，6 分钟后才越过 5 分钟阈值：离开的 6 分钟都不算
+        let left = t0 + 20 * MIN;
+        let mut now = left + 6 * MIN;
+        t.idle(now, now - left);
+        assert_eq!(t.snapshot(now).remaining_secs, 40 * 60);
+        assert_eq!(t.snapshot(now).total_secs, 60 * 60);
+
+        now += 2 * MIN;
+        t.idle(now, now - left);
+        assert_eq!(t.tick(now), None);
+        assert_eq!(t.snapshot(now).remaining_secs, 40 * 60);
+
+        // 回来后从 40 分钟继续倒计时
+        t.idle(now, Duration::ZERO);
+        now += 40 * MIN;
+        t.idle(now, Duration::ZERO);
+        assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
+    }
+
+    #[test]
+    fn brief_inactivity_still_counts_as_work() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        let now = t0 + 30 * MIN;
+        t.idle(now, 4 * MIN);
+        assert_eq!(t.snapshot(now).remaining_secs, 30 * 60);
+    }
+
+    #[test]
+    fn long_absence_counts_as_full_rest() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        let mut now = t0 + 60 * MIN;
+        assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
+        assert!(t.postpone(now));
+
+        // 推迟期间离开了 10 分钟（一次休息的长度）：回来后完整计时，推迟次数清零
+        let left = now + MIN;
+        now = left + 10 * MIN;
+        t.idle(now, now - left);
+        assert_eq!(t.tick(now), None);
+        let snap = t.snapshot(now);
+        assert_eq!(snap.remaining_secs, 60 * 60);
+        assert_eq!(snap.postpones_left, 3);
+
+        now += 30 * MIN;
+        t.idle(now, now - left);
+        t.idle(now, Duration::ZERO);
+        assert_eq!(t.snapshot(now).remaining_secs, 60 * 60);
+    }
+
+    #[test]
+    fn idle_does_not_affect_rest() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        assert!(t.rest_now(t0));
+        t.idle(t0 + 9 * MIN, 9 * MIN);
+        assert_eq!(t.snapshot(t0 + 9 * MIN).phase, Phase::Resting);
+        assert_eq!(t.tick(t0 + 10 * MIN), Some(TimerEvent::RestFinished));
+        t.idle(t0 + 30 * MIN, 30 * MIN);
+        assert_eq!(t.snapshot(t0 + 30 * MIN).phase, Phase::RestOver);
+    }
+
+    #[test]
+    fn idle_detection_can_be_disabled() {
+        let t0 = Instant::now();
+        let cfg = Config {
+            idle_minutes: 0.0,
+            ..Config::default()
+        };
+        let mut t = Timer::new(&cfg, t0);
+        let now = t0 + 60 * MIN;
+        t.idle(now, 30 * MIN);
+        assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
     }
 
     #[test]

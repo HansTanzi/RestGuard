@@ -106,6 +106,7 @@ meeting_detection = true # hold breaks while Zoom, Teams etc. are in use
 force_rest = true        # false = the overlay can be closed
 overlay_coverage = 1.0   # fraction of each screen covered, 0.1 ~ 1.0
 urgent_scale = 0.5       # urgent mode (shrunk overlay) scale relative to the above, 0.1 ~ 0.9
+movable = false          # allow dragging the overlay within its own screen when it isn't full screen
 ```
 
 ## Platform limitations

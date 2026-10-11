@@ -245,6 +245,7 @@ export interface SettingsStrings {
   urgentMode: string;
   meetingDetection: string;
   forceRest: string;
+  movable: string;
   builtinHint: string;
 }
 
@@ -281,6 +282,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     urgentMode: "允许紧急模式（缩小遮罩）",
     meetingDetection: "检测会议软件（Zoom、Teams 等）",
     forceRest: "强制休息（不提供关闭功能）",
+    movable: "允许在本屏幕内拖动遮罩（未占满屏幕时）",
     builtinHint: "内置等级不能修改；新建方案即可在当前等级的基础上自定义",
   },
   en: {
@@ -315,6 +317,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     urgentMode: "Allow urgent mode (shrink the overlay)",
     meetingDetection: "Detect meeting apps (Zoom, Teams, etc.)",
     forceRest: "Force breaks (can't be closed)",
+    movable: "Allow dragging the overlay within its screen (when not full screen)",
     builtinHint: "Built-in levels can't be edited. Create a new profile to customize the current one.",
   },
   hi: {
@@ -349,6 +352,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     urgentMode: "आपात मोड की अनुमति दें (ओवरले छोटा करें)",
     meetingDetection: "मीटिंग ऐप पहचानें (Zoom, Teams आदि)",
     forceRest: "ब्रेक अनिवार्य करें (बंद नहीं किया जा सकता)",
+    movable: "ओवरले को उसकी स्क्रीन के भीतर खींचने दें (पूरी स्क्रीन न होने पर)",
     builtinHint: "बिल्ट-इन स्तर बदले नहीं जा सकते। मौजूदा स्तर को अनुकूलित करने के लिए नई योजना बनाएँ।",
   },
   es: {
@@ -383,6 +387,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     urgentMode: "Permitir modo urgente (reducir la superposición)",
     meetingDetection: "Detectar apps de reuniones (Zoom, Teams, etc.)",
     forceRest: "Forzar descansos (no se pueden cerrar)",
+    movable: "Permitir arrastrar la superposición dentro de su pantalla (si no ocupa toda la pantalla)",
     builtinHint: "Los niveles integrados no se pueden editar. Crea un perfil nuevo para personalizar el actual.",
   },
   ar: {
@@ -417,6 +422,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     urgentMode: "السماح بوضع الطوارئ (تصغير الطبقة)",
     meetingDetection: "اكتشاف تطبيقات الاجتماعات (Zoom وTeams وغيرها)",
     forceRest: "فرض الاستراحة (لا يمكن إغلاقها)",
+    movable: "السماح بسحب الطبقة داخل شاشتها (عندما لا تملأ الشاشة)",
     builtinHint: "لا يمكن تعديل المستويات المدمجة. أنشئ نمطًا جديدًا لتخصيص المستوى الحالي.",
   },
   fr: {
@@ -451,6 +457,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     urgentMode: "Autoriser le mode urgence (réduire le voile)",
     meetingDetection: "Détecter les applis de réunion (Zoom, Teams, etc.)",
     forceRest: "Imposer les pauses (impossible de les fermer)",
+    movable: "Autoriser le déplacement du voile sur son écran (s'il ne couvre pas tout l'écran)",
     builtinHint: "Les niveaux intégrés ne sont pas modifiables. Créez un nouveau profil pour personnaliser le niveau actuel.",
   },
   bn: {
@@ -485,6 +492,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     urgentMode: "জরুরি মোডের অনুমতি দিন (ওভারলে ছোট করা)",
     meetingDetection: "মিটিং অ্যাপ শনাক্ত করুন (Zoom, Teams ইত্যাদি)",
     forceRest: "বিরতি বাধ্যতামূলক করুন (বন্ধ করা যাবে না)",
+    movable: "ওভারলেটি নিজের স্ক্রিনের মধ্যে টেনে সরানোর অনুমতি (পুরো স্ক্রিন না ঢাকলে)",
     builtinHint: "বিল্ট-ইন মাত্রা বদলানো যায় না। বর্তমান মাত্রা কাস্টমাইজ করতে নতুন প্রোফাইল তৈরি করুন।",
   },
   pt: {
@@ -519,6 +527,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     urgentMode: "Permitir modo urgente (reduzir a sobreposição)",
     meetingDetection: "Detectar apps de reunião (Zoom, Teams etc.)",
     forceRest: "Forçar pausas (não podem ser fechadas)",
+    movable: "Permitir arrastar a sobreposição dentro da tela (quando não ocupa a tela toda)",
     builtinHint: "Os níveis integrados não podem ser editados. Crie um novo perfil para personalizar o atual.",
   },
   de: {
@@ -553,6 +562,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     urgentMode: "Notfallmodus erlauben (Overlay verkleinern)",
     meetingDetection: "Meeting-Apps erkennen (Zoom, Teams usw.)",
     forceRest: "Pausen erzwingen (nicht schließbar)",
+    movable: "Overlay innerhalb seines Bildschirms verschieben erlauben (wenn nicht im Vollbild)",
     builtinHint: "Integrierte Stufen können nicht bearbeitet werden. Lege ein neues Profil an, um die aktuelle Stufe anzupassen.",
   },
   ja: {
@@ -587,6 +597,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     urgentMode: "緊急モードを許可（オーバーレイを縮小）",
     meetingDetection: "会議アプリを検出（Zoom、Teams など）",
     forceRest: "休憩を強制（閉じることはできません）",
+    movable: "オーバーレイを同じ画面内でドラッグ可能にする（全画面でないとき）",
     builtinHint: "内蔵レベルは変更できません。新しいプランを作成すると、現在のレベルをもとにカスタマイズできます。",
   },
   it: {
@@ -621,6 +632,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     urgentMode: "Consenti modalità urgente (riduci la sovrapposizione)",
     meetingDetection: "Rileva app per riunioni (Zoom, Teams, ecc.)",
     forceRest: "Imponi le pause (non si possono chiudere)",
+    movable: "Consenti di trascinare la sovrapposizione nel suo schermo (se non a schermo intero)",
     builtinHint: "I livelli integrati non sono modificabili. Crea un nuovo profilo per personalizzare quello attuale.",
   },
   ko: {
@@ -655,6 +667,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     urgentMode: "긴급 모드 허용(오버레이 축소)",
     meetingDetection: "회의 앱 감지(Zoom, Teams 등)",
     forceRest: "휴식 강제(닫을 수 없음)",
+    movable: "오버레이를 해당 화면 안에서 드래그 허용(전체 화면이 아닐 때)",
     builtinHint: "기본 제공 수준은 수정할 수 없습니다. 새 프로필을 만들어 현재 수준을 바탕으로 사용자 지정하세요.",
   },
   id: {
@@ -689,6 +702,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     urgentMode: "Izinkan mode darurat (perkecil lapisan)",
     meetingDetection: "Deteksi aplikasi rapat (Zoom, Teams, dll.)",
     forceRest: "Paksa istirahat (tidak bisa ditutup)",
+    movable: "Izinkan menyeret lapisan di dalam layarnya (saat tidak layar penuh)",
     builtinHint: "Tingkat bawaan tidak bisa diubah. Buat profil baru untuk menyesuaikan tingkat saat ini.",
   },
 };

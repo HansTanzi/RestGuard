@@ -106,6 +106,7 @@ meeting_detection = true # Zoom、Teams 等会议软件使用中时暂缓休息
 force_rest = true        # false 表示遮罩可以关掉
 overlay_coverage = 1.0   # 遮罩覆盖屏幕的比例 0.1 ~ 1.0
 urgent_scale = 0.5       # 紧急模式（缩小遮罩）时相对上面比例的缩放因子 0.1 ~ 0.9
+movable = false          # 遮罩未占满屏幕时允许在本屏幕内拖动（不能拖到其他屏幕）
 ```
 
 ## 平台限制

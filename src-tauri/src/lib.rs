@@ -242,8 +242,8 @@ fn open_overlays(app: &AppHandle) {
     thread::spawn(move || {
         let state = app.state::<AppState>();
         // 以计时器为准：它与这次休息是按同一份方案开始的
-        let forced = state.timer.lock().unwrap().profile().force_rest;
-        overlay::open_all(&app, state.overlay_coverage(false), forced);
+        let profile = state.timer.lock().unwrap().profile().clone();
+        overlay::open_all(&app, profile.coverage(false), profile.force_rest, profile.movable);
     });
 }
 
@@ -331,7 +331,7 @@ pub fn run() {
                         let _ = end_rest(&app, Timer::dismiss);
                     });
                 }
-                // 缩小后可拖动，但不能离开所属屏幕
+                // 强制等级允许时可拖动，但不能离开所属屏幕
                 WindowEvent::Moved(pos) => overlay::keep_on_home(window, *pos),
                 _ => {}
             }

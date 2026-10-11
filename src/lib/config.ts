@@ -15,6 +15,8 @@ export interface Profile {
   overlay_coverage: number;
   // 紧急模式（遮罩缩小后）相对正常模式的缩放因子，小于 1 保证比正常模式小
   urgent_scale: number;
+  // 遮罩没有占满屏幕时（缩小后或覆盖比例小于 1）能否在本屏幕内拖动
+  movable: boolean;
 }
 
 export const BUILTIN_LEVELS = ["high", "medium", "low"] as const;
@@ -30,6 +32,7 @@ export const BUILTIN_PROFILES: Record<BuiltinLevel, Profile> = {
     force_rest: true,
     overlay_coverage: 1,
     urgent_scale: 0.5,
+    movable: false,
   },
   medium: {
     name: "",
@@ -39,6 +42,7 @@ export const BUILTIN_PROFILES: Record<BuiltinLevel, Profile> = {
     force_rest: true,
     overlay_coverage: 1,
     urgent_scale: 0.5,
+    movable: true,
   },
   low: {
     name: "",
@@ -48,6 +52,7 @@ export const BUILTIN_PROFILES: Record<BuiltinLevel, Profile> = {
     force_rest: false,
     overlay_coverage: 0.8,
     urgent_scale: 0.5,
+    movable: true,
   },
 };
 

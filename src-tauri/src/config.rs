@@ -23,15 +23,17 @@ pub struct Profile {
     pub overlay_coverage: f64,
     /// 紧急模式下（遮罩缩小后）相对 overlay_coverage 的缩放因子，小于 1 保证比正常模式小
     pub urgent_scale: f64,
+    /// 遮罩没有占满屏幕时（缩小后或覆盖比例小于 1）能否拖动。无论如何都不能拖到别的屏幕
+    pub movable: bool,
 }
 
 impl Profile {
     /// 内置等级 high、medium、low 的方案，与 src/lib/config.ts 的 BUILTIN_PROFILES 一致
     pub fn builtin(level: &str) -> Option<Self> {
-        let (max_postpones, urgent_mode, meeting_detection, force_rest, overlay_coverage) = match level {
-            "high" => (0, false, false, true, 1.0),
-            "medium" => (3, true, true, true, 1.0),
-            "low" => (3, true, true, false, 0.8),
+        let (max_postpones, urgent_mode, meeting_detection, force_rest, overlay_coverage, movable) = match level {
+            "high" => (0, false, false, true, 1.0, false),
+            "medium" => (3, true, true, true, 1.0, true),
+            "low" => (3, true, true, false, 0.8, true),
             _ => return None,
         };
         Some(Self {
@@ -42,6 +44,7 @@ impl Profile {
             force_rest,
             overlay_coverage,
             urgent_scale: 0.5,
+            movable,
         })
     }
 
@@ -154,7 +157,7 @@ impl Config {
             text += &format!(
                 "\n[[profiles]]\nname = {}\nmax_postpones = {}\nurgent_mode = {}\n\
                  meeting_detection = {}\nforce_rest = {}\n\
-                 overlay_coverage = {:?}\nurgent_scale = {:?}\n",
+                 overlay_coverage = {:?}\nurgent_scale = {:?}\nmovable = {}\n",
                 quote(&p.name),
                 p.max_postpones,
                 p.urgent_mode,
@@ -162,6 +165,7 @@ impl Config {
                 p.force_rest,
                 p.overlay_coverage,
                 p.urgent_scale,
+                p.movable,
             );
         }
         text
@@ -256,6 +260,7 @@ mod tests {
                     force_rest: false,
                     overlay_coverage: 0.8,
                     urgent_scale: 0.3,
+                    movable: false,
                 },
                 Profile {
                     name: "Focus".into(),

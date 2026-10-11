@@ -316,6 +316,15 @@
               <output>{Math.round(profile.urgent_scale * 100)}%</output>
             </span>
           </label>
+          <label class="check">
+            <input
+              type="checkbox"
+              disabled={customIndex < 0}
+              checked={profile.movable}
+              onchange={(e) => edit({ movable: e.currentTarget.checked })}
+            />
+            <span>{s.movable}</span>
+          </label>
           {#if customIndex < 0}
             <p class="hint">{s.builtinHint}</p>
           {/if}

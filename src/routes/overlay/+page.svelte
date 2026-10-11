@@ -29,6 +29,8 @@
   // 遮罩窗口在休息结束时销毁，下次打开自然恢复原大小
   let shrunk = $state(false);
 
+  // 强制等级允许拖动、且遮罩没有占满屏幕时才能拖
+  const movable = $derived(!!snap?.movable && (shrunk || !snap.fullScreen));
   const resting = $derived(snap?.phase === "resting");
   const restOver = $derived(snap?.phase === "restOver");
   const progress = $derived(
@@ -54,9 +56,9 @@
     invoke("set_overlay_shrunk", { shrunk: !shrunk }).catch(console.error);
   }
 
-  // 缩小后按住空白处可拖动窗口，后端会把它限制在本屏幕内
+  // 可拖动时按住空白处拖动窗口，后端会把它限制在本屏幕内
   function onMouseDown(e: MouseEvent) {
-    if (!shrunk || e.button !== 0) return;
+    if (!movable || e.button !== 0) return;
     if ((e.target as Element).closest("button, select")) return;
     win.startDragging().catch(console.error);
   }
@@ -93,7 +95,7 @@
 </script>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<main class:movable={shrunk} onmousedown={onMouseDown} in:fade={{ duration: 600 }}>
+<main class:movable onmousedown={onMouseDown} in:fade={{ duration: 600 }}>
   {#if snap && s}
     <!-- 强制等级可以关闭紧急模式；不强制休息时可以直接跳过，不需要缩小 -->
     {#if snap.canShrink || shrunk}

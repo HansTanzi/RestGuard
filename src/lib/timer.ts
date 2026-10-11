@@ -15,6 +15,10 @@ export interface Snapshot {
   forced: boolean;
   /** 遮罩上提供“有急事，缩小一下” */
   canShrink: boolean;
+  /** 遮罩没有占满屏幕时可以在本屏幕内拖动 */
+  movable: boolean;
+  /** 正常模式下遮罩占满屏幕（此时即使 movable 也拖不动） */
+  fullScreen: boolean;
 }
 
 export const STATE_EVENT = "timer:state";

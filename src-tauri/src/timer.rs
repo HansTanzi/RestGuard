@@ -41,6 +41,10 @@ pub struct Snapshot {
     pub forced: bool,
     /// 遮罩上提供“有急事，缩小一下”
     pub can_shrink: bool,
+    /// 遮罩没有占满屏幕时可以在本屏幕内拖动
+    pub movable: bool,
+    /// 正常模式下遮罩占满屏幕（此时即使 movable 也拖不动）
+    pub full_screen: bool,
 }
 
 pub struct Timer {
@@ -234,6 +238,8 @@ impl Timer {
             can_shrink: self.phase != Phase::Working
                 && self.profile.force_rest
                 && self.profile.urgent_mode,
+            movable: self.profile.movable,
+            full_screen: self.profile.overlay_coverage >= 1.0,
         }
     }
 

@@ -199,10 +199,9 @@ pub fn close_all(app: &AppHandle) {
     HOMES.lock().unwrap().clear();
 }
 
-/// 紧急模式：把所有遮罩的宽高缩小一半（仍居中置顶），露出四周以便保存文件等；
-/// `shrunk = false` 时恢复原大小并回到屏幕中央
-pub fn set_shrunk(app: &AppHandle, coverage: f64, shrunk: bool) {
-    let coverage = if shrunk { coverage * 0.5 } else { coverage };
+/// 把所有遮罩按比例缩放（仍居中置顶）。紧急模式传入较小的比例，露出四周以便保存文件等；
+/// 退出时传回正常比例，恢复原大小并回到屏幕中央
+pub fn set_coverage(app: &AppHandle, coverage: f64) {
     let homes = HOMES.lock().unwrap().clone();
     for (label, window) in app.webview_windows() {
         if let Some(&home) = homes.get(&label) {

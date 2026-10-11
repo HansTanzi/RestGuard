@@ -309,7 +309,7 @@
         <section>
           <h2>{s.overlay}</h2>
           <label>
-            <span>{s.coverage}</span>
+            <span>{s.coverageNormal}</span>
             <span class="range">
               <input
                 type="range"
@@ -319,6 +319,19 @@
                 bind:value={draft.overlay_coverage}
               />
               <output>{Math.round(draft.overlay_coverage * 100)}%</output>
+            </span>
+          </label>
+          <label>
+            <span>{s.urgentScale}</span>
+            <span class="range">
+              <input
+                type="range"
+                min="0.1"
+                max="0.9"
+                step="0.05"
+                bind:value={draft.urgent_scale}
+              />
+              <output>{Math.round(draft.urgent_scale * 100)}%</output>
             </span>
           </label>
         </section>

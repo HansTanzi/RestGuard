@@ -354,6 +354,22 @@ pub mod config {
         id: "Bagian setiap layar yang ditutupi lapisan, 0.1 ~ 1.0",
     };
 
+    pub const URGENT_SCALE: Tr = Tr {
+        zh: "紧急模式（缩小遮罩）时相对上面比例的缩放因子，0.1 ~ 0.9",
+        en: "Urgent mode (shrunk overlay) scale relative to the coverage above, 0.1 ~ 0.9",
+        hi: "आपात मोड (छोटा ओवरले) में ऊपर वाले अनुपात के सापेक्ष स्केल, 0.1 ~ 0.9",
+        es: "Escala del modo urgente (superposición reducida) respecto a la cobertura de arriba, 0.1 ~ 0.9",
+        ar: "معامل التصغير في وضع الطوارئ نسبةً إلى التغطية أعلاه، 0.1 ~ 0.9",
+        fr: "Échelle du mode urgence (voile réduit) par rapport à la couverture ci-dessus, 0.1 ~ 0.9",
+        bn: "জরুরি মোডে (ছোট ওভারলে) উপরের অনুপাতের তুলনায় স্কেল, 0.1 ~ 0.9",
+        pt: "Escala do modo urgente (sobreposição reduzida) em relação à cobertura acima, 0.1 ~ 0.9",
+        de: "Skalierung im Notfallmodus (verkleinertes Overlay) relativ zur Abdeckung oben, 0.1 ~ 0.9",
+        ja: "緊急モード（オーバーレイ縮小時）の、上の割合に対する縮小率、0.1 ~ 0.9",
+        it: "Scala in modalità urgente (sovrapposizione ridotta) rispetto alla copertura sopra, 0.1 ~ 0.9",
+        ko: "긴급 모드(오버레이 축소) 때 위 비율에 곱하는 축소 비율, 0.1 ~ 0.9",
+        id: "Skala mode darurat (lapisan diperkecil) relatif terhadap cakupan di atas, 0.1 ~ 0.9",
+    };
+
     pub const IDLE: Tr = Tr {
         zh: "无操作超过多久算离开电脑，离开期间不计工作时间；离开满一次休息时长就当已休息。0 表示关闭",
         en: "Inactivity after which you count as away; away time isn't work, and being away for a full break counts as one. 0 = off",
@@ -404,13 +420,14 @@ pub mod config {
 
     /// 用于测试：所有注释
     #[cfg(test)]
-    pub const ALL: [&Tr; 9] = [
+    pub const ALL: [&Tr; 10] = [
         &HEADER,
         &UNITS,
         &WORK,
         &REST,
         &POSTPONE,
         &COVERAGE,
+        &URGENT_SCALE,
         &IDLE,
         &LEVEL,
         &PROFILES,

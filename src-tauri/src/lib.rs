@@ -36,8 +36,14 @@ struct AppState {
 }
 
 impl AppState {
-    fn overlay_coverage(&self) -> f64 {
-        self.config.lock().unwrap().overlay_coverage
+    /// 遮罩覆盖屏幕的比例，`urgent` 为紧急模式（遮罩缩小）时的比例
+    fn overlay_coverage(&self, urgent: bool) -> f64 {
+        let config = self.config.lock().unwrap();
+        if urgent {
+            config.urgent_coverage()
+        } else {
+            config.overlay_coverage
+        }
     }
 }
 
@@ -154,8 +160,8 @@ async fn set_overlay_shrunk(app: AppHandle, shrunk: bool) -> Result<(), String> 
     if shrunk && !get_state(app.clone()).can_shrink {
         return Err("当前强制等级不允许紧急模式".into());
     }
-    let coverage = app.state::<AppState>().overlay_coverage();
-    overlay::set_shrunk(&app, coverage, shrunk);
+    let coverage = app.state::<AppState>().overlay_coverage(shrunk);
+    overlay::set_coverage(&app, coverage);
     // 通知所有遮罩（包括副屏）切换可拖动状态
     let _ = app.emit(SHRINK_EVENT, shrunk);
     Ok(())
@@ -242,7 +248,7 @@ fn open_overlays(app: &AppHandle) {
         // 以计时器为准：它与这次休息是按同一份方案开始的
         let forced = state.timer.lock().unwrap().profile().force_rest;
         if forced {
-            overlay::open_all(&app, state.overlay_coverage());
+            overlay::open_all(&app, state.overlay_coverage(false));
         } else {
             overlay::open_popup(&app);
         }

@@ -33,6 +33,8 @@ export interface Config {
   rest_minutes: number;
   postpone_minutes: number;
   overlay_coverage: number;
+  // 紧急模式（遮罩缩小后）相对正常模式的缩放因子，小于 1 保证比正常模式小
+  urgent_scale: number;
   idle_minutes: number;
   // 内置等级，或某个自定义方案的名字
   level: string;
@@ -44,6 +46,7 @@ export const DEFAULT_CONFIG: Config = {
   rest_minutes: 10,
   postpone_minutes: 5,
   overlay_coverage: 1,
+  urgent_scale: 0.5,
   idle_minutes: 5,
   level: "medium",
   profiles: [],

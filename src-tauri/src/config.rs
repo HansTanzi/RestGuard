@@ -53,7 +53,10 @@ pub struct Config {
     pub work_minutes: f64,
     pub rest_minutes: f64,
     pub postpone_minutes: f64,
+    /// 遮罩覆盖屏幕的比例（正常模式）
     pub overlay_coverage: f64,
+    /// 紧急模式下（遮罩缩小后）相对 overlay_coverage 的缩放因子，小于 1 保证比正常模式小
+    pub urgent_scale: f64,
     /// 无操作超过这么久算离开电脑，0 表示关闭空闲检测
     pub idle_minutes: f64,
     /// 当前强制等级：内置等级（见 Profile::builtin），或某个自定义方案的名字
@@ -69,6 +72,7 @@ impl Default for Config {
             rest_minutes: 10.0,
             postpone_minutes: 5.0,
             overlay_coverage: 1.0,
+            urgent_scale: 0.5,
             idle_minutes: 5.0,
             level: DEFAULT_LEVEL.to_string(),
             profiles: Vec::new(),
@@ -120,6 +124,7 @@ impl Config {
              # {}\nrest_minutes = {:?}\n\n\
              # {}\npostpone_minutes = {:?}\n\n\
              # {}\noverlay_coverage = {:?}\n\n\
+             # {}\nurgent_scale = {:?}\n\n\
              # {}\nidle_minutes = {:?}\n\n\
              # {}\nlevel = {}\n\n\
              # {}\n",
@@ -133,6 +138,8 @@ impl Config {
             self.postpone_minutes,
             c(&comment::COVERAGE),
             self.overlay_coverage,
+            c(&comment::URGENT_SCALE),
+            self.urgent_scale,
             c(&comment::IDLE),
             self.idle_minutes,
             c(&comment::LEVEL),
@@ -175,15 +182,13 @@ impl Config {
         } else {
             d.level
         };
+        let ratio = |v: f64, max: f64, fallback: f64| if v.is_finite() { v.clamp(0.1, max) } else { fallback };
         Self {
             work_minutes: positive(self.work_minutes, d.work_minutes),
             rest_minutes: positive(self.rest_minutes, d.rest_minutes),
             postpone_minutes: positive(self.postpone_minutes, d.postpone_minutes),
-            overlay_coverage: if self.overlay_coverage.is_finite() {
-                self.overlay_coverage.clamp(0.1, 1.0)
-            } else {
-                d.overlay_coverage
-            },
+            overlay_coverage: ratio(self.overlay_coverage, 1.0, d.overlay_coverage),
+            urgent_scale: ratio(self.urgent_scale, 0.9, d.urgent_scale),
             idle_minutes: if self.idle_minutes.is_finite() && self.idle_minutes >= 0.0 {
                 self.idle_minutes
             } else {
@@ -192,6 +197,11 @@ impl Config {
             level,
             profiles,
         }
+    }
+
+    /// 紧急模式下遮罩覆盖屏幕的实际比例
+    pub fn urgent_coverage(&self) -> f64 {
+        self.overlay_coverage * self.urgent_scale
     }
 
     /// 当前强制等级对应的方案
@@ -234,6 +244,7 @@ mod tests {
             rest_minutes: 0.5,
             postpone_minutes: 2.5,
             overlay_coverage: 0.8,
+            urgent_scale: 0.3,
             idle_minutes: 0.0,
             level: "我的 \"方案\"".into(),
             profiles: vec![
@@ -276,10 +287,11 @@ mod tests {
 
     #[test]
     fn invalid_values_are_sanitized() {
-        let cfg: Config = toml::from_str("work_minutes = 0.0\noverlay_coverage = 3.0").unwrap();
+        let cfg: Config = toml::from_str("work_minutes = 0.0\noverlay_coverage = 3.0\nurgent_scale = 1.0").unwrap();
         let cfg = cfg.sanitized();
         assert_eq!(cfg.work_minutes, 60.0);
         assert_eq!(cfg.overlay_coverage, 1.0);
+        assert_eq!(cfg.urgent_scale, 0.9);
     }
 
     #[test]

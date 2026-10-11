@@ -14,6 +14,7 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 - Multi-monitor: every screen is covered
 - The overlay can't be closed during a break (Alt+F4 does nothing), and you can't quit from the tray
 - Postpone for 5 minutes, up to 3 times; the count resets after a full break
+- Enforcement levels: **High** (no postpones, no urgent shrink, no meeting-app detection), **Medium** (default, as described here) and **Low** (no forced break, just a popup you can close); you can also create your own named profiles
 - Idle detection: after 5 minutes without keyboard or mouse input you count as away and the work countdown pauses; being away as long as a break counts as a full break, so you aren't sent to rest right after coming back
 - Tray menu: time remaining, rest now, settings, start at login
 - Single instance
@@ -80,7 +81,7 @@ The overlay needs X11 (see [Platform limitations](#platform-limitations)).
 
 ## Configuration
 
-Open **Settings…** from the tray menu to change durations, postpone limits, overlay coverage, language and start-at-login. Changes apply immediately (settings are locked during a break). Changing the work duration restarts the current work countdown.
+Open **Settings…** from the tray menu to change durations, the enforcement level, overlay coverage, language and start-at-login. Changes apply immediately (settings are locked during a break). Changing the work duration restarts the current work countdown.
 
 Settings are stored in `config.toml`, created on first run. You can also edit it by hand; restart the app afterwards.
 
@@ -94,9 +95,16 @@ Settings are stored in `config.toml`, created on first run. You can also edit it
 work_minutes = 60.0      # how long to work before a forced break
 rest_minutes = 10.0      # how long each break lasts
 postpone_minutes = 5.0   # how long each postpone lasts
-max_postpones = 3        # max postpones before a full break is required
 overlay_coverage = 1.0   # fraction of each screen covered, 0.1 ~ 1.0
 idle_minutes = 5.0       # no input for this long counts as away, 0 = off
+level = "medium"         # "high", "medium", "low", or the name of a custom profile
+
+[[profiles]]             # a custom profile; add one [[profiles]] per profile
+name = "Focus"
+max_postpones = 1        # max postpones before a full break is required
+urgent_mode = false      # allow shrinking the overlay
+meeting_detection = true # hold breaks while Zoom, Teams etc. are in use
+force_rest = true        # false = only a closable popup
 ```
 
 ## Platform limitations

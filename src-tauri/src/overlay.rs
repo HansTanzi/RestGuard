@@ -1,4 +1,5 @@
 //! 休息遮罩：每块显示器一个无边框、置顶、关不掉的窗口。
+//! 不强制休息的等级只在主屏幕弹出一个普通的、可以关掉的窗口（open_popup）。
 
 use std::{
     collections::HashMap,
@@ -12,6 +13,8 @@ use tauri::{
 const PREFIX: &str = "overlay-";
 /// 主屏幕上的遮罩，打开时获得焦点
 pub const PRIMARY_LABEL: &str = "overlay-primary";
+/// 不强制休息时的弹窗，关掉即跳过这次休息
+pub const POPUP_LABEL: &str = "overlay-popup";
 
 /// 显示器区域，单位与系统窗口坐标一致（见 unit_scale）
 #[derive(Clone, Copy)]
@@ -134,6 +137,27 @@ pub fn open_all(app: &AppHandle, coverage: f64) {
                 eprintln!("创建遮罩窗口 {label} 失败：{e}");
             }
         }
+    }
+}
+
+/// 不强制休息时：在主屏幕中央弹出一个置顶、带标题栏、可以关掉的窗口，页面与遮罩相同。
+/// 与 open_all 一样，调用方要放在独立线程
+pub fn open_popup(app: &AppHandle) {
+    if app.get_webview_window(POPUP_LABEL).is_some() {
+        return;
+    }
+    let built = WebviewWindowBuilder::new(app, POPUP_LABEL, WebviewUrl::App("overlay".into()))
+        .title("RestGuard")
+        .inner_size(460.0, 660.0)
+        .center()
+        .always_on_top(true)
+        .resizable(false)
+        .minimizable(false)
+        .maximizable(false)
+        .focused(true)
+        .build();
+    if let Err(e) = built {
+        eprintln!("创建休息弹窗失败：{e}");
     }
 }
 

@@ -80,7 +80,7 @@
     };
   });
 
-  async function run(command: "start_work" | "postpone" | "in_meeting") {
+  async function run(command: "start_work" | "postpone" | "in_meeting" | "dismiss_break") {
     busy = true;
     try {
       await invoke(command);
@@ -95,9 +95,12 @@
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <main class:movable={shrunk} onmousedown={onMouseDown} in:fade={{ duration: 600 }}>
   {#if snap && s}
-    <button class="ghost shrink" onclick={toggleShrink}>
-      {shrunk ? s.unshrink : s.shrink}
-    </button>
+    <!-- 强制等级可以关闭紧急模式；不强制休息时的弹窗本来就不遮挡屏幕 -->
+    {#if snap.canShrink || shrunk}
+      <button class="ghost shrink" onclick={toggleShrink}>
+        {shrunk ? s.unshrink : s.shrink}
+      </button>
+    {/if}
     <!-- 语言名称始终用其本身的文字显示 -->
     <select class="ghost lang" aria-label="Language" value={lang} onchange={changeLang}>
       {#each UI_LANGS as id (id)}
@@ -138,6 +141,11 @@
       {#if resting && snap.meetingApp}
         <button class="ghost" disabled={busy} onclick={() => run("in_meeting")}>
           {s.inMeeting(snap.meetingApp)}
+        </button>
+      {/if}
+      {#if resting && !snap.forced}
+        <button class="ghost" disabled={busy} onclick={() => run("dismiss_break")}>
+          {s.skipBreak}
         </button>
       {/if}
     </div>

@@ -1,22 +1,52 @@
 import type { UiLang } from "./i18n";
 
+// 强制等级的配置方案，与 src-tauri/src/config.rs 中的 Profile 保持一致
+export interface Profile {
+  // 自定义方案的名字，Config.level 用它引用方案；内置方案为空
+  name: string;
+  max_postpones: number;
+  // 遮罩上提供“有急事，缩小一下”
+  urgent_mode: boolean;
+  // 会议软件在使用时暂缓休息，休息时提供“我在开会”
+  meeting_detection: boolean;
+  // false 时只弹出可以关掉的窗口
+  force_rest: boolean;
+}
+
+export const BUILTIN_LEVELS = ["high", "medium", "low"] as const;
+export type BuiltinLevel = (typeof BUILTIN_LEVELS)[number];
+
+// 与 src-tauri/src/config.rs 的 Profile::builtin 一致
+export const BUILTIN_PROFILES: Record<BuiltinLevel, Profile> = {
+  high: { name: "", max_postpones: 0, urgent_mode: false, meeting_detection: false, force_rest: true },
+  medium: { name: "", max_postpones: 3, urgent_mode: true, meeting_detection: true, force_rest: true },
+  low: { name: "", max_postpones: 3, urgent_mode: true, meeting_detection: true, force_rest: false },
+};
+
+export function isBuiltinLevel(level: string): level is BuiltinLevel {
+  return (BUILTIN_LEVELS as readonly string[]).includes(level);
+}
+
 // 与 src-tauri/src/config.rs 中的 Config 保持一致（字段名与配置文件相同，用 snake_case）
 export interface Config {
   work_minutes: number;
   rest_minutes: number;
   postpone_minutes: number;
-  max_postpones: number;
   overlay_coverage: number;
   idle_minutes: number;
+  // 内置等级，或某个自定义方案的名字
+  level: string;
+  profiles: Profile[];
 }
 
 export const DEFAULT_CONFIG: Config = {
   work_minutes: 60,
   rest_minutes: 10,
   postpone_minutes: 5,
-  max_postpones: 3,
   overlay_coverage: 1,
   idle_minutes: 5,
+  level: "medium",
+  profiles: [],
 };
 
 // 与 src-tauri/src/i18n.rs 的 Lang::id 一致

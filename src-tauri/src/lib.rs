@@ -140,14 +140,25 @@ fn in_meeting(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::in_meeting)
 }
 
+/// 不强制休息时弹窗上的“跳过这次休息”
+#[tauri::command]
+fn dismiss_break(app: AppHandle) -> Result<(), String> {
+    end_rest(&app, Timer::dismiss)
+}
+
 /// 遮罩上的“缩小窗口”按钮：紧急时缩小遮罩处理一下手头的事，但不结束休息。
+/// 当前强制等级不允许紧急模式时拒绝缩小。
 /// 用 async 让它跑在主线程之外，避免在 Windows 上调整窗口时卡住
 #[tauri::command]
-async fn set_overlay_shrunk(app: AppHandle, shrunk: bool) {
+async fn set_overlay_shrunk(app: AppHandle, shrunk: bool) -> Result<(), String> {
+    if shrunk && !get_state(app.clone()).can_shrink {
+        return Err("当前强制等级不允许紧急模式".into());
+    }
     let coverage = app.state::<AppState>().overlay_coverage();
     overlay::set_shrunk(&app, coverage, shrunk);
     // 通知所有遮罩（包括副屏）切换可拖动状态
     let _ = app.emit(SHRINK_EVENT, shrunk);
+    Ok(())
 }
 
 /// 仅开发构建可用：遮罩上按 Esc 直接结束休息，方便调试
@@ -227,8 +238,14 @@ fn open_overlays(app: &AppHandle) {
     let app = app.clone();
     // 见 overlay::open_all 的说明：不能在事件回调线程里直接创建窗口
     thread::spawn(move || {
-        let coverage = app.state::<AppState>().overlay_coverage();
-        overlay::open_all(&app, coverage);
+        let state = app.state::<AppState>();
+        // 以计时器为准：它与这次休息是按同一份方案开始的
+        let forced = state.timer.lock().unwrap().profile().force_rest;
+        if forced {
+            overlay::open_all(&app, state.overlay_coverage());
+        } else {
+            overlay::open_popup(&app);
+        }
     });
 }
 
@@ -249,15 +266,16 @@ fn spawn_ticker(app: AppHandle) {
             if let Some(idle) = idle {
                 timer.idle(now, idle);
             }
-            // 只在休息到点后才检测前台应用
-            let held = if timer.rest_due(now) {
+            // 只在休息到点后才检测前台应用；强制等级可以关闭会议软件检测
+            let detect = timer.profile().meeting_detection;
+            let held = if detect && timer.rest_due(now) {
                 bypass::active_app()
             } else {
                 None
             };
             timer.hold(held);
             let event = timer.tick(now);
-            if event == Some(TimerEvent::RestStarted) {
+            if detect && event == Some(TimerEvent::RestStarted) {
                 timer.set_meeting_app(bypass::running_app());
             }
             (event, timer.snapshot(now))
@@ -306,8 +324,17 @@ pub fn run() {
                 return;
             }
             match event {
-                // 拦截 Alt+F4 等系统关闭操作，遮罩只能由程序销毁
-                WindowEvent::CloseRequested { api, .. } => api.prevent_close(),
+                // 拦截 Alt+F4 等系统关闭操作，遮罩只能由程序销毁。
+                // 不强制休息时的弹窗可以关掉，关掉即跳过这次休息
+                WindowEvent::CloseRequested { api, .. } => {
+                    api.prevent_close();
+                    if window.label() == overlay::POPUP_LABEL {
+                        let app = window.app_handle().clone();
+                        thread::spawn(move || {
+                            let _ = end_rest(&app, Timer::dismiss);
+                        });
+                    }
+                }
                 // 缩小后可拖动，但不能离开所属屏幕
                 WindowEvent::Moved(pos) => overlay::keep_on_home(window, *pos),
                 _ => {}
@@ -327,6 +354,7 @@ pub fn run() {
             start_work,
             postpone,
             in_meeting,
+            dismiss_break,
             set_overlay_shrunk,
             dev_skip_rest
         ])

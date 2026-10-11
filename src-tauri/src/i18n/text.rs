@@ -337,21 +337,6 @@ pub mod config {
         id: "Lama setiap penundaan",
     };
 
-    pub const MAX_POSTPONES: Tr = Tr {
-        zh: "完整休息一次之前，最多推迟几次",
-        en: "Max postpones before a full break is required",
-        hi: "पूरा ब्रेक लेने से पहले अधिकतम कितनी बार टाल सकते हैं",
-        es: "Máximo de aplazamientos antes de exigir un descanso completo",
-        ar: "أقصى عدد من التأجيلات قبل فرض استراحة كاملة",
-        fr: "Nombre maximal de reports avant une pause complète obligatoire",
-        bn: "পূর্ণ বিরতির আগে সর্বোচ্চ কতবার পেছানো যাবে",
-        pt: "Máximo de adiamentos antes de exigir uma pausa completa",
-        de: "Maximale Anzahl an Aufschüben vor einer vollständigen Pause",
-        ja: "完全に休憩するまでに延期できる最大回数",
-        it: "Numero massimo di rinvii prima di una pausa completa",
-        ko: "완전한 휴식 전까지 미룰 수 있는 최대 횟수",
-        id: "Jumlah penundaan maksimum sebelum istirahat penuh diwajibkan",
-    };
 
     pub const COVERAGE: Tr = Tr {
         zh: "遮罩覆盖每块屏幕的比例，0.1 ~ 1.0",
@@ -385,16 +370,49 @@ pub mod config {
         id: "Lama tanpa aktivitas hingga Anda dianggap pergi; waktu pergi tidak dihitung kerja, dan pergi selama satu istirahat penuh dihitung istirahat. 0 = mati",
     };
 
+    pub const LEVEL: Tr = Tr {
+        zh: "强制等级：high（高）、medium（中）、low（低），或下面某个自定义方案的名字",
+        en: "Enforcement level: high, medium, low, or the name of a custom profile below",
+        hi: "सख़्ती का स्तर: high (उच्च), medium (मध्यम), low (निम्न), या नीचे दी गई किसी कस्टम योजना का नाम",
+        es: "Nivel de rigor: high (alto), medium (medio), low (bajo) o el nombre de un perfil personalizado de abajo",
+        ar: "مستوى الإلزام: high (مرتفع) أو medium (متوسط) أو low (منخفض)، أو اسم أحد الأنماط المخصّصة أدناه",
+        fr: "Niveau de contrainte : high (élevé), medium (moyen), low (faible), ou le nom d'un profil personnalisé ci-dessous",
+        bn: "কড়াকড়ির মাত্রা: high (উচ্চ), medium (মাঝারি), low (নিম্ন), অথবা নিচের কোনো কাস্টম প্রোফাইলের নাম",
+        pt: "Nível de rigor: high (alto), medium (médio), low (baixo) ou o nome de um perfil personalizado abaixo",
+        de: "Strenge: high (hoch), medium (mittel), low (niedrig) oder der Name eines eigenen Profils unten",
+        ja: "強制レベル：high（高）、medium（中）、low（低）、または下にあるカスタムプランの名前",
+        it: "Livello di rigore: high (alto), medium (medio), low (basso) o il nome di un profilo personalizzato qui sotto",
+        ko: "강제 수준: high(높음), medium(보통), low(낮음) 또는 아래 사용자 지정 프로필의 이름",
+        id: "Tingkat ketegasan: high (tinggi), medium (sedang), low (rendah), atau nama profil kustom di bawah",
+    };
+
+    pub const PROFILES: Tr = Tr {
+        zh: "自定义方案，每个 [[profiles]] 一个。max_postpones 完整休息前最多推迟几次；urgent_mode 允许缩小遮罩；meeting_detection 检测会议软件；force_rest 为 false 时只弹出可关闭的窗口",
+        en: "Custom profiles, one [[profiles]] each. max_postpones: postpones before a full break; urgent_mode: allow shrinking the overlay; meeting_detection: detect meeting apps; force_rest = false only shows a closable window",
+        hi: "कस्टम योजनाएँ, हर एक के लिए एक [[profiles]]। max_postpones: पूरे ब्रेक से पहले कितनी बार टालें; urgent_mode: ओवरले छोटा करने दें; meeting_detection: मीटिंग ऐप पहचानें; force_rest = false होने पर केवल बंद की जा सकने वाली विंडो दिखती है",
+        es: "Perfiles personalizados, un [[profiles]] cada uno. max_postpones: aplazamientos antes de un descanso completo; urgent_mode: permitir reducir la superposición; meeting_detection: detectar apps de reuniones; force_rest = false solo muestra una ventana que se puede cerrar",
+        ar: "الأنماط المخصّصة، لكلٍّ منها [[profiles]]. max_postpones: عدد التأجيلات قبل استراحة كاملة؛ urgent_mode: السماح بتصغير الطبقة؛ meeting_detection: اكتشاف تطبيقات الاجتماعات؛ force_rest = false يعرض نافذة قابلة للإغلاق فقط",
+        fr: "Profils personnalisés, un [[profiles]] chacun. max_postpones : reports avant une pause complète ; urgent_mode : autoriser la réduction du voile ; meeting_detection : détecter les applis de réunion ; force_rest = false affiche seulement une fenêtre qu'on peut fermer",
+        bn: "কাস্টম প্রোফাইল, প্রতিটির জন্য একটি [[profiles]]। max_postpones: পূর্ণ বিরতির আগে কতবার পেছানো যাবে; urgent_mode: ওভারলে ছোট করার অনুমতি; meeting_detection: মিটিং অ্যাপ শনাক্ত করা; force_rest = false হলে শুধু বন্ধ করা যায় এমন উইন্ডো দেখায়",
+        pt: "Perfis personalizados, um [[profiles]] cada. max_postpones: adiamentos antes de uma pausa completa; urgent_mode: permitir reduzir a sobreposição; meeting_detection: detectar apps de reunião; force_rest = false só mostra uma janela que pode ser fechada",
+        de: "Eigene Profile, je ein [[profiles]]. max_postpones: Aufschübe vor einer vollständigen Pause; urgent_mode: Verkleinern des Overlays erlauben; meeting_detection: Meeting-Apps erkennen; force_rest = false zeigt nur ein schließbares Fenster",
+        ja: "カスタムプラン。1 つにつき [[profiles]] を 1 つ。max_postpones は完全に休憩するまでの最大延期回数、urgent_mode はオーバーレイの縮小を許可、meeting_detection は会議アプリを検出、force_rest = false なら閉じられるウィンドウを表示するだけ",
+        it: "Profili personalizzati, un [[profiles]] ciascuno. max_postpones: rinvii prima di una pausa completa; urgent_mode: consenti di ridurre la sovrapposizione; meeting_detection: rileva le app per riunioni; force_rest = false mostra solo una finestra chiudibile",
+        ko: "사용자 지정 프로필, 하나당 [[profiles]] 하나. max_postpones: 완전한 휴식 전 최대 미루기 횟수, urgent_mode: 오버레이 축소 허용, meeting_detection: 회의 앱 감지, force_rest = false면 닫을 수 있는 창만 표시",
+        id: "Profil kustom, satu [[profiles]] untuk masing-masing. max_postpones: penundaan sebelum istirahat penuh; urgent_mode: izinkan memperkecil lapisan; meeting_detection: deteksi aplikasi rapat; force_rest = false hanya menampilkan jendela yang bisa ditutup",
+    };
+
     /// 用于测试：所有注释
     #[cfg(test)]
-    pub const ALL: [&Tr; 8] = [
+    pub const ALL: [&Tr; 9] = [
         &HEADER,
         &UNITS,
         &WORK,
         &REST,
         &POSTPONE,
-        &MAX_POSTPONES,
         &COVERAGE,
         &IDLE,
+        &LEVEL,
+        &PROFILES,
     ];
 }

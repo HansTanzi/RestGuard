@@ -13,7 +13,16 @@
     type SettingsStrings,
     type UiLang,
   } from "$lib/i18n";
-  import { AUTOSTART_EVENT, DEFAULT_CONFIG, type Config, type LangId } from "$lib/config";
+  import {
+    AUTOSTART_EVENT,
+    BUILTIN_LEVELS,
+    BUILTIN_PROFILES,
+    DEFAULT_CONFIG,
+    isBuiltinLevel,
+    type Config,
+    type LangId,
+    type Profile,
+  } from "$lib/config";
 
   let s = $state<SettingsStrings | null>(null);
   let lang = $state<LangId>("auto");
@@ -22,26 +31,89 @@
 
   // saved 是后端当前生效的配置，draft 是表单里正在编辑的值
   let saved = $state<Config | null>(null);
-  let draft = $state<Config>({ ...DEFAULT_CONFIG });
+  let draft = $state<Config>(structuredClone(DEFAULT_CONFIG));
+  // 选中的强制等级：内置等级 id，或 "custom:<下标>"。
+  // 自定义方案按下标而不是名字选中，改名的过程中不会跳到别的方案
+  let selected = $state<string>(DEFAULT_CONFIG.level);
   let saving = $state(false);
   let message = $state<{ text: string; error: boolean } | null>(null);
   let messageTimer: ReturnType<typeof setTimeout> | undefined;
 
   const locked = $derived(phase !== "working");
+  const customIndex = $derived(selected.startsWith("custom:") ? Number(selected.slice(7)) : -1);
+  const profile = $derived<Profile>(
+    customIndex >= 0
+      ? draft.profiles[customIndex]
+      : BUILTIN_PROFILES[isBuiltinLevel(selected) ? selected : "medium"],
+  );
+  // 要保存的配置：level 换成选中方案的名字
+  const output = $derived<Config>({
+    ...draft,
+    level: customIndex >= 0 ? draft.profiles[customIndex].name.trim() : selected,
+  });
+
   // bind:value 在输入框清空时给出 null
   const positive = (v: number | null) => typeof v === "number" && Number.isFinite(v) && v > 0;
+  const count = (v: number | null) => Number.isInteger(v) && v! >= 0;
+  // 名字用来引用方案，不能为空、与内置等级重名或彼此重复（与 config.rs 的 sanitized 一致）
+  const badName = (i: number) => {
+    const name = draft.profiles[i].name.trim();
+    return (
+      !name ||
+      isBuiltinLevel(name) ||
+      draft.profiles.some((p, j) => j !== i && p.name.trim() === name)
+    );
+  };
   const errors = $derived({
     work_minutes: !positive(draft.work_minutes),
     rest_minutes: !positive(draft.rest_minutes),
     postpone_minutes: !positive(draft.postpone_minutes),
-    max_postpones: !(Number.isInteger(draft.max_postpones) && draft.max_postpones >= 0),
     idle_minutes: !(positive(draft.idle_minutes) || draft.idle_minutes === 0),
+    profile_name: customIndex >= 0 && badName(customIndex),
+    max_postpones: !count(profile.max_postpones),
   });
-  const valid = $derived(!Object.values(errors).some(Boolean));
-  const dirty = $derived(
-    saved !== null &&
-      (Object.keys(saved) as (keyof Config)[]).some((k) => saved![k] !== draft[k]),
+  // 切到别的方案后，之前编辑过的方案也要有效
+  const valid = $derived(
+    !Object.values(errors).some(Boolean) &&
+      draft.profiles.every((p, i) => !badName(i) && count(p.max_postpones)),
   );
+  // 字段顺序都来自后端返回值（新方案也按同样的顺序构造），可以直接比较 JSON
+  const dirty = $derived(saved !== null && JSON.stringify(saved) !== JSON.stringify(output));
+
+  function load(config: Config) {
+    saved = config;
+    draft = structuredClone(config);
+    const i = config.profiles.findIndex((p) => p.name === config.level);
+    selected = i >= 0 ? `custom:${i}` : config.level;
+  }
+
+  // 只有自定义方案可以修改
+  function edit(patch: Partial<Profile>) {
+    if (customIndex >= 0) Object.assign(draft.profiles[customIndex], patch);
+  }
+
+  // 以当前选中的方案为模板新建
+  function addProfile() {
+    if (!s) return;
+    const names = new Set(draft.profiles.map((p) => p.name.trim()));
+    let n = draft.profiles.length + 1;
+    while (names.has(s.defaultProfileName(n))) n++;
+    const { max_postpones, urgent_mode, meeting_detection, force_rest } = profile;
+    draft.profiles.push({
+      name: s.defaultProfileName(n),
+      max_postpones,
+      urgent_mode,
+      meeting_detection,
+      force_rest,
+    });
+    selected = `custom:${draft.profiles.length - 1}`;
+  }
+
+  function deleteProfile() {
+    if (customIndex < 0) return;
+    draft.profiles.splice(customIndex, 1);
+    selected = DEFAULT_CONFIG.level;
+  }
 
   function applyLang(v: UiLang) {
     s = settingsStrings(v);
@@ -60,10 +132,9 @@
     if (!valid) return flash(s.invalid, true);
     saving = true;
     try {
-      const result = await invoke<Config>("save_config", { config: $state.snapshot(draft) });
+      const result = await invoke<Config>("save_config", { config: $state.snapshot(output) });
       // 后端可能修正了越界的值，以返回值为准
-      saved = result;
-      draft = { ...result };
+      load(result);
       flash(s.saved);
     } catch (e) {
       flash(String(e), true);
@@ -84,10 +155,7 @@
 
   onMount(() => {
     invoke<UiLang>("ui_lang").then(applyLang);
-    invoke<Config>("get_config").then((v) => {
-      saved = v;
-      draft = { ...v };
-    });
+    invoke<Config>("get_config").then(load);
     invoke<boolean>("get_autostart").then((v) => (autostart = v));
     invoke<Snapshot>("get_state").then((v) => (phase = v.phase));
     const unlistens = [
@@ -146,16 +214,6 @@
             />
           </label>
           <label>
-            <span>{s.maxPostpones}</span>
-            <input
-              type="number"
-              min="0"
-              step="1"
-              class:invalid={errors.max_postpones}
-              bind:value={draft.max_postpones}
-            />
-          </label>
-          <label>
             <span>{s.idleMinutes}</span>
             <input
               type="number"
@@ -170,6 +228,82 @@
           {#if saved && draft.work_minutes !== saved.work_minutes}
             <p class="hint accent">{s.workRestartHint}</p>
           {/if}
+        </section>
+
+        <!-- 内置等级只读展示，自定义方案可以修改 -->
+        <section>
+          <h2>{s.enforcement}</h2>
+          <label>
+            <span>{s.level}</span>
+            <select bind:value={selected}>
+              {#each BUILTIN_LEVELS as id (id)}
+                <option value={id}>{s.levels[id]}</option>
+              {/each}
+              {#each draft.profiles as p, i (i)}
+                <option value={`custom:${i}`}>{p.name.trim() || "…"}</option>
+              {/each}
+            </select>
+          </label>
+          {#if customIndex >= 0}
+            <label>
+              <span>{s.profileName}</span>
+              <input
+                type="text"
+                class:invalid={errors.profile_name}
+                bind:value={draft.profiles[customIndex].name}
+              />
+            </label>
+          {/if}
+          <label>
+            <span>{s.maxPostpones}</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              class:invalid={errors.max_postpones}
+              disabled={customIndex < 0}
+              value={profile.max_postpones}
+              oninput={(e) => edit({ max_postpones: e.currentTarget.valueAsNumber })}
+            />
+          </label>
+          <label class="check">
+            <input
+              type="checkbox"
+              disabled={customIndex < 0}
+              checked={profile.force_rest}
+              onchange={(e) => edit({ force_rest: e.currentTarget.checked })}
+            />
+            <span>{s.forceRest}</span>
+          </label>
+          <label class="check">
+            <input
+              type="checkbox"
+              disabled={customIndex < 0 || !profile.force_rest}
+              checked={profile.urgent_mode}
+              onchange={(e) => edit({ urgent_mode: e.currentTarget.checked })}
+            />
+            <span>{s.urgentMode}</span>
+          </label>
+          <label class="check">
+            <input
+              type="checkbox"
+              disabled={customIndex < 0}
+              checked={profile.meeting_detection}
+              onchange={(e) => edit({ meeting_detection: e.currentTarget.checked })}
+            />
+            <span>{s.meetingDetection}</span>
+          </label>
+          {#if customIndex < 0}
+            <p class="hint">{s.builtinHint}</p>
+          {/if}
+          <div class="actions profile-actions">
+            {#if customIndex >= 0}
+              <button type="button" class="ghost" onclick={deleteProfile}>
+                {s.deleteProfile}
+              </button>
+            {/if}
+            <button type="button" class="ghost" onclick={addProfile}>{s.newProfile}</button>
+          </div>
         </section>
 
         <section>
@@ -193,7 +327,11 @@
           <button
             type="button"
             class="ghost"
-            onclick={() => (draft = { ...DEFAULT_CONFIG })}
+            onclick={() => {
+              // 自定义方案是用户自己建的，恢复默认值时保留
+              draft = { ...structuredClone(DEFAULT_CONFIG), profiles: $state.snapshot(draft.profiles) };
+              selected = DEFAULT_CONFIG.level;
+            }}
           >
             {s.resetDefaults}
           </button>
@@ -308,6 +446,7 @@
   }
 
   input[type="number"],
+  input[type="text"],
   select {
     width: 7.5rem;
     box-sizing: border-box;
@@ -320,6 +459,7 @@
   }
 
   input[type="number"]:focus,
+  input[type="text"]:focus,
   select:focus {
     outline: 2px solid var(--accent);
     outline-offset: -1px;
@@ -370,6 +510,14 @@
     display: flex;
     justify-content: flex-end;
     gap: 0.75rem;
+  }
+
+  .profile-actions {
+    margin-top: 0.75rem;
+  }
+
+  input:disabled {
+    opacity: 0.6;
   }
 
   button {

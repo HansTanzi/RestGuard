@@ -1,5 +1,7 @@
 // 界面语言由后端决定（src-tauri/src/i18n.rs），与托盘保持一致
 
+import type { BuiltinLevel } from "./config";
+
 // 托盘或页面切换语言时广播，载荷为实际显示的语言（UiLang）
 export const LANG_EVENT = "lang:changed";
 
@@ -56,6 +58,8 @@ export interface Strings {
   inMeeting: (app: string) => string;
   shrink: string;
   unshrink: string;
+  // 不强制休息时的弹窗
+  skipBreak: string;
 }
 
 const overlay: Record<UiLang, Strings> = {
@@ -68,6 +72,7 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `我在开 ${app} 会议，15 分钟后再提醒`,
     shrink: "有急事，缩小一下",
     unshrink: "恢复大小",
+    skipBreak: "跳过这次休息",
   },
   en: {
     title: "Time for a break!",
@@ -78,6 +83,7 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `I'm in a ${app} meeting, remind me in 15 min`,
     shrink: "Urgent? Shrink",
     unshrink: "Restore size",
+    skipBreak: "Skip this break",
   },
   hi: {
     title: "ब्रेक का समय!",
@@ -88,6 +94,7 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `मैं ${app} मीटिंग में हूँ, 15 मिनट बाद याद दिलाएँ`,
     shrink: "ज़रूरी काम? छोटा करें",
     unshrink: "पूरा आकार",
+    skipBreak: "यह ब्रेक छोड़ें",
   },
   es: {
     title: "¡Hora de descansar!",
@@ -98,6 +105,7 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `Estoy en una reunión de ${app}, recuérdamelo en 15 min`,
     shrink: "¿Urgente? Reducir",
     unshrink: "Restaurar tamaño",
+    skipBreak: "Saltar este descanso",
   },
   ar: {
     title: "حان وقت الاستراحة!",
@@ -108,6 +116,7 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `أنا في اجتماع على ${app}، ذكّرني بعد 15 دقيقة`,
     shrink: "أمر عاجل؟ تصغير",
     unshrink: "استعادة الحجم",
+    skipBreak: "تخطَّ هذه الاستراحة",
   },
   fr: {
     title: "C'est l'heure de la pause !",
@@ -118,6 +127,7 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `Je suis en réunion ${app}, rappel dans 15 min`,
     shrink: "Urgent ? Réduire",
     unshrink: "Taille normale",
+    skipBreak: "Passer cette pause",
   },
   bn: {
     title: "বিরতির সময় হয়েছে!",
@@ -128,6 +138,7 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `আমি ${app} মিটিংয়ে আছি, 15 মিনিট পরে মনে করিয়ে দিন`,
     shrink: "জরুরি? ছোট করুন",
     unshrink: "আগের আকারে ফেরান",
+    skipBreak: "এই বিরতি বাদ দিন",
   },
   pt: {
     title: "Hora da pausa!",
@@ -138,6 +149,7 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `Estou em uma reunião do ${app}, lembre-me em 15 min`,
     shrink: "Urgente? Reduzir",
     unshrink: "Restaurar tamanho",
+    skipBreak: "Pular esta pausa",
   },
   de: {
     title: "Zeit für eine Pause!",
@@ -148,6 +160,7 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `Ich bin in einem ${app}-Meeting, in 15 Min. erinnern`,
     shrink: "Dringend? Verkleinern",
     unshrink: "Originalgröße",
+    skipBreak: "Diese Pause überspringen",
   },
   ja: {
     title: "休憩の時間です！",
@@ -158,6 +171,7 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `${app} で会議中です。15 分後に通知`,
     shrink: "急用？縮小する",
     unshrink: "元のサイズに戻す",
+    skipBreak: "今回の休憩をスキップ",
   },
   it: {
     title: "È ora di una pausa!",
@@ -168,6 +182,7 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `Sono in una riunione ${app}, ricordamelo tra 15 min`,
     shrink: "Urgente? Riduci",
     unshrink: "Ripristina dimensioni",
+    skipBreak: "Salta questa pausa",
   },
   ko: {
     title: "휴식 시간입니다!",
@@ -178,6 +193,7 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `${app} 회의 중이에요. 15분 후에 다시 알림`,
     shrink: "급한 일? 축소",
     unshrink: "원래 크기로",
+    skipBreak: "이번 휴식 건너뛰기",
   },
   id: {
     title: "Waktunya istirahat!",
@@ -188,6 +204,7 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `Saya sedang rapat ${app}, ingatkan 15 menit lagi`,
     shrink: "Mendesak? Perkecil",
     unshrink: "Kembalikan ukuran",
+    skipBreak: "Lewati istirahat ini",
   },
 };
 
@@ -218,6 +235,17 @@ export interface SettingsStrings {
   resetDefaults: string;
   invalid: string;
   lockedDuringBreak: string;
+  enforcement: string;
+  level: string;
+  levels: Record<BuiltinLevel, string>;
+  profileName: string;
+  newProfile: string;
+  deleteProfile: string;
+  defaultProfileName: (n: number) => string;
+  urgentMode: string;
+  meetingDetection: string;
+  forceRest: string;
+  builtinHint: string;
 }
 
 const settings: Record<UiLang, SettingsStrings> = {
@@ -243,6 +271,17 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "恢复默认值",
     invalid: "请检查标红的输入项",
     lockedDuringBreak: "休息期间不能修改设置",
+    enforcement: "强制等级",
+    level: "等级",
+    levels: { high: "高", medium: "中", low: "低" },
+    profileName: "方案名称",
+    newProfile: "新建方案",
+    deleteProfile: "删除方案",
+    defaultProfileName: (n) => `方案 ${n}`,
+    urgentMode: "允许紧急模式（缩小遮罩）",
+    meetingDetection: "检测会议软件（Zoom、Teams 等）",
+    forceRest: "强制休息（不提供关闭功能）",
+    builtinHint: "内置等级不能修改；新建方案即可在当前等级的基础上自定义",
   },
   en: {
     title: "Settings",
@@ -266,6 +305,17 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "Restore defaults",
     invalid: "Please fix the highlighted fields",
     lockedDuringBreak: "Settings can't be changed during a break",
+    enforcement: "Enforcement",
+    level: "Level",
+    levels: { high: "High", medium: "Medium", low: "Low" },
+    profileName: "Profile name",
+    newProfile: "New profile",
+    deleteProfile: "Delete profile",
+    defaultProfileName: (n) => `Profile ${n}`,
+    urgentMode: "Allow urgent mode (shrink the overlay)",
+    meetingDetection: "Detect meeting apps (Zoom, Teams, etc.)",
+    forceRest: "Force breaks (can't be closed)",
+    builtinHint: "Built-in levels can't be edited. Create a new profile to customize the current one.",
   },
   hi: {
     title: "सेटिंग्स",
@@ -289,6 +339,17 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "डिफ़ॉल्ट पर लौटें",
     invalid: "कृपया लाल रंग वाले फ़ील्ड ठीक करें",
     lockedDuringBreak: "ब्रेक के दौरान सेटिंग्स नहीं बदली जा सकतीं",
+    enforcement: "सख़्ती",
+    level: "स्तर",
+    levels: { high: "उच्च", medium: "मध्यम", low: "निम्न" },
+    profileName: "योजना का नाम",
+    newProfile: "नई योजना",
+    deleteProfile: "योजना हटाएँ",
+    defaultProfileName: (n) => `योजना ${n}`,
+    urgentMode: "आपात मोड की अनुमति दें (ओवरले छोटा करें)",
+    meetingDetection: "मीटिंग ऐप पहचानें (Zoom, Teams आदि)",
+    forceRest: "ब्रेक अनिवार्य करें (बंद नहीं किया जा सकता)",
+    builtinHint: "बिल्ट-इन स्तर बदले नहीं जा सकते। मौजूदा स्तर को अनुकूलित करने के लिए नई योजना बनाएँ।",
   },
   es: {
     title: "Ajustes",
@@ -312,6 +373,17 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "Restaurar valores predeterminados",
     invalid: "Corrige los campos resaltados",
     lockedDuringBreak: "No se pueden cambiar los ajustes durante un descanso",
+    enforcement: "Rigor",
+    level: "Nivel",
+    levels: { high: "Alto", medium: "Medio", low: "Bajo" },
+    profileName: "Nombre del perfil",
+    newProfile: "Nuevo perfil",
+    deleteProfile: "Eliminar perfil",
+    defaultProfileName: (n) => `Perfil ${n}`,
+    urgentMode: "Permitir modo urgente (reducir la superposición)",
+    meetingDetection: "Detectar apps de reuniones (Zoom, Teams, etc.)",
+    forceRest: "Forzar descansos (no se pueden cerrar)",
+    builtinHint: "Los niveles integrados no se pueden editar. Crea un perfil nuevo para personalizar el actual.",
   },
   ar: {
     title: "الإعدادات",
@@ -335,6 +407,17 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "استعادة الافتراضيات",
     invalid: "يرجى تصحيح الحقول المميّزة",
     lockedDuringBreak: "لا يمكن تغيير الإعدادات أثناء الاستراحة",
+    enforcement: "الإلزام",
+    level: "المستوى",
+    levels: { high: "مرتفع", medium: "متوسط", low: "منخفض" },
+    profileName: "اسم النمط",
+    newProfile: "نمط جديد",
+    deleteProfile: "حذف النمط",
+    defaultProfileName: (n) => `نمط ${n}`,
+    urgentMode: "السماح بوضع الطوارئ (تصغير الطبقة)",
+    meetingDetection: "اكتشاف تطبيقات الاجتماعات (Zoom وTeams وغيرها)",
+    forceRest: "فرض الاستراحة (لا يمكن إغلاقها)",
+    builtinHint: "لا يمكن تعديل المستويات المدمجة. أنشئ نمطًا جديدًا لتخصيص المستوى الحالي.",
   },
   fr: {
     title: "Paramètres",
@@ -358,6 +441,17 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "Valeurs par défaut",
     invalid: "Corrigez les champs en rouge",
     lockedDuringBreak: "Impossible de modifier les paramètres pendant une pause",
+    enforcement: "Contrainte",
+    level: "Niveau",
+    levels: { high: "Élevé", medium: "Moyen", low: "Faible" },
+    profileName: "Nom du profil",
+    newProfile: "Nouveau profil",
+    deleteProfile: "Supprimer le profil",
+    defaultProfileName: (n) => `Profil ${n}`,
+    urgentMode: "Autoriser le mode urgence (réduire le voile)",
+    meetingDetection: "Détecter les applis de réunion (Zoom, Teams, etc.)",
+    forceRest: "Imposer les pauses (impossible de les fermer)",
+    builtinHint: "Les niveaux intégrés ne sont pas modifiables. Créez un nouveau profil pour personnaliser le niveau actuel.",
   },
   bn: {
     title: "সেটিংস",
@@ -381,6 +475,17 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "ডিফল্টে ফিরুন",
     invalid: "লাল চিহ্নিত ঘরগুলো ঠিক করুন",
     lockedDuringBreak: "বিরতির সময় সেটিংস পরিবর্তন করা যাবে না",
+    enforcement: "কড়াকড়ি",
+    level: "মাত্রা",
+    levels: { high: "উচ্চ", medium: "মাঝারি", low: "নিম্ন" },
+    profileName: "প্রোফাইলের নাম",
+    newProfile: "নতুন প্রোফাইল",
+    deleteProfile: "প্রোফাইল মুছুন",
+    defaultProfileName: (n) => `প্রোফাইল ${n}`,
+    urgentMode: "জরুরি মোডের অনুমতি দিন (ওভারলে ছোট করা)",
+    meetingDetection: "মিটিং অ্যাপ শনাক্ত করুন (Zoom, Teams ইত্যাদি)",
+    forceRest: "বিরতি বাধ্যতামূলক করুন (বন্ধ করা যাবে না)",
+    builtinHint: "বিল্ট-ইন মাত্রা বদলানো যায় না। বর্তমান মাত্রা কাস্টমাইজ করতে নতুন প্রোফাইল তৈরি করুন।",
   },
   pt: {
     title: "Configurações",
@@ -404,6 +509,17 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "Restaurar padrões",
     invalid: "Corrija os campos destacados",
     lockedDuringBreak: "Não é possível alterar as configurações durante uma pausa",
+    enforcement: "Rigor",
+    level: "Nível",
+    levels: { high: "Alto", medium: "Médio", low: "Baixo" },
+    profileName: "Nome do perfil",
+    newProfile: "Novo perfil",
+    deleteProfile: "Excluir perfil",
+    defaultProfileName: (n) => `Perfil ${n}`,
+    urgentMode: "Permitir modo urgente (reduzir a sobreposição)",
+    meetingDetection: "Detectar apps de reunião (Zoom, Teams etc.)",
+    forceRest: "Forçar pausas (não podem ser fechadas)",
+    builtinHint: "Os níveis integrados não podem ser editados. Crie um novo perfil para personalizar o atual.",
   },
   de: {
     title: "Einstellungen",
@@ -427,6 +543,17 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "Standardwerte",
     invalid: "Bitte die markierten Felder korrigieren",
     lockedDuringBreak: "Während einer Pause können die Einstellungen nicht geändert werden",
+    enforcement: "Strenge",
+    level: "Stufe",
+    levels: { high: "Hoch", medium: "Mittel", low: "Niedrig" },
+    profileName: "Profilname",
+    newProfile: "Neues Profil",
+    deleteProfile: "Profil löschen",
+    defaultProfileName: (n) => `Profil ${n}`,
+    urgentMode: "Notfallmodus erlauben (Overlay verkleinern)",
+    meetingDetection: "Meeting-Apps erkennen (Zoom, Teams usw.)",
+    forceRest: "Pausen erzwingen (nicht schließbar)",
+    builtinHint: "Integrierte Stufen können nicht bearbeitet werden. Lege ein neues Profil an, um die aktuelle Stufe anzupassen.",
   },
   ja: {
     title: "設定",
@@ -450,6 +577,17 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "デフォルトに戻す",
     invalid: "赤く表示された項目を確認してください",
     lockedDuringBreak: "休憩中は設定を変更できません",
+    enforcement: "強制レベル",
+    level: "レベル",
+    levels: { high: "高", medium: "中", low: "低" },
+    profileName: "プラン名",
+    newProfile: "新しいプラン",
+    deleteProfile: "プランを削除",
+    defaultProfileName: (n) => `プラン ${n}`,
+    urgentMode: "緊急モードを許可（オーバーレイを縮小）",
+    meetingDetection: "会議アプリを検出（Zoom、Teams など）",
+    forceRest: "休憩を強制（閉じることはできません）",
+    builtinHint: "内蔵レベルは変更できません。新しいプランを作成すると、現在のレベルをもとにカスタマイズできます。",
   },
   it: {
     title: "Impostazioni",
@@ -473,6 +611,17 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "Ripristina predefiniti",
     invalid: "Correggi i campi evidenziati",
     lockedDuringBreak: "Non puoi modificare le impostazioni durante una pausa",
+    enforcement: "Rigore",
+    level: "Livello",
+    levels: { high: "Alto", medium: "Medio", low: "Basso" },
+    profileName: "Nome del profilo",
+    newProfile: "Nuovo profilo",
+    deleteProfile: "Elimina profilo",
+    defaultProfileName: (n) => `Profilo ${n}`,
+    urgentMode: "Consenti modalità urgente (riduci la sovrapposizione)",
+    meetingDetection: "Rileva app per riunioni (Zoom, Teams, ecc.)",
+    forceRest: "Imponi le pause (non si possono chiudere)",
+    builtinHint: "I livelli integrati non sono modificabili. Crea un nuovo profilo per personalizzare quello attuale.",
   },
   ko: {
     title: "설정",
@@ -496,6 +645,17 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "기본값 복원",
     invalid: "빨간색으로 표시된 항목을 확인하세요",
     lockedDuringBreak: "휴식 중에는 설정을 변경할 수 없습니다",
+    enforcement: "강제 수준",
+    level: "수준",
+    levels: { high: "높음", medium: "보통", low: "낮음" },
+    profileName: "프로필 이름",
+    newProfile: "새 프로필",
+    deleteProfile: "프로필 삭제",
+    defaultProfileName: (n) => `프로필 ${n}`,
+    urgentMode: "긴급 모드 허용(오버레이 축소)",
+    meetingDetection: "회의 앱 감지(Zoom, Teams 등)",
+    forceRest: "휴식 강제(닫을 수 없음)",
+    builtinHint: "기본 제공 수준은 수정할 수 없습니다. 새 프로필을 만들어 현재 수준을 바탕으로 사용자 지정하세요.",
   },
   id: {
     title: "Pengaturan",
@@ -519,6 +679,17 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "Kembalikan default",
     invalid: "Periksa kolom yang ditandai merah",
     lockedDuringBreak: "Pengaturan tidak bisa diubah saat istirahat",
+    enforcement: "Ketegasan",
+    level: "Tingkat",
+    levels: { high: "Tinggi", medium: "Sedang", low: "Rendah" },
+    profileName: "Nama profil",
+    newProfile: "Profil baru",
+    deleteProfile: "Hapus profil",
+    defaultProfileName: (n) => `Profil ${n}`,
+    urgentMode: "Izinkan mode darurat (perkecil lapisan)",
+    meetingDetection: "Deteksi aplikasi rapat (Zoom, Teams, dll.)",
+    forceRest: "Paksa istirahat (tidak bisa ditutup)",
+    builtinHint: "Tingkat bawaan tidak bisa diubah. Buat profil baru untuk menyesuaikan tingkat saat ini.",
   },
 };
 

@@ -2,11 +2,15 @@
 
 English | [简体中文](README.zh-CN.md)
 
-A cross-platform break reminder that actually makes you rest: after each work session, a full-screen overlay forces you to take a break, and it can't be closed until the countdown ends.
+A cross-platform break reminder with three built-in enforcement levels: it can remind you to take a break, or make you take one. Enforcement is what sets it apart from other break reminders.
+
+- High: does everything it can to make you take the break.
+- Medium: you can still work, but it makes working uncomfortable enough to nudge you into resting.
+- Low: like other break reminders, it mainly reminds you.
 
 Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [ProtectEyes](./ProtectEyes).
 
-![The break overlay](./docs/images/BreakOverlay-MainScreen.webp)
+![The break overlay (Low)](./docs/images/EN/LowEnforcement.webp)
 
 ## Features
 
@@ -17,6 +21,8 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 - The overlay can't be closed during a break (Alt+F4 does nothing), and you can't quit from the tray
 - Postpone for 5 minutes, up to 3 times; the count resets after a full break
 - Urgent mode: something can't wait? Shrink the overlay for a moment to save your work while the countdown keeps running
+
+![When the break is over, click "Back to work"](./docs/images/EN/Back2Work.webp)
 
 ### Three built-in profiles for different needs
 
@@ -29,6 +35,12 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 | Close / skip this break | ✗ | ✗ | ✓ |
 | Screen coverage | 100% | 100% | 80% |
 | Draggable overlay | ✗ | ✓ | ✓ |
+
+![The break overlay (High)](./docs/images/EN/HighEnforcement.webp)
+
+![The break overlay (Medium)](./docs/images/EN/MediumEnforcement.webp)
+
+![The break overlay (Low)](./docs/images/EN/LowEnforcement.webp)
 
 ### Highly customizable
 
@@ -55,10 +67,12 @@ Keep as many custom profiles as you like and switch any time. Work, break, postp
 ### And more
 
 - Cross-platform: Windows, macOS and Linux, installable and updatable through WinGet, Scoop, Homebrew and APT (see [Install](#install))
-- Tray menu: time remaining, rest now, settings, start at login
+- Tray menu: time remaining, rest now, settings, start at login, switch enforcement profile
 - Single instance
 - Free and open source under the permissive MIT / Apache-2.0 dual license (see [License](#license))
 - Available in Simplified Chinese, English, Hindi, Spanish, Arabic, French, Bengali, Portuguese, German, Japanese, Italian, Korean and Indonesian. The UI language follows the system by default (English if the system language isn't supported); switch it any time from the tray menu's "语言 / Language" submenu
+
+![The tray menu](./docs/images/EN/TrayMenu.webp)
 
 ## Install
 

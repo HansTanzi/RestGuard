@@ -1,3 +1,4 @@
+use crate::config::BUILTIN_LEVELS;
 use crate::i18n::{self, t, text, Lang};
 use crate::timer::{Phase, Snapshot};
 use std::sync::Mutex;
@@ -12,6 +13,8 @@ use tauri_plugin_autostart::ManagerExt;
 
 const TRAY_ID: &str = "main";
 const LANG_ID_PREFIX: &str = "lang:";
+/// 后接内置等级或自定义方案的名字（两者不会重名，见 Config::sanitized）
+const LEVEL_ID_PREFIX: &str = "level:";
 
 /// 需要随状态或语言更新的菜单项
 struct TrayItems {
@@ -19,6 +22,8 @@ struct TrayItems {
     rest_now: MenuItem<Wry>,
     settings: MenuItem<Wry>,
     autostart: CheckMenuItem<Wry>,
+    /// 强制方案子菜单，方案列表随配置变化，由 refresh_levels 整个重建
+    level_menu: Submenu<Wry>,
     /// 与 Lang::ALL 顺序一致
     langs: Vec<CheckMenuItem<Wry>>,
     about: MenuItem<Wry>,
@@ -104,6 +109,62 @@ fn lang_text(lang: Lang) -> &'static str {
     }
 }
 
+fn level_menu_text() -> &'static str {
+    t(&text::LEVEL_MENU)
+}
+
+/// 内置等级显示翻译后的名字，自定义方案显示它自己的名字
+fn level_text(level: &str) -> &str {
+    match level {
+        "high" => t(&text::LEVEL_HIGH),
+        "medium" => t(&text::LEVEL_MEDIUM),
+        "low" => t(&text::LEVEL_LOW),
+        name => name,
+    }
+}
+
+/// 按当前配置重建强制方案子菜单：内置等级与自定义方案之间加分隔线
+fn fill_levels(app: &AppHandle, menu: &Submenu<Wry>) -> tauri::Result<()> {
+    let (current, customs) = {
+        let state = app.state::<crate::AppState>();
+        let config = state.config.lock().unwrap();
+        let customs: Vec<String> = config.profiles.iter().map(|p| p.name.clone()).collect();
+        (config.level.clone(), customs)
+    };
+    while menu.remove_at(0)?.is_some() {}
+    let check = |level: &str| {
+        CheckMenuItem::with_id(
+            app,
+            format!("{LEVEL_ID_PREFIX}{level}"),
+            level_text(level),
+            true,
+            level == current,
+            None::<&str>,
+        )
+    };
+    for level in BUILTIN_LEVELS {
+        menu.append(&check(level)?)?;
+    }
+    if !customs.is_empty() {
+        menu.append(&PredefinedMenuItem::separator(app)?)?;
+    }
+    for name in &customs {
+        menu.append(&check(name)?)?;
+    }
+    Ok(())
+}
+
+/// 配置变化或切换方案后刷新子菜单（自定义方案会增删、改名；
+/// 点击 CheckMenuItem 会自动切换它的勾选，也要按实际选择重设）
+pub fn refresh_levels(app: &AppHandle) {
+    let Some(items) = app.try_state::<TrayItems>() else {
+        return;
+    };
+    if let Err(e) = fill_levels(app, &items.level_menu) {
+        eprintln!("刷新强制方案菜单失败：{e}");
+    }
+}
+
 pub fn init(app: &AppHandle) -> tauri::Result<()> {
     let status = MenuItem::with_id(app, "status", "RestGuard", false, None::<&str>)?;
     let rest_now = MenuItem::with_id(app, "rest_now", rest_now_text(), true, None::<&str>)?;
@@ -136,6 +197,8 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
     let mut lang_entries: Vec<&dyn IsMenuItem<Wry>> = vec![&langs[0], &separator];
     lang_entries.extend(langs[1..].iter().map(|item| item as &dyn IsMenuItem<Wry>));
     let lang_menu = Submenu::with_items(app, "语言 / Language", true, &lang_entries)?;
+    let level_menu = Submenu::new(app, level_menu_text(), true)?;
+    fill_levels(app, &level_menu)?;
     let about = MenuItem::with_id(app, "about", about_text(), true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", quit_text(), true, None::<&str>)?;
 
@@ -147,6 +210,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
             &rest_now,
             &settings,
             &autostart,
+            &level_menu,
             &lang_menu,
             &PredefinedMenuItem::separator(app)?,
             &about,
@@ -172,6 +236,8 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
             id => {
                 if let Some(lang) = id.strip_prefix(LANG_ID_PREFIX).and_then(Lang::from_id) {
                     crate::set_language(app, lang);
+                } else if let Some(level) = id.strip_prefix(LEVEL_ID_PREFIX) {
+                    crate::set_level(app, level);
                 }
             }
         })
@@ -182,6 +248,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         rest_now,
         settings,
         autostart,
+        level_menu,
         langs,
         about,
         quit,
@@ -198,6 +265,7 @@ pub fn refresh_language(app: &AppHandle) {
     let _ = items.rest_now.set_text(rest_now_text());
     let _ = items.settings.set_text(settings_text());
     let _ = items.autostart.set_text(autostart_text());
+    let _ = items.level_menu.set_text(level_menu_text());
     let _ = items.about.set_text(about_text());
     let _ = items.quit.set_text(quit_text());
     // 点击 CheckMenuItem 会自动切换它的勾选，这里统一按实际选择重设
@@ -206,6 +274,7 @@ pub fn refresh_language(app: &AppHandle) {
         let _ = item.set_text(lang_text(lang));
         let _ = item.set_checked(lang == current);
     }
+    refresh_levels(app);
 }
 
 pub fn update(app: &AppHandle, snap: &Snapshot) {
@@ -224,9 +293,10 @@ pub fn update(app: &AppHandle, snap: &Snapshot) {
     if let Some(items) = app.try_state::<TrayItems>() {
         let _ = items.status.set_text(&text);
         let _ = items.rest_now.set_enabled(working);
-        // 休息期间不允许从托盘退出，也不允许打开设置缩短休息；
+        // 休息期间不允许从托盘退出，也不允许打开设置或切换方案来缩短休息；
         // 关于页面能打开浏览器，同样禁用
         let _ = items.settings.set_enabled(working);
+        let _ = items.level_menu.set_enabled(working);
         let _ = items.about.set_enabled(working);
         let _ = items.quit.set_enabled(working);
 

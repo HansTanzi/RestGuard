@@ -90,3 +90,6 @@ export type LangId = "auto" | UiLang;
 
 // 托盘或设置面板切换开机自启时广播，载荷为是否开启
 export const AUTOSTART_EVENT = "autostart:changed";
+
+// 配置保存后广播（包括从托盘切换强制方案），载荷为新的配置
+export const CONFIG_EVENT = "config:changed";

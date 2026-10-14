@@ -15,6 +15,7 @@
   } from "$lib/i18n";
   import {
     AUTOSTART_EVENT,
+    CONFIG_EVENT,
     BUILTIN_LEVELS,
     BUILTIN_PROFILES,
     DEFAULT_CONFIG,
@@ -171,6 +172,8 @@
     const unlistens = [
       listen<UiLang>(LANG_EVENT, (e) => applyLang(e.payload)),
       listen<boolean>(AUTOSTART_EVENT, (e) => (autostart = e.payload)),
+      // 有未保存的修改时不覆盖表单，只更新 saved，保存时以表单为准
+      listen<Config>(CONFIG_EVENT, (e) => (dirty ? (saved = e.payload) : load(e.payload))),
       listen<Snapshot>(STATE_EVENT, (e) => (phase = e.payload.phase)),
     ];
     return () => {

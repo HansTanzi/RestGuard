@@ -85,6 +85,71 @@ pub const QUIT: Tr = Tr {
     id: "Keluar",
 };
 
+pub const LEVEL_MENU: Tr = Tr {
+    zh: "强制方案",
+    en: "Enforcement profile",
+    hi: "सख़्ती योजना",
+    es: "Perfil de rigor",
+    ar: "نمط الإلزام",
+    fr: "Profil de contrainte",
+    bn: "কড়াকড়ির প্রোফাইল",
+    pt: "Perfil de rigor",
+    de: "Strenge-Profil",
+    ja: "強制プラン",
+    it: "Profilo di rigore",
+    ko: "강제 프로필",
+    id: "Profil ketegasan",
+};
+
+/// 内置强制等级的名字，与 src/lib/i18n.ts 的 levels 一致
+pub const LEVEL_HIGH: Tr = Tr {
+    zh: "高等强制",
+    en: "High enforcement",
+    hi: "उच्च सख़्ती",
+    es: "Rigor alto",
+    ar: "إلزام مرتفع",
+    fr: "Contrainte élevée",
+    bn: "উচ্চ কড়াকড়ি",
+    pt: "Rigor alto",
+    de: "Hohe Strenge",
+    ja: "強制：高",
+    it: "Rigore alto",
+    ko: "강제 높음",
+    id: "Ketegasan tinggi",
+};
+
+pub const LEVEL_MEDIUM: Tr = Tr {
+    zh: "中等强制",
+    en: "Medium enforcement",
+    hi: "मध्यम सख़्ती",
+    es: "Rigor medio",
+    ar: "إلزام متوسط",
+    fr: "Contrainte moyenne",
+    bn: "মাঝারি কড়াকড়ি",
+    pt: "Rigor médio",
+    de: "Mittlere Strenge",
+    ja: "強制：中",
+    it: "Rigore medio",
+    ko: "강제 보통",
+    id: "Ketegasan sedang",
+};
+
+pub const LEVEL_LOW: Tr = Tr {
+    zh: "低等强制",
+    en: "Low enforcement",
+    hi: "निम्न सख़्ती",
+    es: "Rigor bajo",
+    ar: "إلزام منخفض",
+    fr: "Contrainte faible",
+    bn: "নিম্ন কড়াকড়ি",
+    pt: "Rigor baixo",
+    de: "Niedrige Strenge",
+    ja: "強制：低",
+    it: "Rigore basso",
+    ko: "강제 낮음",
+    id: "Ketegasan rendah",
+};
+
 pub const FOLLOW_SYSTEM: Tr = Tr {
     zh: "跟随系统",
     en: "Follow system",

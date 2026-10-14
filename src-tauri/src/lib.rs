@@ -28,6 +28,8 @@ const LANG_EVENT: &str = "lang:changed";
 const SHRINK_EVENT: &str = "overlay:shrunk";
 /// 载荷为开机自启是否开启，与 src/lib/config.ts 的 AUTOSTART_EVENT 一致
 const AUTOSTART_EVENT: &str = "autostart:changed";
+/// 载荷为新的配置，与 src/lib/config.ts 的 CONFIG_EVENT 一致
+const CONFIG_EVENT: &str = "config:changed";
 
 struct AppState {
     timer: Mutex<Timer>,
@@ -80,6 +82,22 @@ fn get_config(app: AppHandle) -> Config {
 /// 休息期间不允许修改，防止通过缩短休息时长绕过休息
 #[tauri::command]
 fn save_config(app: AppHandle, config: Config) -> Result<Config, String> {
+    apply_config(&app, config)
+}
+
+/// 托盘切换强制方案：只改 level，其余配置不变
+pub(crate) fn set_level(app: &AppHandle, level: &str) {
+    let mut config = app.state::<AppState>().config.lock().unwrap().clone();
+    config.level = level.to_string();
+    if let Err(e) = apply_config(app, config) {
+        eprintln!("切换强制方案失败：{e}");
+        // 点击已经自动切换了被点项的勾选，按实际选择重设
+        tray::refresh_levels(app);
+    }
+}
+
+/// 保存配置并立即生效，通知托盘和设置面板。设置面板与托盘共用
+fn apply_config(app: &AppHandle, config: Config) -> Result<Config, String> {
     let config = config.sanitized();
     let state = app.state::<AppState>();
     let snap = {
@@ -95,7 +113,9 @@ fn save_config(app: AppHandle, config: Config) -> Result<Config, String> {
         timer.snapshot(now)
     };
     *state.config.lock().unwrap() = config.clone();
-    broadcast(&app, &snap);
+    tray::refresh_levels(app);
+    let _ = app.emit(CONFIG_EVENT, &config);
+    broadcast(app, &snap);
     Ok(config)
 }
 

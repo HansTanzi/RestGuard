@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::{fs, io, path::Path, time::Duration};
 
 const DEFAULT_LEVEL: &str = "medium";
+/// 内置强制等级，与 src/lib/config.ts 的 BUILTIN_LEVELS 一致
+pub const BUILTIN_LEVELS: [&str; 3] = ["high", "medium", "low"];
 
 /// 强制等级对应的配置方案。内置高、中、低三种，用户还可以自定义多个。
 /// 与 src/lib/config.ts 的 Profile 保持一致

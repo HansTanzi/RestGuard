@@ -1,6 +1,7 @@
 //! 设置面板：从托盘菜单打开的普通窗口，加载前端根路由（src/routes/+page.svelte）。
 
 use crate::i18n::{t, text};
+use std::{path::Path, process::Command};
 use tauri::{window::Color, AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 pub const LABEL: &str = "settings";
@@ -39,6 +40,38 @@ pub fn open(app: &AppHandle) {
         }
         Err(e) => eprintln!("创建设置窗口失败：{e}"),
     }
+}
+
+/// 用系统默认的程序打开配置文件，供用户手动编辑。
+/// 在进程内调用 ShellExecute：商店（MSIX）版的 AppData 写入是虚拟化的，
+/// 交给 explorer 打开会找不到文件，由本进程启动的编辑器才能看到同一份文件
+#[cfg(windows)]
+pub fn open_file(path: &Path) -> Result<(), String> {
+    use windows::{
+        core::{w, HSTRING, PCWSTR},
+        Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOWNORMAL},
+    };
+    let file = HSTRING::from(path.as_os_str());
+    let code = unsafe {
+        ShellExecuteW(None, w!("open"), &file, PCWSTR::null(), PCWSTR::null(), SW_SHOWNORMAL)
+    };
+    // 返回值大于 32 表示成功
+    if code.0 as isize > 32 {
+        return Ok(());
+    }
+    // .toml 没有关联的程序时用记事本打开
+    Command::new("notepad").arg(path).spawn().map(drop).map_err(|e| e.to_string())
+}
+
+#[cfg(target_os = "macos")]
+pub fn open_file(path: &Path) -> Result<(), String> {
+    // -t：用默认的文本编辑器打开，.toml 没有关联的程序时也能打开
+    Command::new("open").arg("-t").arg(path).spawn().map(drop).map_err(|e| e.to_string())
+}
+
+#[cfg(all(unix, not(target_os = "macos")))]
+pub fn open_file(path: &Path) -> Result<(), String> {
+    Command::new("xdg-open").arg(path).spawn().map(drop).map_err(|e| e.to_string())
 }
 
 /// 语言切换后更新窗口标题（页面内文字由前端监听 LANG_EVENT 自行更新）

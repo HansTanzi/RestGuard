@@ -15,6 +15,7 @@
   } from "$lib/i18n";
   import {
     AUTOSTART_EVENT,
+    CONFIG_EVENT,
     BUILTIN_LEVELS,
     BUILTIN_PROFILES,
     DEFAULT_CONFIG,
@@ -153,6 +154,18 @@
     }
   }
 
+  function openConfig() {
+    invoke("open_config_file").catch((e) => flash(String(e), true));
+  }
+
+  // 窗口获得焦点时重新读取配置文件，手动编辑完切回来即可生效。
+  // 有变化时后端会发出 CONFIG_EVENT，表单在那里更新
+  function reloadConfig() {
+    invoke<Config | null>("reload_config")
+      .then((config) => config && s && flash(s.reloaded))
+      .catch((e) => flash(String(e), true));
+  }
+
   function changeLang() {
     invoke("set_lang", { lang }).catch(console.error);
   }
@@ -165,15 +178,22 @@
 
   onMount(() => {
     invoke<UiLang>("ui_lang").then(applyLang);
-    invoke<Config>("get_config").then(load);
+    // 窗口刚打开时不会触发 focus，先载入手动编辑过的配置文件，再取当前配置
+    invoke("reload_config")
+      .catch((e) => flash(String(e), true))
+      .finally(() => invoke<Config>("get_config").then(load));
     invoke<boolean>("get_autostart").then((v) => (autostart = v));
     invoke<Snapshot>("get_state").then((v) => (phase = v.phase));
     const unlistens = [
       listen<UiLang>(LANG_EVENT, (e) => applyLang(e.payload)),
       listen<boolean>(AUTOSTART_EVENT, (e) => (autostart = e.payload)),
+      // 有未保存的修改时不覆盖表单，只更新 saved，保存时以表单为准
+      listen<Config>(CONFIG_EVENT, (e) => (dirty ? (saved = e.payload) : load(e.payload))),
       listen<Snapshot>(STATE_EVENT, (e) => (phase = e.payload.phase)),
     ];
+    window.addEventListener("focus", reloadConfig);
     return () => {
+      window.removeEventListener("focus", reloadConfig);
       unlistens.forEach((p) => p.then((off) => off()));
       clearTimeout(messageTimer);
     };
@@ -196,6 +216,19 @@
           {locked ? s.lockedDuringBreak : (message?.text ?? "")}
         </p>
         <div class="actions">
+          <!-- 鼠标停在按钮上（或键盘聚焦）时，在按钮下方显示说明 -->
+          <span class="tip">
+            <button
+              type="button"
+              class="ghost"
+              disabled={locked}
+              aria-describedby="config-hint"
+              onclick={openConfig}
+            >
+              {s.openConfig}
+            </button>
+            <span id="config-hint" role="tooltip">{s.configHint}</span>
+          </span>
           <button
             type="button"
             class="ghost"
@@ -617,8 +650,42 @@
 
   .actions {
     display: flex;
+    /* 标题栏有三个按钮，窄窗口下换行 */
+    flex-wrap: wrap;
     justify-content: flex-end;
     gap: 0.75rem;
+  }
+
+  .tip {
+    position: relative;
+  }
+
+  /* 与按钮左对齐：按钮在最左边，窄窗口换行后也不会超出窗口 */
+  .tip [role="tooltip"] {
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    left: 0;
+    width: max-content;
+    max-width: min(20rem, calc(100vw - 3rem));
+    padding: 0.45rem 0.65rem;
+    font-size: 0.8rem;
+    color: var(--fg);
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 0.15s,
+      visibility 0.15s;
+  }
+
+  .tip:hover [role="tooltip"],
+  .tip:has(:focus-visible) [role="tooltip"] {
+    opacity: 1;
+    visibility: visible;
   }
 
   .profile-actions {

@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use std::{fs, io, path::Path, time::Duration};
 
 const DEFAULT_LEVEL: &str = "medium";
+/// 内置强制等级，与 src/lib/config.ts 的 BUILTIN_LEVELS 一致
+pub const BUILTIN_LEVELS: [&str; 3] = ["high", "medium", "low"];
 
 /// 强制等级对应的配置方案。内置高、中、低三种，用户还可以自定义多个。
 /// 与 src/lib/config.ts 的 Profile 保持一致
@@ -34,7 +36,7 @@ impl Profile {
     pub fn builtin(level: &str) -> Option<Self> {
         let (max_postpones, urgent_mode, meeting_detection, force_rest, allow_skip, overlay_coverage, movable) =
             match level {
-                "high" => (0, false, false, true, false, 1.0, false),
+                "high" => (1, false, false, true, false, 1.0, false),
                 "medium" => (3, true, true, true, false, 1.0, true),
                 "low" => (3, true, true, false, true, 0.8, true),
                 _ => return None,
@@ -123,6 +125,19 @@ impl Config {
                 Self::default()
             }
         }
+    }
+
+    /// 重新读取用户手动编辑过的配置文件。出错时返回给设置面板显示的提示
+    pub fn read(path: &Path) -> Result<Self, String> {
+        let text = fs::read_to_string(path)
+            .map_err(|e| i18n::t(&i18n::text::CONFIG_READ_FAILED).replace("{e}", &e.to_string()))?;
+        toml::from_str::<Config>(&text).map(Self::sanitized).map_err(|e| {
+            // 完整的错误信息带多行代码片段，提示只能一行，只取行号和说明
+            let line = e.span().map_or(1, |s| text[..s.start].matches('\n').count() + 1);
+            i18n::t(&i18n::text::CONFIG_INVALID)
+                .replace("{line}", &line.to_string())
+                .replace("{e}", e.message())
+        })
     }
 
     /// 保存到配置文件（保留注释模板）

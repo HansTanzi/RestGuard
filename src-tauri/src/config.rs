@@ -36,7 +36,7 @@ impl Profile {
     pub fn builtin(level: &str) -> Option<Self> {
         let (max_postpones, urgent_mode, meeting_detection, force_rest, allow_skip, overlay_coverage, movable) =
             match level {
-                "high" => (0, false, false, true, false, 1.0, false),
+                "high" => (1, false, false, true, false, 1.0, false),
                 "medium" => (3, true, true, true, false, 1.0, true),
                 "low" => (3, true, true, false, true, 0.8, true),
                 _ => return None,

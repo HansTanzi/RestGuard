@@ -463,7 +463,8 @@ mod tests {
         t.apply_config(&cfg, t0);
         t.tick(t0 + 60 * MIN);
         let snap = t.snapshot(t0 + 60 * MIN);
-        assert!(!snap.can_postpone);
+        assert!(snap.can_postpone);
+        assert_eq!(snap.postpones_left, 1);
         assert!(!snap.can_shrink);
         assert!(snap.forced);
         assert!(!snap.can_skip);

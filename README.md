@@ -29,7 +29,7 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 | | High | Medium (default) | Low |
 |---|:---:|:---:|:---:|
 | Best for | Strict discipline, beating "just five more minutes" | Everyday work | A gentle nudge |
-| Postpones | 0 | 3 | 3 |
+| Postpones | 1 | 3 | 3 |
 | Urgent mode (shrink overlay) | ✗ | ✓ | ✓ |
 | Meeting-app detection | ✗ | ✓ | ✓ |
 | Close / skip this break | ✗ | ✗ | ✓ |

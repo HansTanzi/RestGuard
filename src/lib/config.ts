@@ -28,7 +28,7 @@ export type BuiltinLevel = (typeof BUILTIN_LEVELS)[number];
 export const BUILTIN_PROFILES: Record<BuiltinLevel, Profile> = {
   high: {
     name: "",
-    max_postpones: 0,
+    max_postpones: 1,
     urgent_mode: false,
     meeting_detection: false,
     force_rest: true,

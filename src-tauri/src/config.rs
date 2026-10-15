@@ -127,6 +127,19 @@ impl Config {
         }
     }
 
+    /// 重新读取用户手动编辑过的配置文件。出错时返回给设置面板显示的提示
+    pub fn read(path: &Path) -> Result<Self, String> {
+        let text = fs::read_to_string(path)
+            .map_err(|e| i18n::t(&i18n::text::CONFIG_READ_FAILED).replace("{e}", &e.to_string()))?;
+        toml::from_str::<Config>(&text).map(Self::sanitized).map_err(|e| {
+            // 完整的错误信息带多行代码片段，提示只能一行，只取行号和说明
+            let line = e.span().map_or(1, |s| text[..s.start].matches('\n').count() + 1);
+            i18n::t(&i18n::text::CONFIG_INVALID)
+                .replace("{line}", &line.to_string())
+                .replace("{e}", e.message())
+        })
+    }
+
     /// 保存到配置文件（保留注释模板）
     pub fn save(&self, path: &Path) -> io::Result<()> {
         if let Some(dir) = path.parent() {

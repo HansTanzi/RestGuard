@@ -96,9 +96,44 @@ pub(crate) fn set_level(app: &AppHandle, level: &str) {
     }
 }
 
+/// 设置面板的“打开配置文件”：用系统默认的程序打开，供用户手动编辑。
+/// 休息期间不允许，与 save_config 一样
+#[tauri::command]
+fn open_config_file(app: AppHandle) -> Result<(), String> {
+    if get_state(app.clone()).phase != Phase::Working {
+        return Err(i18n::t(&i18n::text::SETTINGS_LOCKED).into());
+    }
+    let state = app.state::<AppState>();
+    // 文件被删掉时先写回当前配置，免得编辑器打开一个空文件
+    if !state.config_path.exists() {
+        let config = state.config.lock().unwrap().clone();
+        config
+            .save(&state.config_path)
+            .map_err(|e| i18n::t(&i18n::text::SAVE_FAILED).replace("{e}", &e.to_string()))?;
+    }
+    settings::open_file(&state.config_path)
+}
+
+/// 重新读取手动编辑过的配置文件，有变化时立即生效。设置面板获得焦点时调用。
+/// 返回生效的新配置，没有变化时返回 None
+#[tauri::command]
+fn reload_config(app: AppHandle) -> Result<Option<Config>, String> {
+    let state = app.state::<AppState>();
+    let config = Config::read(&state.config_path)?;
+    if *state.config.lock().unwrap() == config {
+        return Ok(None);
+    }
+    // 不写回文件：用户可能还开着编辑器
+    commit_config(&app, config, false).map(Some)
+}
+
 /// 保存配置并立即生效，通知托盘和设置面板。设置面板与托盘共用
 fn apply_config(app: &AppHandle, config: Config) -> Result<Config, String> {
-    let config = config.sanitized();
+    commit_config(app, config.sanitized(), true)
+}
+
+/// 让已修正过的配置生效，`save` 为是否写入配置文件。休息期间拒绝修改
+fn commit_config(app: &AppHandle, config: Config, save: bool) -> Result<Config, String> {
     let state = app.state::<AppState>();
     let snap = {
         let mut timer = state.timer.lock().unwrap();
@@ -106,9 +141,11 @@ fn apply_config(app: &AppHandle, config: Config) -> Result<Config, String> {
         if timer.snapshot(now).phase != Phase::Working {
             return Err(i18n::t(&i18n::text::SETTINGS_LOCKED).into());
         }
-        config
-            .save(&state.config_path)
-            .map_err(|e| i18n::t(&i18n::text::SAVE_FAILED).replace("{e}", &e.to_string()))?;
+        if save {
+            config
+                .save(&state.config_path)
+                .map_err(|e| i18n::t(&i18n::text::SAVE_FAILED).replace("{e}", &e.to_string()))?;
+        }
         timer.apply_config(&config, now);
         timer.snapshot(now)
     };
@@ -363,6 +400,8 @@ pub fn run() {
             set_lang,
             get_config,
             save_config,
+            open_config_file,
+            reload_config,
             get_autostart,
             set_autostart,
             get_about,

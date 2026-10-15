@@ -302,6 +302,40 @@ pub const SAVE_FAILED: Tr = Tr {
     id: "Tidak dapat menyimpan file konfigurasi: {e}",
 };
 
+/// `{e}` 为具体的错误信息
+pub const CONFIG_READ_FAILED: Tr = Tr {
+    zh: "无法读取配置文件：{e}",
+    en: "Couldn't read the config file: {e}",
+    hi: "कॉन्फ़िग फ़ाइल पढ़ी नहीं जा सकी: {e}",
+    es: "No se pudo leer el archivo de configuración: {e}",
+    ar: "تعذّرت قراءة ملف الإعدادات: {e}",
+    fr: "Impossible de lire le fichier de configuration : {e}",
+    bn: "কনফিগ ফাইল পড়া যায়নি: {e}",
+    pt: "Não foi possível ler o arquivo de configuração: {e}",
+    de: "Die Konfigurationsdatei konnte nicht gelesen werden: {e}",
+    ja: "設定ファイルを読み込めませんでした：{e}",
+    it: "Impossibile leggere il file di configurazione: {e}",
+    ko: "설정 파일을 읽을 수 없습니다: {e}",
+    id: "Tidak dapat membaca file konfigurasi: {e}",
+};
+
+/// 手动编辑的配置文件有语法错误。`{line}` 为行号，`{e}` 为具体的错误信息
+pub const CONFIG_INVALID: Tr = Tr {
+    zh: "配置文件第 {line} 行有误，修改未生效：{e}",
+    en: "Config file error on line {line}, changes not applied: {e}",
+    hi: "कॉन्फ़िग फ़ाइल की पंक्ति {line} में त्रुटि, बदलाव लागू नहीं हुए: {e}",
+    es: "Error en la línea {line} del archivo de configuración, cambios no aplicados: {e}",
+    ar: "خطأ في السطر {line} من ملف الإعدادات، لم تُطبَّق التغييرات: {e}",
+    fr: "Erreur ligne {line} du fichier de configuration, modifications non appliquées : {e}",
+    bn: "কনফিগ ফাইলের {line} নম্বর লাইনে ত্রুটি, পরিবর্তন প্রয়োগ হয়নি: {e}",
+    pt: "Erro na linha {line} do arquivo de configuração, alterações não aplicadas: {e}",
+    de: "Fehler in Zeile {line} der Konfigurationsdatei, Änderungen nicht übernommen: {e}",
+    ja: "設定ファイルの {line} 行目に誤りがあるため、変更は反映されていません：{e}",
+    it: "Errore alla riga {line} del file di configurazione, modifiche non applicate: {e}",
+    ko: "설정 파일 {line}번째 줄에 오류가 있어 변경 사항이 적용되지 않았습니다: {e}",
+    id: "Kesalahan di baris {line} file konfigurasi, perubahan tidak diterapkan: {e}",
+};
+
 pub const LINKS_LOCKED: Tr = Tr {
     zh: "休息期间不能打开链接",
     en: "Links can't be opened during a break",
@@ -323,19 +357,19 @@ pub mod config {
     use super::Tr;
 
     pub const HEADER: Tr = Tr {
-        zh: "RestGuard 配置文件。可以在托盘菜单的“设置”里修改；手动编辑后需重启生效",
-        en: "RestGuard config. Edit it from \"Settings\" in the tray menu, or by hand and then restart the app.",
-        hi: "RestGuard कॉन्फ़िग फ़ाइल। ट्रे मेनू की \"सेटिंग्स\" से बदलें, या हाथ से संपादित करके ऐप दोबारा शुरू करें।",
-        es: "Configuración de RestGuard. Modifícala desde \"Ajustes\" en el menú de la bandeja, o a mano y luego reinicia la app.",
-        ar: "ملف إعدادات RestGuard. عدّله من \"الإعدادات\" في قائمة شريط النظام، أو يدويًا ثم أعد تشغيل التطبيق.",
-        fr: "Configuration de RestGuard. Modifiez-la via « Paramètres » dans le menu de la barre d'état, ou à la main puis redémarrez l'application.",
-        bn: "RestGuard কনফিগ ফাইল। ট্রে মেনুর \"সেটিংস\" থেকে বদলান, অথবা হাতে সম্পাদনা করে অ্যাপটি আবার চালু করুন।",
-        pt: "Configuração do RestGuard. Altere em \"Configurações\" no menu da bandeja, ou edite à mão e reinicie o app.",
-        de: "RestGuard-Konfiguration. Über „Einstellungen“ im Tray-Menü ändern oder von Hand bearbeiten und die App neu starten.",
-        ja: "RestGuard の設定ファイル。トレイメニューの「設定」から変更できます。手動で編集した場合は再起動後に反映されます",
-        it: "Configurazione di RestGuard. Modificala da \"Impostazioni\" nel menu della barra delle applicazioni, oppure a mano e poi riavvia l'app.",
-        ko: "RestGuard 설정 파일입니다. 트레이 메뉴의 \"설정\"에서 바꿀 수 있으며, 직접 수정한 경우 앱을 다시 시작해야 적용됩니다.",
-        id: "Konfigurasi RestGuard. Ubah lewat \"Pengaturan\" di menu baki, atau edit manual lalu mulai ulang aplikasi.",
+        zh: "RestGuard 配置文件。可以在托盘菜单的“设置”里修改；手动编辑保存后，打开或回到设置窗口即可生效",
+        en: "RestGuard config. Edit it from \"Settings\" in the tray menu, or by hand: after saving, open or switch back to the Settings window to apply it.",
+        hi: "RestGuard कॉन्फ़िग फ़ाइल। ट्रे मेनू की \"सेटिंग्स\" से बदलें, या हाथ से संपादित करें: सहेजने के बाद लागू करने के लिए सेटिंग्स विंडो खोलें या उस पर लौटें।",
+        es: "Configuración de RestGuard. Modifícala desde \"Ajustes\" en el menú de la bandeja, o a mano: tras guardar, abre o vuelve a la ventana de Ajustes para aplicarla.",
+        ar: "ملف إعدادات RestGuard. عدّله من \"الإعدادات\" في قائمة شريط النظام، أو يدويًا: بعد الحفظ، افتح نافذة الإعدادات أو عُد إليها لتطبيقه.",
+        fr: "Configuration de RestGuard. Modifiez-la via « Paramètres » dans le menu de la barre d'état, ou à la main : après l'enregistrement, ouvrez la fenêtre Paramètres ou revenez-y pour l'appliquer.",
+        bn: "RestGuard কনফিগ ফাইল। ট্রে মেনুর \"সেটিংস\" থেকে বদলান, অথবা হাতে সম্পাদনা করুন: সংরক্ষণের পর প্রয়োগ করতে সেটিংস উইন্ডো খুলুন বা সেখানে ফিরে যান।",
+        pt: "Configuração do RestGuard. Altere em \"Configurações\" no menu da bandeja, ou edite à mão: depois de salvar, abra ou volte à janela de Configurações para aplicá-la.",
+        de: "RestGuard-Konfiguration. Über „Einstellungen“ im Tray-Menü ändern oder von Hand bearbeiten: Nach dem Speichern das Einstellungsfenster öffnen oder dorthin zurückkehren, um sie zu übernehmen.",
+        ja: "RestGuard の設定ファイル。トレイメニューの「設定」から変更できます。手動で編集して保存した場合は、設定ウィンドウを開くか戻ると反映されます",
+        it: "Configurazione di RestGuard. Modificala da \"Impostazioni\" nel menu della barra delle applicazioni, oppure a mano: dopo il salvataggio, apri o torna alla finestra Impostazioni per applicarla.",
+        ko: "RestGuard 설정 파일입니다. 트레이 메뉴의 \"설정\"에서 바꿀 수 있으며, 직접 수정해 저장한 경우 설정 창을 열거나 설정 창으로 돌아오면 적용됩니다.",
+        id: "Konfigurasi RestGuard. Ubah lewat \"Pengaturan\" di menu baki, atau edit manual: setelah disimpan, buka atau kembali ke jendela Pengaturan untuk menerapkannya.",
     };
 
     pub const UNITS: Tr = Tr {

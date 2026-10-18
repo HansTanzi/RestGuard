@@ -272,10 +272,11 @@ jobs:
 
   # 直接更新 HansTanzi/homebrew-tap（用户添加的 tap），用该仓库的 deploy key
   # （secret HOMEBREW_TAP_DEPLOY_KEY，需写权限）推送到其默认分支。
-  # cask 已是此版本和哈希时 git diff 为空，不会提交；推送被拒绝时 rebase 后重试
+  # cask 已是此版本和哈希时 git diff 为空，不会提交；推送被拒绝时 rebase 后重试。
+  # 同一个 cask 在 macOS 上装 .app，在 Linux 上取 Arch 包里的 usr/bin/restguard，版本号共用，所以要等两个平台都就绪
   homebrew:
-    needs: [prepare, build-macos]
-    if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-macos.result) }}
+    needs: [prepare, build-macos, build-linux]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-macos.result) && contains(fromJSON('["success", "skipped"]'), needs.build-linux.result) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -289,15 +290,26 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
-          name="RestGuard_${VERSION}_universal.zip"
-          gh release download "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY" --pattern "$name" --dir "$RUNNER_TEMP"
-          hash=$(sha256sum "$RUNNER_TEMP/$name" | cut -d ' ' -f 1)
+          sha() {
+            gh release download "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY" --pattern "$1" --dir "$RUNNER_TEMP"
+            sha256sum "$RUNNER_TEMP/$1" | cut -d ' ' -f 1
+          }
+          mac_hash=$(sha "RestGuard_${VERSION}_universal.zip")
+          linux_hash=$(sha "RestGuard_${VERSION}_x86_64.pkg.tar.zst")
 
+          # 两个 sha256 分别在 on_macos 和 on_linux 块里，按所在的块替换
           path="Casks/restguard.rb"
           sed -i -E \
             -e "s/^(  version \")[^\"]+/\1${VERSION}/" \
-            -e "s/^(  sha256 \")[^\"]+/\1${hash}/" \
+            -e "/^  on_macos do/,/^  end/ s/^(    sha256 \")[^\"]+/\1${mac_hash}/" \
+            -e "/^  on_linux do/,/^  end/ s/^(    sha256 \")[^\"]+/\1${linux_hash}/" \
             "$path"
+          if ! grep -qxF "  version \"${VERSION}\"" "$path" \
+            || ! grep -qxF "    sha256 \"${mac_hash}\"" "$path" \
+            || ! grep -qxF "    sha256 \"${linux_hash}\"" "$path"; then
+            echo "::error::Failed to update $path, check its format"
+            exit 1
+          fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

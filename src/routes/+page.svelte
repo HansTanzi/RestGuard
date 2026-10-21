@@ -19,6 +19,7 @@
     BUILTIN_LEVELS,
     BUILTIN_PROFILES,
     DEFAULT_CONFIG,
+    SOUNDS,
     isBuiltinLevel,
     type Config,
     type LangId,
@@ -77,6 +78,8 @@
     postpone_minutes: !positive(draft.postpone_minutes),
     idle_minutes: !(positive(draft.idle_minutes) || draft.idle_minutes === 0),
     max_postpones: !count(profile.max_postpones),
+    // 关掉提示音时不检查，后端会把没有文件的 file 换成默认提示音
+    sound_file: draft.sound_prompt && draft.sound === "file" && !draft.sound_file.trim(),
   });
   // 切到别的方案后，之前编辑过的方案也要有效
   const valid = $derived(
@@ -131,6 +134,21 @@
     applyDocumentLang(v);
     invoke<LangId>("get_lang").then((id) => (lang = id));
   }
+
+  // 按表单里还没保存的设置播放一遍
+  function preview() {
+    invoke("preview_sound", { config: $state.snapshot(output) }).catch((e) =>
+      flash(String(e), true),
+    );
+  }
+
+  function pickFile() {
+    invoke<string | null>("pick_sound_file")
+      .then((path) => path && (draft.sound_file = path))
+      .catch((e) => flash(String(e), true));
+  }
+
+  const fileName = (path: string) => path.split(/[\\/]/).pop() ?? "";
 
   function flash(text: string, error = false) {
     clearTimeout(messageTimer);
@@ -264,6 +282,51 @@
           <input type="checkbox" bind:checked={autostart} onchange={changeAutostart} />
           <span>{s.autostart}</span>
         </label>
+        <!-- 结束提醒需要保存才生效，休息期间锁定 -->
+        <fieldset disabled={locked}>
+          <label class="check">
+            <input type="checkbox" bind:checked={draft.sound_prompt} />
+            <span>{s.soundPrompt}</span>
+          </label>
+          <label class="sub">
+            <span>{s.soundKind}</span>
+            <select disabled={!draft.sound_prompt} bind:value={draft.sound}>
+              {#each SOUNDS as id (id)}
+                <option value={id}>{s.sounds[id]}</option>
+              {/each}
+            </select>
+          </label>
+          {#if draft.sound === "file"}
+            <!-- 只能通过对话框选择，路径太长时显示文件名，完整路径在悬停提示里 -->
+            <div class="row sub">
+              <span>{s.soundFile}</span>
+              <span class="file">
+                <span class="name" class:invalid={errors.sound_file} title={draft.sound_file}>
+                  {fileName(draft.sound_file) || s.noFile}
+                </span>
+                <button
+                  type="button"
+                  class="ghost small"
+                  disabled={!draft.sound_prompt}
+                  onclick={pickFile}
+                >
+                  {s.chooseFile}
+                </button>
+              </span>
+            </div>
+            <p class="hint sub">{s.fileHint}</p>
+          {/if}
+          <div class="actions profile-actions">
+            <button
+              type="button"
+              class="ghost"
+              disabled={!draft.sound_prompt || errors.sound_file}
+              onclick={preview}
+            >
+              {s.preview}
+            </button>
+          </div>
+        </fieldset>
       </section>
 
       <fieldset disabled={locked}>
@@ -547,7 +610,8 @@
     min-width: 0;
   }
 
-  fieldset:disabled section {
+  fieldset:disabled section,
+  section fieldset:disabled {
     opacity: 0.5;
   }
 
@@ -583,8 +647,42 @@
     gap: 0.6rem;
   }
 
-  label.sub {
+  label.sub,
+  .row.sub,
+  .hint.sub {
     padding-inline-start: 1.6rem;
+  }
+
+  /* 与 label 相同的一行布局，但里面有按钮，不能用 label */
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.35rem 0;
+  }
+
+  .file {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .file .name {
+    max-width: 10rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--muted);
+  }
+
+  .file .name.invalid {
+    color: var(--warn);
+  }
+
+  button.small {
+    padding: 0.25rem 0.9rem;
   }
 
   input[type="number"],
@@ -613,6 +711,7 @@
     min-width: 7.5rem;
   }
 
+  /* 提示内容和语音名字较长 */
   input.invalid {
     border-color: var(--warn);
   }

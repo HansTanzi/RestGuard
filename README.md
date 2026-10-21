@@ -164,6 +164,9 @@ rest_minutes = 10.0      # how long each break lasts
 postpone_minutes = 5.0   # how long each postpone lasts
 idle_minutes = 5.0       # no input for this long counts as away, 0 = off
 level = "medium"         # "high", "medium", "low", or the name of a custom profile
+sound_prompt = true      # play a sound when a break ends
+sound = "beep"           # "beep", "chime", "rise" or "file" (plays sound_file)
+sound_file = ""          # full path of your own audio file, used when sound = "file"
 
 [[profiles]]             # a custom profile; add one [[profiles]] per profile
 name = "Focus"
@@ -181,6 +184,7 @@ movable = false          # allow dragging the overlay within its own screen when
 
 - **macOS**: system-level actions such as Force Quit (`Cmd+Option+Esc`) can't be blocked
 - **Linux**: idle detection needs GNOME or a desktop implementing `org.freedesktop.ScreenSaver` (e.g. KDE Plasma), plus `gdbus`; otherwise it's off
+- **Linux**: sounds are played with `paplay`, `pw-play` or `aplay`, so use wav, ogg or flac for your own file (mp3 isn't supported)
 - **Linux Wayland**: the protocol doesn't let apps keep themselves on top or position their own windows, so the overlay may not work; X11 is fine
 
 ## Development

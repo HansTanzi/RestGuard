@@ -1,6 +1,6 @@
 // 界面语言由后端决定（src-tauri/src/i18n.rs），与托盘保持一致
 
-import type { BuiltinLevel } from "./config";
+import type { BuiltinLevel, SoundId } from "./config";
 
 // 托盘或页面切换语言时广播，载荷为实际显示的语言（UiLang）
 export const LANG_EVENT = "lang:changed";
@@ -254,6 +254,15 @@ export interface SettingsStrings {
   allowSkip: string;
   movable: string;
   builtinHint: string;
+  sound: string;
+  soundPrompt: string;
+  soundKind: string;
+  sounds: Record<SoundId, string>;
+  soundFile: string;
+  chooseFile: string;
+  noFile: string;
+  fileHint: string;
+  preview: string;
 }
 
 const settings: Record<UiLang, SettingsStrings> = {
@@ -298,6 +307,15 @@ const settings: Record<UiLang, SettingsStrings> = {
     allowSkip: "允许跳过",
     movable: "允许拖动遮罩（同屏幕内）",
     builtinHint: "内置方案不能修改；在上方选择“新建自定义…”即可在当前方案的基础上自定义",
+    sound: "结束提醒",
+    soundPrompt: "休息结束时播放提示音",
+    soundKind: "提示音",
+    sounds: { beep: "滴滴", chime: "叮咚", rise: "上扬三音", file: "自选音频文件" },
+    soundFile: "音频文件",
+    chooseFile: "选择…",
+    noFile: "未选择",
+    fileHint: "支持 mp3、wav 等常见格式；Linux 上请用 wav、ogg 或 flac",
+    preview:"试听",
   },
   en: {
     title: "Settings",
@@ -340,6 +358,15 @@ const settings: Record<UiLang, SettingsStrings> = {
     allowSkip: "Allow skipping",
     movable: "Allow dragging the overlay (within the same screen)",
     builtinHint: "Built-in profiles can't be edited. Choose “New custom…” above to customize the current one.",
+    sound: "End-of-break alert",
+    soundPrompt: "Play a sound when a break ends",
+    soundKind: "Sound",
+    sounds: { beep: "Beep beep", chime: "Ding-dong", rise: "Rising notes", file: "Custom audio file" },
+    soundFile: "Audio file",
+    chooseFile: "Choose…",
+    noFile: "None selected",
+    fileHint: "Common formats such as mp3 and wav work; on Linux use wav, ogg or flac.",
+    preview:"Preview",
   },
   hi: {
     title: "सेटिंग्स",
@@ -382,6 +409,15 @@ const settings: Record<UiLang, SettingsStrings> = {
     allowSkip: "छोड़ने की अनुमति दें",
     movable: "ओवरले खींचने दें (उसी स्क्रीन के भीतर)",
     builtinHint: "बिल्ट-इन योजनाएँ बदली नहीं जा सकतीं। मौजूदा योजना को अनुकूलित करने के लिए ऊपर “नई कस्टम योजना…” चुनें।",
+    sound: "ब्रेक समाप्ति सूचना",
+    soundPrompt: "ब्रेक खत्म होने पर ध्वनि बजाएँ",
+    soundKind: "ध्वनि",
+    sounds: { beep: "बीप बीप", chime: "डिंग-डॉन्ग", rise: "चढ़ते सुर", file: "अपनी ऑडियो फ़ाइल" },
+    soundFile: "ऑडियो फ़ाइल",
+    chooseFile: "चुनें…",
+    noFile: "कोई फ़ाइल नहीं चुनी",
+    fileHint: "mp3, wav जैसे आम फ़ॉर्मैट चलते हैं; Linux पर wav, ogg या flac इस्तेमाल करें।",
+    preview:"सुनें",
   },
   es: {
     title: "Ajustes",
@@ -424,6 +460,15 @@ const settings: Record<UiLang, SettingsStrings> = {
     allowSkip: "Permitir saltar",
     movable: "Permitir arrastrar la superposición (dentro de la misma pantalla)",
     builtinHint: "Los perfiles integrados no se pueden editar. Elige «Nuevo personalizado…» arriba para personalizar el actual.",
+    sound: "Aviso de fin de descanso",
+    soundPrompt: "Reproducir un sonido al terminar el descanso",
+    soundKind: "Sonido",
+    sounds: { beep: "Pip pip", chime: "Din don", rise: "Notas ascendentes", file: "Archivo de audio propio" },
+    soundFile: "Archivo de audio",
+    chooseFile: "Elegir…",
+    noFile: "Ninguno seleccionado",
+    fileHint: "Funcionan formatos comunes como mp3 y wav; en Linux usa wav, ogg o flac.",
+    preview:"Escuchar",
   },
   ar: {
     title: "الإعدادات",
@@ -466,6 +511,15 @@ const settings: Record<UiLang, SettingsStrings> = {
     allowSkip: "السماح بالتخطي",
     movable: "السماح بسحب الطبقة (داخل الشاشة نفسها)",
     builtinHint: "لا يمكن تعديل الأنماط المدمجة. اختر «نمط مخصص جديد…» في الأعلى لتخصيص النمط الحالي.",
+    sound: "تنبيه انتهاء الاستراحة",
+    soundPrompt: "تشغيل صوت عند انتهاء الاستراحة",
+    soundKind: "الصوت",
+    sounds: { beep: "صفير مزدوج", chime: "دينغ دونغ", rise: "نغمات صاعدة", file: "ملف صوتي مخصص" },
+    soundFile: "الملف الصوتي",
+    chooseFile: "اختيار…",
+    noFile: "لم يُختر ملف",
+    fileHint: "تعمل الصيغ الشائعة مثل mp3 وwav؛ على Linux استخدم wav أو ogg أو flac.",
+    preview:"استماع",
   },
   fr: {
     title: "Paramètres",
@@ -508,6 +562,15 @@ const settings: Record<UiLang, SettingsStrings> = {
     allowSkip: "Autoriser à passer",
     movable: "Autoriser le déplacement du voile (sur le même écran)",
     builtinHint: "Les profils intégrés ne sont pas modifiables. Choisissez « Nouveau personnalisé… » ci-dessus pour personnaliser le profil actuel.",
+    sound: "Alerte de fin de pause",
+    soundPrompt: "Jouer un son à la fin de la pause",
+    soundKind: "Son",
+    sounds: { beep: "Bip bip", chime: "Ding dong", rise: "Notes montantes", file: "Fichier audio personnalisé" },
+    soundFile: "Fichier audio",
+    chooseFile: "Choisir…",
+    noFile: "Aucun fichier",
+    fileHint: "Les formats courants comme mp3 et wav fonctionnent ; sous Linux, utilisez wav, ogg ou flac.",
+    preview:"Écouter",
   },
   bn: {
     title: "সেটিংস",
@@ -550,6 +613,15 @@ const settings: Record<UiLang, SettingsStrings> = {
     allowSkip: "বাদ দেওয়ার অনুমতি দিন",
     movable: "ওভারলে টেনে সরানোর অনুমতি (একই স্ক্রিনের মধ্যে)",
     builtinHint: "বিল্ট-ইন প্রোফাইল বদলানো যায় না। বর্তমান প্রোফাইল কাস্টমাইজ করতে ওপরে “নতুন কাস্টম…” বেছে নিন।",
+    sound: "বিরতি শেষের সতর্কতা",
+    soundPrompt: "বিরতি শেষ হলে শব্দ বাজান",
+    soundKind: "শব্দ",
+    sounds: { beep: "বিপ বিপ", chime: "ডিং-ডং", rise: "ঊর্ধ্বমুখী সুর", file: "নিজের অডিও ফাইল" },
+    soundFile: "অডিও ফাইল",
+    chooseFile: "বেছে নিন…",
+    noFile: "কিছু বাছাই করা হয়নি",
+    fileHint: "mp3, wav-এর মতো সাধারণ ফরম্যাট চলে; Linux-এ wav, ogg বা flac ব্যবহার করুন।",
+    preview:"শুনুন",
   },
   pt: {
     title: "Configurações",
@@ -592,6 +664,15 @@ const settings: Record<UiLang, SettingsStrings> = {
     allowSkip: "Permitir pular",
     movable: "Permitir arrastar a sobreposição (dentro da mesma tela)",
     builtinHint: "Os perfis integrados não podem ser editados. Escolha “Novo personalizado…” acima para personalizar o atual.",
+    sound: "Alerta de fim de pausa",
+    soundPrompt: "Tocar um som ao fim da pausa",
+    soundKind: "Som",
+    sounds: { beep: "Bipe bipe", chime: "Dim-dom", rise: "Notas ascendentes", file: "Arquivo de áudio próprio" },
+    soundFile: "Arquivo de áudio",
+    chooseFile: "Escolher…",
+    noFile: "Nenhum selecionado",
+    fileHint: "Formatos comuns como mp3 e wav funcionam; no Linux use wav, ogg ou flac.",
+    preview:"Ouvir",
   },
   de: {
     title: "Einstellungen",
@@ -634,6 +715,15 @@ const settings: Record<UiLang, SettingsStrings> = {
     allowSkip: "Überspringen erlauben",
     movable: "Verschieben des Overlays erlauben (auf demselben Bildschirm)",
     builtinHint: "Integrierte Profile können nicht bearbeitet werden. Wähle oben „Neu (benutzerdefiniert)…“, um das aktuelle Profil anzupassen.",
+    sound: "Hinweis am Pausenende",
+    soundPrompt: "Am Ende der Pause einen Ton abspielen",
+    soundKind: "Ton",
+    sounds: { beep: "Piep piep", chime: "Ding-dong", rise: "Aufsteigende Töne", file: "Eigene Audiodatei" },
+    soundFile: "Audiodatei",
+    chooseFile: "Auswählen…",
+    noFile: "Keine ausgewählt",
+    fileHint: "Gängige Formate wie mp3 und wav funktionieren; unter Linux wav, ogg oder flac verwenden.",
+    preview:"Anhören",
   },
   ja: {
     title: "設定",
@@ -676,6 +766,15 @@ const settings: Record<UiLang, SettingsStrings> = {
     allowSkip: "スキップを許可",
     movable: "オーバーレイのドラッグを許可（同じ画面内）",
     builtinHint: "内蔵プランは変更できません。上で「新しいカスタム…」を選ぶと、現在のプランをもとにカスタマイズできます。",
+    sound: "休憩終了の通知",
+    soundPrompt: "休憩が終わったら通知音を鳴らす",
+    soundKind: "通知音",
+    sounds: { beep: "ピピッ", chime: "ピンポン", rise: "上がる 3 音", file: "音声ファイルを指定" },
+    soundFile: "音声ファイル",
+    chooseFile: "選択…",
+    noFile: "未選択",
+    fileHint: "mp3 や wav などの一般的な形式に対応しています。Linux では wav、ogg、flac を使ってください",
+    preview:"試聴",
   },
   it: {
     title: "Impostazioni",
@@ -718,6 +817,15 @@ const settings: Record<UiLang, SettingsStrings> = {
     allowSkip: "Consenti di saltare",
     movable: "Consenti di trascinare la sovrapposizione (nello stesso schermo)",
     builtinHint: "I profili integrati non sono modificabili. Scegli «Nuovo personalizzato…» qui sopra per personalizzare quello attuale.",
+    sound: "Avviso di fine pausa",
+    soundPrompt: "Riproduci un suono alla fine della pausa",
+    soundKind: "Suono",
+    sounds: { beep: "Bip bip", chime: "Din don", rise: "Note ascendenti", file: "File audio personale" },
+    soundFile: "File audio",
+    chooseFile: "Scegli…",
+    noFile: "Nessuno selezionato",
+    fileHint: "Funzionano i formati comuni come mp3 e wav; su Linux usa wav, ogg o flac.",
+    preview:"Ascolta",
   },
   ko: {
     title: "설정",
@@ -760,6 +868,15 @@ const settings: Record<UiLang, SettingsStrings> = {
     allowSkip: "건너뛰기 허용",
     movable: "오버레이 드래그 허용(같은 화면 안에서)",
     builtinHint: "기본 제공 프로필은 수정할 수 없습니다. 위에서 “새 사용자 지정…”을 선택하면 현재 프로필을 바탕으로 사용자 지정할 수 있습니다.",
+    sound: "휴식 종료 알림",
+    soundPrompt: "휴식이 끝나면 알림음 재생",
+    soundKind: "알림음",
+    sounds: { beep: "삐삐", chime: "딩동", rise: "올라가는 세 음", file: "직접 고른 오디오 파일" },
+    soundFile: "오디오 파일",
+    chooseFile: "선택…",
+    noFile: "선택 안 함",
+    fileHint: "mp3, wav 등 일반적인 형식을 지원합니다. Linux에서는 wav, ogg, flac을 사용하세요.",
+    preview:"미리 듣기",
   },
   id: {
     title: "Pengaturan",
@@ -802,6 +919,15 @@ const settings: Record<UiLang, SettingsStrings> = {
     allowSkip: "Izinkan melewati",
     movable: "Izinkan menyeret lapisan (di layar yang sama)",
     builtinHint: "Profil bawaan tidak bisa diubah. Pilih “Kustom baru…” di atas untuk menyesuaikan profil saat ini.",
+    sound: "Peringatan akhir istirahat",
+    soundPrompt: "Putar suara saat istirahat selesai",
+    soundKind: "Suara",
+    sounds: { beep: "Bip bip", chime: "Ding dong", rise: "Nada naik", file: "File audio sendiri" },
+    soundFile: "File audio",
+    chooseFile: "Pilih…",
+    noFile: "Belum dipilih",
+    fileHint: "Format umum seperti mp3 dan wav didukung; di Linux gunakan wav, ogg, atau flac.",
+    preview:"Dengarkan",
   },
 };
 

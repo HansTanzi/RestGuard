@@ -233,6 +233,40 @@ pub const BREAK_OVER: Tr = Tr {
     id: "Istirahat selesai",
 };
 
+/// 设置面板选择提示音文件时，文件对话框里的类型名称
+pub const AUDIO_FILES: Tr = Tr {
+    zh: "音频文件",
+    en: "Audio files",
+    hi: "ऑडियो फ़ाइलें",
+    es: "Archivos de audio",
+    ar: "ملفات صوتية",
+    fr: "Fichiers audio",
+    bn: "অডিও ফাইল",
+    pt: "Arquivos de áudio",
+    de: "Audiodateien",
+    ja: "音声ファイル",
+    it: "File audio",
+    ko: "오디오 파일",
+    id: "File audio",
+};
+
+/// 试听自选文件播放失败时的提示（多半是格式不受支持）
+pub const SOUND_FILE_FAILED: Tr = Tr {
+    zh: "无法播放这个文件，可能是本系统不支持它的格式，请换一个文件",
+    en: "Couldn't play this file. Its format may not be supported on this system; please choose another file.",
+    hi: "यह फ़ाइल नहीं चल सकी। हो सकता है इस सिस्टम पर इसका फ़ॉर्मैट समर्थित न हो; कृपया दूसरी फ़ाइल चुनें।",
+    es: "No se pudo reproducir este archivo. Puede que su formato no sea compatible con este sistema; elige otro archivo.",
+    ar: "تعذّر تشغيل هذا الملف. قد لا تكون صيغته مدعومة على هذا النظام؛ يُرجى اختيار ملف آخر.",
+    fr: "Impossible de lire ce fichier. Son format n'est peut-être pas pris en charge sur ce système ; choisissez-en un autre.",
+    bn: "এই ফাইলটি চালানো যায়নি। এই সিস্টেমে এর ফরম্যাট সমর্থিত না-ও হতে পারে; অন্য একটি ফাইল বেছে নিন।",
+    pt: "Não foi possível reproduzir este arquivo. O formato pode não ser compatível com este sistema; escolha outro arquivo.",
+    de: "Diese Datei konnte nicht abgespielt werden. Ihr Format wird auf diesem System eventuell nicht unterstützt; bitte eine andere Datei wählen.",
+    ja: "このファイルを再生できません。このシステムでは形式に対応していない可能性があります。別のファイルを選んでください",
+    it: "Impossibile riprodurre questo file. Il formato potrebbe non essere supportato su questo sistema; scegli un altro file.",
+    ko: "이 파일을 재생할 수 없습니다. 이 시스템에서 지원하지 않는 형식일 수 있으니 다른 파일을 선택하세요.",
+    id: "File ini tidak dapat diputar. Formatnya mungkin tidak didukung di sistem ini; silakan pilih file lain.",
+};
+
 // 窗口标题
 
 pub const SETTINGS_TITLE: Tr = Tr {
@@ -484,9 +518,57 @@ pub mod config {
         id: "Profil kustom, satu [[profiles]] untuk masing-masing. max_postpones: penundaan sebelum istirahat penuh; urgent_mode: izinkan memperkecil lapisan; meeting_detection: deteksi aplikasi rapat; force_rest = false hanya menampilkan jendela yang bisa ditutup; allow_skip: tetap tampilkan \"Lewati istirahat ini\" saat istirahat dipaksa;overlay_coverage: bagian setiap layar yang ditutupi, 0.1 ~ 1.0; urgent_scale: skala mode darurat relatif terhadap overlay_coverage, 0.1 ~ 0.9; movable: izinkan menyeret lapisan di dalam layarnya saat tidak layar penuh",
     };
 
+    pub const SOUND_PROMPT: Tr = Tr {
+        zh: "休息结束时是否播放提示音（true / false）",
+        en: "Play a sound when a break ends (true / false)",
+        hi: "ब्रेक खत्म होने पर ध्वनि बजाएँ या नहीं (true / false)",
+        es: "Reproducir un sonido al terminar el descanso (true / false)",
+        ar: "تشغيل صوت عند انتهاء الاستراحة (true / false)",
+        fr: "Jouer un son à la fin de la pause (true / false)",
+        bn: "বিরতি শেষ হলে শব্দ বাজবে কি না (true / false)",
+        pt: "Tocar um som ao fim da pausa (true / false)",
+        de: "Am Ende der Pause einen Ton abspielen (true / false)",
+        ja: "休憩が終わったときに通知音を鳴らすか（true / false）",
+        it: "Riprodurre un suono alla fine della pausa (true / false)",
+        ko: "휴식이 끝나면 알림음을 재생할지 여부(true / false)",
+        id: "Putar suara saat istirahat selesai (true / false)",
+    };
+
+    pub const SOUND: Tr = Tr {
+        zh: "提示音：beep（滴滴）、chime（叮咚）、rise（上扬三音）或 file（播放 sound_file）",
+        en: "Sound: beep, chime, rise (three rising notes), or file (plays sound_file)",
+        hi: "ध्वनि: beep (बीप), chime (घंटी), rise (तीन चढ़ते सुर), या file (sound_file बजाएँ)",
+        es: "Sonido: beep (pitido), chime (campanilla), rise (tres notas ascendentes) o file (reproduce sound_file)",
+        ar: "الصوت: beep (صفير)، chime (رنين)، rise (ثلاث نغمات صاعدة)، أو file (تشغيل sound_file)",
+        fr: "Son : beep (bip), chime (carillon), rise (trois notes montantes) ou file (joue sound_file)",
+        bn: "শব্দ: beep (বিপ), chime (ঘণ্টা), rise (তিনটি ঊর্ধ্বমুখী সুর), অথবা file (sound_file বাজায়)",
+        pt: "Som: beep (bipe), chime (sininho), rise (três notas ascendentes) ou file (toca sound_file)",
+        de: "Ton: beep (Piepton), chime (Gong), rise (drei aufsteigende Töne) oder file (spielt sound_file ab)",
+        ja: "通知音：beep（ピピッ）、chime（ピンポン）、rise（上がる 3 音）、file（sound_file を再生）",
+        it: "Suono: beep (bip), chime (campanello), rise (tre note ascendenti) o file (riproduce sound_file)",
+        ko: "알림음: beep(삐삐), chime(딩동), rise(올라가는 세 음), file(sound_file 재생)",
+        id: "Suara: beep (bip), chime (lonceng), rise (tiga nada naik), atau file (memutar sound_file)",
+    };
+
+    pub const SOUND_FILE: Tr = Tr {
+        zh: "sound 为 \"file\" 时播放的音频文件的完整路径",
+        en: "Full path of the audio file played when sound = \"file\"",
+        hi: "sound = \"file\" होने पर बजाई जाने वाली ऑडियो फ़ाइल का पूरा पथ",
+        es: "Ruta completa del archivo de audio que se reproduce cuando sound = \"file\"",
+        ar: "المسار الكامل لملف الصوت الذي يُشغَّل عندما sound = \"file\"",
+        fr: "Chemin complet du fichier audio joué quand sound = \"file\"",
+        bn: "sound = \"file\" হলে যে অডিও ফাইল বাজবে তার পূর্ণ পথ",
+        pt: "Caminho completo do arquivo de áudio tocado quando sound = \"file\"",
+        de: "Vollständiger Pfad der Audiodatei, die bei sound = \"file\" abgespielt wird",
+        ja: "sound が \"file\" のときに再生する音声ファイルのフルパス",
+        it: "Percorso completo del file audio riprodotto quando sound = \"file\"",
+        ko: "sound가 \"file\"일 때 재생할 오디오 파일의 전체 경로",
+        id: "Path lengkap file audio yang diputar saat sound = \"file\"",
+    };
+
     /// 用于测试：所有注释
     #[cfg(test)]
-    pub const ALL: [&Tr; 8] = [
+    pub const ALL: [&Tr; 11] = [
         &HEADER,
         &UNITS,
         &WORK,
@@ -494,6 +576,9 @@ pub mod config {
         &POSTPONE,
         &IDLE,
         &LEVEL,
+        &SOUND_PROMPT,
+        &SOUND,
+        &SOUND_FILE,
         &PROFILES,
     ];
 }

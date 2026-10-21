@@ -170,6 +170,9 @@ rest_minutes = 10.0      # 每次休息多久
 postpone_minutes = 5.0   # 每次推迟多久
 idle_minutes = 5.0       # 无操作超过这么久算离开电脑，0 表示关闭
 level = "medium"         # 强制等级："high"、"medium"、"low"，或某个自定义方案的名字
+sound_prompt = true      # 休息结束时播放提示音
+sound = "beep"           # "beep"（滴滴）、"chime"（叮咚）、"rise"（上扬三音）或 "file"（播放 sound_file）
+sound_file = ""          # 自选音频文件的完整路径，sound = "file" 时使用
 
 [[profiles]]             # 自定义方案，每个方案一个 [[profiles]]
 name = "专注"
@@ -187,6 +190,7 @@ movable = false          # 遮罩未占满屏幕时允许在本屏幕内拖动�
 
 - **macOS**：强制退出（`Cmd+Option+Esc`）等系统级操作无法拦截
 - **Linux**：空闲检测需要 GNOME 或实现了 `org.freedesktop.ScreenSaver` 的桌面（如 KDE Plasma），以及 `gdbus`；否则不生效
+- **Linux**：提示音用 `paplay`、`pw-play` 或 `aplay` 播放，自选文件请用 wav、ogg 或 flac（不支持 mp3）
 - **Linux Wayland**：协议不允许应用自行置顶和定位窗口，遮罩可能失效；X11 正常
 
 ## 开发

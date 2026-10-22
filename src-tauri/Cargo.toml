@@ -20,21 +20,21 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-autostart = "2"
-# 设置面板选择提示音文件，只在后端调用，前端不需要权限
+# Picks a sound file for the settings panel; only called from the backend, so the frontend needs no permission
 tauri-plugin-dialog = "2"
 tauri-plugin-single-instance = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "0.9"
 sys-locale = "0.3"
-# 休息结束时通过 ntfy 推送到手机
+# Push to the phone via ntfy when a break ends
 ureq = "3"
 
-# 与 tauri 使用的版本一致，用于把遮罩提升到菜单栏和全屏应用之上，以及检测前台应用
+# Same version as tauri uses; raises the overlay above the menu bar and full-screen apps, and detects the frontmost app
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSResponder", "NSWindow", "NSWorkspace", "NSRunningApplication"] }
 
-# 与 tauri 使用的版本一致，用于商店（MSIX）版的开机自启，检测前台应用和麦克风占用，空闲检测，打开配置文件，以及播放提示音
+# Same version as tauri uses; for Store (MSIX) autostart, detecting the foreground app and microphone use, idle detection, opening the config file, and playing sounds
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62", features = ["ApplicationModel", "Foundation", "Media_Core", "Media_Playback", "Storage", "Storage_Streams", "Win32_Foundation", "Win32_Storage_Packaging_Appx", "Win32_System_Diagnostics_ToolHelp", "Win32_System_Registry", "Win32_System_SystemInformation", "Win32_System_Threading", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
 

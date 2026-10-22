@@ -1,12 +1,12 @@
-//! 豁免应用：休息时间到时，如果会议等不便打断的应用在前台或正在使用麦克风，暂缓强制休息，
-//! 等它不再占用后再开始。目前只有内置清单，后续可以开放给用户自定义
+//! Exempt apps: when a break is due and an app that shouldn't be interrupted (such as a meeting) is in the foreground or using the microphone, the forced break is held off
+//! until it's no longer in use. Only a built-in list for now; it could be made user-configurable later
 
 struct App {
-    /// 显示在托盘里的名字
+    /// Name shown in the tray
     name: &'static str,
-    /// Windows 进程名，不区分大小写
+    /// Windows process names, case-insensitive
     exe: &'static [&'static str],
-    /// Windows 商店（MSIX）版的包系列名，用于识别麦克风占用
+    /// Package family names of Microsoft Store (MSIX) versions, used to detect microphone use
     package: &'static [&'static str],
     /// macOS bundle identifier
     bundle_id: &'static [&'static str],
@@ -21,7 +21,7 @@ const BUILTIN: &[App] = &[
     },
     App {
         name: "Microsoft Teams",
-        // ms-teams.exe 是新版 Teams（以 MSIX 包安装），Teams.exe 是经典版
+        // ms-teams.exe is the new Teams (installed as an MSIX package), Teams.exe is Teams classic
         exe: &["ms-teams.exe", "Teams.exe"],
         package: &["MSTeams_8wekyb3d8bbwe"],
         bundle_id: &["com.microsoft.teams2", "com.microsoft.teams"],
@@ -40,7 +40,7 @@ const BUILTIN: &[App] = &[
     },
 ];
 
-/// 豁免清单里有应用在前台或正在使用麦克风时，返回它的名字
+/// Returns the name of an app on the exemption list that is in the foreground or using the microphone
 pub fn active_app() -> Option<String> {
     foreground_app()
         .or_else(mic_app)
@@ -63,7 +63,7 @@ fn contains(list: &[&str], id: &str) -> bool {
     list.iter().any(|x| x.eq_ignore_ascii_case(id))
 }
 
-/// Windows：前台窗口所属进程的可执行文件名
+/// Windows: executable name of the process owning the foreground window
 #[cfg(windows)]
 fn foreground_id() -> Option<String> {
     use windows::{
@@ -103,7 +103,7 @@ fn foreground_id() -> Option<String> {
     }
 }
 
-/// macOS：前台应用的 bundle identifier
+/// macOS: bundle identifier of the frontmost app
 #[cfg(target_os = "macos")]
 fn foreground_id() -> Option<String> {
     use objc2_app_kit::NSWorkspace;
@@ -119,8 +119,8 @@ fn foreground_id() -> Option<String> {
     None
 }
 
-/// Windows：正在使用麦克风的豁免应用。
-/// 应用异常退出时系统记录可能停留在“使用中”，所以还要求它的进程仍在运行
+/// Windows: an exempt app currently using the microphone.
+/// If an app crashes, the system record may stay marked as in use, so its process must also still be running
 #[cfg(windows)]
 fn mic_app() -> Option<&'static App> {
     let users = win::mic_users();
@@ -136,13 +136,13 @@ fn mic_app() -> Option<&'static App> {
     })
 }
 
-/// 其他平台暂不支持检测麦克风占用
+/// Detecting microphone use isn't supported on other platforms yet
 #[cfg(not(windows))]
 fn mic_app() -> Option<&'static App> {
     None
 }
 
-/// 正在运行（不一定在开会）的豁免应用
+/// An exempt app that is running (not necessarily in a meeting)
 #[cfg(windows)]
 pub fn running_app() -> Option<String> {
     let running = win::running_exes();
@@ -152,7 +152,7 @@ pub fn running_app() -> Option<String> {
         .map(|app| app.name.to_string())
 }
 
-/// 其他平台暂不支持检测运行中的进程
+/// Detecting running processes isn't supported on other platforms yet
 #[cfg(not(windows))]
 pub fn running_app() -> Option<String> {
     None
@@ -177,14 +177,14 @@ mod win {
         },
     };
 
-    /// 系统“隐私 > 麦克风”页面的数据来源。每个用过麦克风的应用一个子键：
-    /// 商店应用以包系列名命名，其余应用在 NonPackaged 下以完整路径（`\` 换成 `#`）命名。
-    /// LastUsedTimeStop 为 0 表示正在使用
+    /// Data source of the system's "Privacy > Microphone" page. One subkey per app that has used the microphone:
+    /// Store apps are named by package family name, other apps under NonPackaged by full path (with `\` replaced by `#`).
+    /// LastUsedTimeStop of 0 means currently in use
     const CONSENT_STORE: PCWSTR = w!(
         r"Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\microphone"
     );
 
-    /// 正在使用麦克风的应用：商店应用返回包系列名，其余返回可执行文件名
+    /// Apps currently using the microphone: package family name for Store apps, executable name otherwise
     pub fn mic_users() -> Vec<String> {
         let mut users = Vec::new();
         let Some(root) = Key::open(HKEY_CURRENT_USER, CONSENT_STORE) else {
@@ -208,7 +208,7 @@ mod win {
         users
     }
 
-    /// 所有正在运行的进程的可执行文件名
+    /// Executable names of all running processes
     pub fn running_exes() -> Vec<String> {
         let mut exes = Vec::new();
         unsafe {
@@ -238,7 +238,7 @@ mod win {
         s.encode_utf16().chain(Some(0)).collect()
     }
 
-    /// 打开的注册表键，离开作用域时关闭
+    /// An open registry key, closed when it goes out of scope
     struct Key(HKEY);
 
     impl Key {
@@ -255,7 +255,7 @@ mod win {
 
         fn subkeys(&self) -> Vec<String> {
             let mut names = Vec::new();
-            // 注册表键名最长 255 个字符
+            // Registry key names are at most 255 characters
             let mut buf = [0u16; 256];
             for index in 0.. {
                 let mut len = buf.len() as u32;
@@ -279,7 +279,7 @@ mod win {
             names
         }
 
-        /// 子键 name 记录的应用是否正在使用麦克风
+        /// Whether the app recorded under subkey name is using the microphone
         fn in_use(&self, name: &str) -> bool {
             let start = self.qword(name, w!("LastUsedTimeStart"));
             let stop = self.qword(name, w!("LastUsedTimeStop"));
@@ -326,7 +326,7 @@ mod win {
 
         #[test]
         fn reads_consent_store() {
-            // 只要能读出来、不崩溃即可；打印出来方便开会时手动核对
+            // Only needs to read without crashing; printed for manual checking during a meeting
             println!("mic users: {:?}", mic_users());
         }
     }

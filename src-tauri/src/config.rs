@@ -3,42 +3,42 @@ use serde::{Deserialize, Serialize};
 use std::{fs, io, path::Path, time::Duration};
 
 const DEFAULT_LEVEL: &str = "medium";
-/// 内置强制等级，与 src/lib/config.ts 的 BUILTIN_LEVELS 一致
+/// Built-in enforcement levels; matches BUILTIN_LEVELS in src/lib/config.ts
 pub const BUILTIN_LEVELS: [&str; 3] = ["high", "medium", "low"];
-/// 休息结束时的提示音：内置音效（见 sound::builtin）或自选的音频文件。
-/// 与 src/lib/config.ts 的 SOUNDS 一致
+/// Sound played when a break ends: a built-in sound (see sound::builtin) or a user-chosen audio file.
+/// Matches SOUNDS in src/lib/config.ts
 pub const SOUNDS: [&str; 4] = ["beep", "chime", "rise", "file"];
 const DEFAULT_SOUND: &str = "beep";
-/// 推送到手机用的 ntfy 服务器，与 src/lib/config.ts 的 DEFAULT_CONFIG 一致
+/// ntfy server for phone notifications; matches DEFAULT_CONFIG in src/lib/config.ts
 const DEFAULT_NTFY_SERVER: &str = "https://ntfy.sh";
 
-/// 强制等级对应的配置方案。内置高、中、低三种，用户还可以自定义多个。
-/// 与 src/lib/config.ts 的 Profile 保持一致
+/// The settings profile for an enforcement level. Three are built in (high, medium, low), and users can define more.
+/// Keep in sync with Profile in src/lib/config.ts
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Profile {
-    /// 自定义方案的名字，Config::level 用它引用方案；内置方案为空
+    /// Name of a custom profile, used by Config::level to refer to it; empty for built-in profiles
     pub name: String,
-    /// 完整休息一次之前，最多推迟几次
+    /// Maximum postponements before a full break
     pub max_postpones: u32,
-    /// 遮罩上提供“有急事，缩小一下”。关闭后遮罩始终全屏，也就没法切到任务管理器结束程序
+    /// Offer "Urgent? Shrink it" on the overlay. When off, the overlay is always full screen, so there's no way to switch to Task Manager and kill the app
     pub urgent_mode: bool,
-    /// 会议软件在使用时暂缓休息，休息时提供“我在开会”
+    /// Hold off breaks while meeting software is in use, and offer "I'm in a meeting" during a break
     pub meeting_detection: bool,
-    /// false 时不强制休息，遮罩可以关掉（关掉即跳过这次休息）
+    /// When false the break isn't forced and the overlay can be closed (closing it skips the break)
     pub force_rest: bool,
-    /// 强制休息时，遮罩上仍提供“跳过这次休息”。不强制休息时总能跳过
+    /// Still offer "Skip this break" on the overlay when the break is forced. Unforced breaks can always be skipped
     pub allow_skip: bool,
-    /// 遮罩覆盖屏幕的比例（正常模式）
+    /// Fraction of the screen the overlay covers (normal mode)
     pub overlay_coverage: f64,
-    /// 紧急模式下（遮罩缩小后）相对 overlay_coverage 的缩放因子，小于 1 保证比正常模式小
+    /// Scale factor relative to overlay_coverage in urgent mode (overlay shrunk); below 1 so it's always smaller than normal mode
     pub urgent_scale: f64,
-    /// 遮罩没有占满屏幕时（缩小后或覆盖比例小于 1）能否拖动。无论如何都不能拖到别的屏幕
+    /// Whether the overlay can be dragged when it doesn't fill the screen (shrunk, or coverage below 1). It can never be dragged to another screen
     pub movable: bool,
 }
 
 impl Profile {
-    /// 内置等级 high、medium、low 的方案，与 src/lib/config.ts 的 BUILTIN_PROFILES 一致
+    /// Profiles for the built-in levels high, medium and low; matches BUILTIN_PROFILES in src/lib/config.ts
     pub fn builtin(level: &str) -> Option<Self> {
         let (max_postpones, urgent_mode, meeting_detection, force_rest, allow_skip, overlay_coverage, movable) =
             match level {
@@ -60,12 +60,12 @@ impl Profile {
         })
     }
 
-    /// 遮罩上提供“跳过这次休息”
+    /// Offer "Skip this break" on the overlay
     pub fn can_skip(&self) -> bool {
         self.allow_skip || !self.force_rest
     }
 
-    /// 遮罩覆盖屏幕的实际比例，`urgent` 为紧急模式（遮罩缩小）时的比例
+    /// Actual fraction of the screen the overlay covers; `urgent` is the fraction in urgent mode (overlay shrunk)
     pub fn coverage(&self, urgent: bool) -> f64 {
         if urgent {
             self.overlay_coverage * self.urgent_scale
@@ -81,30 +81,30 @@ impl Default for Profile {
     }
 }
 
-/// 与 src/lib/config.ts 的 Config 保持一致。前端也用配置文件里的 snake_case 字段名
+/// Keep in sync with Config in src/lib/config.ts. The frontend also uses the config file's snake_case field names
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
     pub work_minutes: f64,
     pub rest_minutes: f64,
     pub postpone_minutes: f64,
-    /// 无操作超过这么久算离开电脑，0 表示关闭空闲检测
+    /// No input for this long counts as being away from the computer; 0 disables idle detection
     pub idle_minutes: f64,
-    /// 当前强制等级：内置等级（见 Profile::builtin），或某个自定义方案的名字
+    /// Current enforcement level: a built-in level (see Profile::builtin) or the name of a custom profile
     pub level: String,
-    /// 休息结束时播放提示音
+    /// Play a sound when a break ends
     pub sound_prompt: bool,
-    /// 提示音，取值见 SOUNDS
+    /// The sound; see SOUNDS for values
     pub sound: String,
-    /// sound 为 "file" 时播放的音频文件
+    /// When sound is "file", the audio file to play
     pub sound_file: String,
-    /// 休息结束时通过 ntfy 推送到手机
+    /// Push to the phone via ntfy when a break ends
     pub phone_notify: bool,
-    /// ntfy 服务器地址，默认公共服务器，也可以填自建的
+    /// ntfy server URL; the public server by default, or a self-hosted one
     pub ntfy_server: String,
-    /// ntfy 主题，手机上订阅同一个主题。公共服务器上谁知道主题都能订阅，应取不易猜到的名字
+    /// ntfy topic; subscribe to the same topic on the phone. Anyone who knows the topic can subscribe on the public server, so pick a hard-to-guess name
     pub ntfy_topic: String,
-    /// 自定义方案
+    /// Custom profiles
     pub profiles: Vec<Profile>,
 }
 
@@ -128,35 +128,35 @@ impl Default for Config {
 }
 
 impl Config {
-    /// 读取配置；文件不存在时写入默认配置，解析失败时回退到默认值
+    /// Loads the config; writes the default config if the file doesn't exist and falls back to defaults if parsing fails
     pub fn load_or_create(path: &Path) -> Self {
         match fs::read_to_string(path) {
             Ok(text) => match toml::from_str::<Config>(&text) {
                 Ok(cfg) => cfg.sanitized(),
                 Err(e) => {
-                    eprintln!("配置文件 {} 解析失败，使用默认值：{e}", path.display());
+                    eprintln!("Failed to parse config file {}, using defaults: {e}", path.display());
                     Self::default()
                 }
             },
             Err(e) if e.kind() == io::ErrorKind::NotFound => {
                 if let Err(e) = Self::default().save(path) {
-                    eprintln!("无法写入默认配置 {}：{e}", path.display());
+                    eprintln!("Failed to write default config {}: {e}", path.display());
                 }
                 Self::default()
             }
             Err(e) => {
-                eprintln!("无法读取配置 {}：{e}", path.display());
+                eprintln!("Failed to read config {}: {e}", path.display());
                 Self::default()
             }
         }
     }
 
-    /// 重新读取用户手动编辑过的配置文件。出错时返回给设置面板显示的提示
+    /// Re-reads a config file the user edited manually. On error, returns a message for the settings panel to show
     pub fn read(path: &Path) -> Result<Self, String> {
         let text = fs::read_to_string(path)
             .map_err(|e| i18n::t(&i18n::text::CONFIG_READ_FAILED).replace("{e}", &e.to_string()))?;
         toml::from_str::<Config>(&text).map(Self::sanitized).map_err(|e| {
-            // 完整的错误信息带多行代码片段，提示只能一行，只取行号和说明
+            // The full error includes a multi-line code snippet, but the message must fit on one line, so keep only the line number and description
             let line = e.span().map_or(1, |s| text[..s.start].matches('\n').count() + 1);
             i18n::t(&i18n::text::CONFIG_INVALID)
                 .replace("{line}", &line.to_string())
@@ -164,7 +164,7 @@ impl Config {
         })
     }
 
-    /// 保存到配置文件（保留注释模板）
+    /// Saves to the config file (keeping the commented template)
     pub fn save(&self, path: &Path) -> io::Result<()> {
         if let Some(dir) = path.parent() {
             fs::create_dir_all(dir)?;
@@ -172,12 +172,12 @@ impl Config {
         fs::write(path, self.render(i18n::resolved()))
     }
 
-    /// 生成带注释的配置文件，方便用户手改。注释语言跟随界面语言
+    /// Generates a commented config file for easy manual editing. Comments follow the UI language
     fn render(&self, lang: Lang) -> String {
         let c = |tr: &i18n::Tr| tr.get(lang);
-        // 字符串交给 toml 转义，名字里有引号等字符也不会写坏文件
+        // Let toml escape strings so quotes and the like in names can't corrupt the file
         let quote = |s: &str| toml::Value::String(s.to_string()).to_string();
-        // {:?} 保证浮点数总带小数点（60.0 而不是 60），写出的仍是合法的 TOML 浮点数
+        // {:?} always includes a decimal point (60.0, not 60), which is still a valid TOML float
         let mut text = format!(
             "# {}\n# {}\n\n\
              # {}\nwork_minutes = {:?}\n\n\
@@ -218,7 +218,7 @@ impl Config {
             quote(&self.ntfy_topic),
             c(&comment::PROFILES),
         );
-        // 表必须写在所有顶层键之后
+        // Tables must come after all top-level keys
         for p in &self.profiles {
             text += &format!(
                 "\n[[profiles]]\nname = {}\nmax_postpones = {}\nurgent_mode = {}\n\
@@ -238,13 +238,13 @@ impl Config {
         text
     }
 
-    /// 把明显无效的值替换成默认值，避免出现 0 分钟工作之类的死循环
+    /// Replaces clearly invalid values with defaults, avoiding endless loops like 0-minute work periods
     pub fn sanitized(self) -> Self {
         let d = Self::default();
         let positive = |v: f64, fallback: f64| if v.is_finite() && v > 0.0 { v } else { fallback };
         let ratio = |v: f64, max: f64, fallback: f64| if v.is_finite() { v.clamp(0.1, max) } else { fallback };
         let dp = Profile::default();
-        // 方案名字用来引用方案：去掉空名字、与内置等级重名的和重复的
+        // Profile names are used as references: drop empty names, names clashing with built-in levels, and duplicates
         let mut profiles: Vec<Profile> = Vec::new();
         for mut p in self.profiles {
             p.name = p.name.trim().to_string();
@@ -263,14 +263,14 @@ impl Config {
         } else {
             d.level
         };
-        // 选了自选文件却没给路径时，退回默认提示音
+        // Fall back to the default sound if a custom file is selected but no path is given
         let sound_file = self.sound_file.trim().to_string();
         let sound = match self.sound.trim() {
             "file" if sound_file.is_empty() => d.sound,
             s if SOUNDS.contains(&s) => s.to_string(),
             _ => d.sound,
         };
-        // 没写协议时按 https，去掉末尾的斜杠，空着时用公共服务器
+        // Assume https when no scheme is given, strip trailing slashes, and use the public server when empty
         let ntfy_server = match self.ntfy_server.trim().trim_end_matches('/') {
             "" => d.ntfy_server,
             s if s.contains("://") => s.to_string(),
@@ -296,7 +296,7 @@ impl Config {
         }
     }
 
-    /// 当前强制等级对应的方案
+    /// The profile for the current enforcement level
     pub fn profile(&self) -> Profile {
         Profile::builtin(&self.level)
             .or_else(|| self.profiles.iter().find(|p| p.name == self.level).cloned())
@@ -315,7 +315,7 @@ impl Config {
         minutes(self.postpone_minutes)
     }
 
-    /// 空闲检测的阈值，None 表示关闭
+    /// Idle detection threshold; None means disabled
     pub fn idle(&self) -> Option<Duration> {
         (self.idle_minutes > 0.0).then(|| minutes(self.idle_minutes))
     }
@@ -410,7 +410,7 @@ mod tests {
         };
         assert_eq!(sound(" chime ", ""), "chime");
         assert_eq!(sound("file", " a.mp3 "), "file");
-        assert_eq!(sound("file", "  "), "beep", "没有文件时用默认提示音");
+        assert_eq!(sound("file", "  "), "beep", "Default sound when there is no file");
         assert_eq!(sound("trumpet", ""), "beep");
     }
 
@@ -426,7 +426,7 @@ mod tests {
         };
         assert_eq!(server("  "), "https://ntfy.sh");
         assert_eq!(server("http://192.168.1.2:8080/"), "http://192.168.1.2:8080");
-        assert_eq!(server("ntfy.example.com"), "https://ntfy.example.com", "没写协议时按 https");
+        assert_eq!(server("ntfy.example.com"), "https://ntfy.example.com", "Assume https when no scheme is given");
     }
 
     #[test]
@@ -451,7 +451,7 @@ mod tests {
         }
         .sanitized();
         assert_eq!(cfg.profiles, vec![named("A")]);
-        assert_eq!(cfg.level, "medium", "引用不存在的方案时回退到默认等级");
+        assert_eq!(cfg.level, "medium", "Fall back to the default level when referencing a missing profile");
     }
 
     #[test]

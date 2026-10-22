@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# 用 src-tauri/arch/PKGBUILD 把 .deb 重新打包为 Arch 包，输出到当前目录的
-# RestGuard_<版本>_x86_64.pkg.tar.zst。用法：bash scripts/arch-package.sh <版本>
-# 需要先运行 pnpm tauri build --bundles deb，以及 Docker（在 archlinux 容器里运行 makepkg）
+# Repackages the .deb as an Arch package using src-tauri/arch/PKGBUILD, written to the current directory as
+# RestGuard_<version>_x86_64.pkg.tar.zst. Usage: bash scripts/arch-package.sh <version>
+# Requires running pnpm tauri build --bundles deb first, plus Docker (makepkg runs in an archlinux container)
 set -euo pipefail
 
 version="$1"
@@ -10,11 +10,11 @@ dir=$(mktemp -d)
 
 cp "$root/src-tauri/arch/PKGBUILD" "$root/LICENSE-MIT" "$root/LICENSE-APACHE" "$dir/"
 cp "$root/src-tauri/target/release/bundle/deb/RestGuard_${version}_amd64.deb" "$dir/restguard.deb"
-# pkgver 不能含 -。去掉后 0.2.0-beta.1 变为 0.2.0beta.1，pacman 认为它比 0.2.0 旧
+# pkgver can't contain -. Removing it turns 0.2.0-beta.1 into 0.2.0beta.1, which pacman considers older than 0.2.0
 sed -i "s/^pkgver=.*/pkgver=${version//-/}/" "$dir/PKGBUILD"
 
-# makepkg 不允许以 root 运行，用普通用户 builder；--nodeps 不安装依赖，只打包。
-# 结束后把目录归还给当前用户，否则容器外读不到产物
+# makepkg refuses to run as root, so use a regular user, builder; --nodeps skips installing dependencies and only packages.
+# Afterwards hand the directory back to the current user, otherwise the output can't be read outside the container
 docker run --rm -v "$dir:/build" -e HOST_UID="$(id -u)" archlinux:base-devel bash -euc '
   useradd -m builder
   chown -R builder /build

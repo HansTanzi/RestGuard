@@ -1,5 +1,5 @@
-//! 以 MSIX 包（微软商店版）运行时的系统集成。
-//! 包内写注册表 Run 键会被虚拟化而不生效，开机自启要改用清单里声明的 StartupTask
+//! System integration when running as an MSIX package (Microsoft Store version).
+//! Writes to the registry Run key are virtualized inside the package and have no effect, so autostart uses the StartupTask declared in the manifest
 
 use std::sync::OnceLock;
 use windows::{
@@ -10,7 +10,7 @@ use windows::{
     },
 };
 
-/// 与 msix/AppxManifest.xml 中 uap5:StartupTask 的 TaskId 一致
+/// Matches the TaskId of uap5:StartupTask in msix/AppxManifest.xml
 const STARTUP_TASK_ID: &str = "RestGuardStartup";
 
 pub fn is_packaged() -> bool {
@@ -36,7 +36,7 @@ pub fn startup_enabled() -> bool {
 pub fn set_startup(on: bool) -> windows::core::Result<()> {
     let task = startup_task()?;
     if on {
-        // 用户在任务管理器里禁用过时保持 DisabledByUser，只能由用户在系统设置里重新开启
+        // If the user disabled it in Task Manager it stays DisabledByUser; only the user can re-enable it in system settings
         task.RequestEnableAsync()?.join()?;
     } else {
         task.Disable()?;

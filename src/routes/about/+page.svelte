@@ -1,4 +1,4 @@
-<!-- 关于页面：从托盘菜单“关于 RestGuard…”打开（src-tauri/src/about.rs） -->
+<!-- About page: opened from "About RestGuard…" in the tray menu (src-tauri/src/about.rs) -->
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
   import { listen } from "@tauri-apps/api/event";
@@ -11,10 +11,10 @@
     type AboutStrings,
     type UiLang,
   } from "$lib/i18n";
-  // 直接用应用图标，static/favicon.png 只有 32px，放大会糊
+  // Use the app icon directly; static/favicon.png is only 32px and blurs when scaled up
   import icon from "../../../src-tauri/icons/128x128.png";
 
-  // 与 src-tauri/src/about.rs 中的 AboutInfo 保持一致
+  // Keep in sync with AboutInfo in src-tauri/src/about.rs
   interface AboutInfo {
     version: string;
     repo_url: string;
@@ -33,7 +33,7 @@
     applyDocumentLang(v);
   }
 
-  // 链接由后端用系统浏览器打开，WebView 里不跳转
+  // Links are opened by the backend in the system browser, not navigated in the WebView
   function open(e: MouseEvent, link: "repo" | "issues") {
     e.preventDefault();
     if (locked) return;
@@ -41,7 +41,7 @@
     invoke("open_link", { link }).catch((err) => (error = String(err)));
   }
 
-  // 去掉协议头，显示得更紧凑
+  // Strip the scheme for a more compact display
   const short = (url: string) => url.replace(/^https?:\/\//, "");
 
   onMount(() => {
@@ -85,7 +85,7 @@
     background: #0f172a;
   }
 
-  /* 配色与设置面板（src/routes/+page.svelte）一致 */
+  /* Colors match the settings panel (src/routes/+page.svelte) */
   main {
     --bg-1: #0f172a;
     --bg-2: #1e293b;

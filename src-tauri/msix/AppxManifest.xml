@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  微软商店（MSIX）包清单，由 scripts/msix.ps1 打包，Version 由脚本按 tauri.conf.json 填入。
-  Identity 的 Name、Publisher 和 PublisherDisplayName 必须与合作伙伴中心
-  “产品标识”页面（Product identity）里的值完全一致，否则上传会被拒绝。
+  Microsoft Store (MSIX) package manifest, packaged by scripts/msix.ps1; the script fills in Version from tauri.conf.json.
+  Name, Publisher and PublisherDisplayName in Identity must exactly match the values on the
+  Product identity page in Partner Center, otherwise the upload is rejected.
 -->
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
@@ -44,7 +44,7 @@
         <uap:DefaultTile Square71x71Logo="Assets\Square71x71Logo.png" />
       </uap:VisualElements>
       <Extensions>
-        <!-- 开机自启：TaskId 与 src-tauri/src/msix.rs 的 STARTUP_TASK_ID 一致 -->
+        <!-- Autostart: TaskId matches STARTUP_TASK_ID in src-tauri/src/msix.rs -->
         <uap5:Extension Category="windows.startupTask" Executable="restguard.exe" EntryPoint="Windows.FullTrustApplication">
           <uap5:StartupTask TaskId="RestGuardStartup" Enabled="false" DisplayName="RestGuard" />
         </uap5:Extension>

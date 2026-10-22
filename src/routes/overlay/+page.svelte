@@ -16,7 +16,7 @@
   } from "$lib/i18n";
 
   const win = getCurrentWebviewWindow();
-  // 与 src-tauri/src/lib.rs 的 SHRINK_EVENT 一致，载荷为是否已缩小
+  // Matches SHRINK_EVENT in src-tauri/src/lib.rs; payload is whether the overlay is shrunk
   const SHRINK_EVENT = "overlay:shrunk";
 
   const RADIUS = 120;
@@ -26,10 +26,10 @@
   let s = $state<Strings | null>(null);
   let busy = $state(false);
   let lang = $state<UiLang>("en");
-  // 遮罩窗口在休息结束时销毁，下次打开自然恢复原大小
+  // Overlay windows are destroyed when the break ends, so they reopen at the original size
   let shrunk = $state(false);
 
-  // 强制等级允许拖动、且遮罩没有占满屏幕时才能拖
+  // Draggable only when the enforcement level allows it and the overlay doesn't fill the screen
   const movable = $derived(!!snap?.movable && (shrunk || !snap.fullScreen));
   const resting = $derived(snap?.phase === "resting");
   const restOver = $derived(snap?.phase === "restOver");
@@ -43,20 +43,20 @@
     applyDocumentLang(v);
   }
 
-  // 后端保存选择并广播 LANG_EVENT，所有遮罩和托盘随之更新。
-  // 与托盘菜单里手动选择某种语言等效
+  // The backend saves the choice and broadcasts LANG_EVENT, updating all overlays and the tray.
+  // Same as picking a language manually in the tray menu
   function changeLang(e: Event) {
     const value = (e.currentTarget as HTMLSelectElement).value;
     invoke("set_lang", { lang: value }).catch(console.error);
   }
 
-  // 紧急模式：所有遮罩缩小一半但仍置顶，能处理急事又没法舒服地继续工作。
-  // 后端缩放后广播 SHRINK_EVENT，各遮罩据此更新 shrunk
+  // Urgent mode: all overlays shrink by half but stay on top, enough to handle something urgent but not to keep working comfortably.
+  // The backend broadcasts SHRINK_EVENT after scaling, and each overlay updates shrunk accordingly
   function toggleShrink() {
     invoke("set_overlay_shrunk", { shrunk: !shrunk }).catch(console.error);
   }
 
-  // 可拖动时按住空白处拖动窗口，后端会把它限制在本屏幕内
+  // When draggable, dragging empty space moves the window; the backend keeps it on its own screen
   function onMouseDown(e: MouseEvent) {
     if (!movable || e.button !== 0) return;
     if ((e.target as Element).closest("button, select")) return;
@@ -71,7 +71,7 @@
       listen<UiLang>(LANG_EVENT, (e) => applyLang(e.payload)),
       listen<boolean>(SHRINK_EVENT, (e) => (shrunk = e.payload)),
     ];
-    // 仅 pnpm tauri dev：按 Esc 直接结束休息，避免调试时被遮罩锁住
+    // pnpm tauri dev only: Esc ends the break immediately so the overlay doesn't lock you out while debugging
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") invoke("dev_skip_rest").catch(console.error);
     };
@@ -97,13 +97,13 @@
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <main class:movable onmousedown={onMouseDown} in:fade={{ duration: 600 }}>
   {#if snap && s}
-    <!-- 强制等级可以关闭紧急模式；不强制休息时可以直接跳过，不需要缩小 -->
+    <!-- The enforcement level can disable urgent mode; unforced breaks can just be skipped, no need to shrink -->
     {#if snap.canShrink || shrunk}
       <button class="ghost shrink" onclick={toggleShrink}>
         {shrunk ? s.unshrink : s.shrink}
       </button>
     {/if}
-    <!-- 语言名称始终用其本身的文字显示 -->
+    <!-- Language names are always shown in their own language -->
     <select class="ghost lang" aria-label="Language" value={lang} onchange={changeLang}>
       {#each UI_LANGS as id (id)}
         <option value={id}>{LANG_NAMES[id]}</option>
@@ -300,7 +300,7 @@
     outline: none;
   }
 
-  /* 下拉列表本身不继承透明背景，单独设深色 */
+  /* The dropdown list doesn't inherit the transparent background, so give it a dark one */
   option {
     color: var(--fg);
     background: var(--bg-1);
@@ -320,7 +320,7 @@
     left: 1.25rem;
   }
 
-  /* 缩小后窗口较矮，收紧布局避免内容溢出 */
+  /* The shrunk window is shorter, so tighten the layout to avoid overflow */
   @media (max-height: 640px) {
     main {
       gap: 0.75rem;

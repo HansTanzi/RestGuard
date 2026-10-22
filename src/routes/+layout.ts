@@ -3,12 +3,12 @@
 // See: https://svelte.dev/docs/kit/single-page-apps
 // See: https://v2.tauri.app/start/frontend/sveltekit/ for more info
 export const ssr = false;
-// 为每个路由生成独立的 html（如 overlay.html），遮罩窗口按路径直接加载
+// Generate a separate html per route (e.g. overlay.html) so overlay windows load it directly by path
 export const prerender = true;
 
-// 正式版屏蔽 WebView 自带的浏览器行为（右键菜单的刷新/另存为/打印/检查，
-// 以及刷新、打印、开发者工具快捷键），仅 pnpm tauri dev 保留以便调试。
-// 预渲染在 Node 中执行本模块，需判断 window 是否存在
+// Release builds block the WebView's built-in browser behavior (context menu reload/save as/print/inspect,
+// and the reload, print and devtools shortcuts); only pnpm tauri dev keeps them for debugging.
+// Prerendering runs this module in Node, so check whether window exists
 if (!import.meta.env.DEV && typeof window !== "undefined") {
   window.addEventListener("contextmenu", (e) => e.preventDefault());
   window.addEventListener("keydown", (e) => {

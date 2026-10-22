@@ -1,4 +1,4 @@
-//! 关于窗口：从托盘菜单打开，加载前端 /about 路由（src/routes/about/+page.svelte）。
+//! About window: opened from the tray menu, loads the frontend /about route (src/routes/about/+page.svelte).
 
 use crate::i18n::{t, text};
 use serde::Serialize;
@@ -7,7 +7,7 @@ use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 pub const LABEL: &str = "about";
 
-/// 仓库地址取自 Cargo.toml 的 repository 字段
+/// Repository URL taken from the repository field in Cargo.toml
 const REPO_URL: &str = env!("CARGO_PKG_REPOSITORY");
 
 #[derive(Serialize)]
@@ -29,12 +29,12 @@ fn issues_url() -> String {
     format!("{REPO_URL}/issues")
 }
 
-/// 用系统默认浏览器打开链接。只接受固定的几个链接，不让页面打开任意地址
+/// Opens a link in the system default browser. Only a fixed set of links is accepted, so the page can't open arbitrary URLs
 pub fn open_link(link: &str) -> Result<(), String> {
     let url = match link {
         "repo" => REPO_URL.to_string(),
         "issues" => issues_url(),
-        _ => return Err("未知的链接".into()),
+        _ => return Err("Unknown link".into()),
     };
     #[cfg(windows)]
     let mut cmd = Command::new("explorer");
@@ -42,7 +42,7 @@ pub fn open_link(link: &str) -> Result<(), String> {
     let mut cmd = Command::new("open");
     #[cfg(all(unix, not(target_os = "macos")))]
     let mut cmd = Command::new("xdg-open");
-    // explorer 打开网址后返回非零退出码，所以只检查能否启动
+    // explorer returns a non-zero exit code after opening a URL, so only check that it starts
     cmd.arg(url).spawn().map(drop).map_err(|e| e.to_string())
 }
 
@@ -50,8 +50,8 @@ fn title() -> &'static str {
     t(&text::ABOUT_TITLE)
 }
 
-/// 打开关于窗口；已经打开时把它带到前台。
-/// 与 settings::open 一样，调用方要放在独立线程
+/// Opens the About window; brings it to the front if already open.
+/// Like settings::open, callers must run this on a separate thread
 pub fn open(app: &AppHandle) {
     if let Some(window) = app.get_webview_window(LABEL) {
         let _ = window.unminimize();
@@ -68,11 +68,11 @@ pub fn open(app: &AppHandle) {
         .minimizable(false)
         .build();
     if let Err(e) = built {
-        eprintln!("创建关于窗口失败：{e}");
+        eprintln!("Failed to create the About window: {e}");
     }
 }
 
-/// 语言切换后更新窗口标题（页面内文字由前端监听 LANG_EVENT 自行更新）
+/// Updates the window title after a language change (the page text is updated by the frontend listening for LANG_EVENT)
 pub fn refresh_language(app: &AppHandle) {
     if let Some(window) = app.get_webview_window(LABEL) {
         let _ = window.set_title(title());

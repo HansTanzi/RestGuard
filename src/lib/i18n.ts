@@ -1,11 +1,11 @@
-// 界面语言由后端决定（src-tauri/src/i18n.rs），与托盘保持一致
+// The UI language is decided by the backend (src-tauri/src/i18n.rs), consistent with the tray
 
 import type { BuiltinLevel, SoundId } from "./config";
 
-// 托盘或页面切换语言时广播，载荷为实际显示的语言（UiLang）
+// Broadcast when the tray or a page switches language; payload is the language actually displayed (UiLang)
 export const LANG_EVENT = "lang:changed";
 
-// 与 src-tauri/src/i18n.rs 的 Lang::id 一致（不含 auto）
+// Matches Lang::id in src-tauri/src/i18n.rs (excluding auto)
 export const UI_LANGS = [
   "zh",
   "en",
@@ -23,7 +23,7 @@ export const UI_LANGS = [
 ] as const;
 export type UiLang = (typeof UI_LANGS)[number];
 
-// 语言名称始终用其本身的文字显示，与托盘菜单（Lang::native_name）一致
+// Language names are always shown in their own language, as in the tray menu (Lang::native_name)
 export const LANG_NAMES: Record<UiLang, string> = {
   zh: "简体中文",
   en: "English",
@@ -40,25 +40,25 @@ export const LANG_NAMES: Record<UiLang, string> = {
   id: "Bahasa Indonesia",
 };
 
-// 更新文档的 lang 和书写方向，让浏览器选对字形（中日韩汉字）并让阿拉伯语从右到左排版
+// Update the document's lang and direction so the browser picks the right glyphs (CJK) and lays out Arabic right to left
 export function applyDocumentLang(lang: UiLang) {
   const el = document.documentElement;
   el.lang = lang === "zh" ? "zh-CN" : lang;
   el.dir = lang === "ar" ? "rtl" : "ltr";
 }
 
-// 休息遮罩（src/routes/overlay/+page.svelte）
+// Break overlay (src/routes/overlay/+page.svelte)
 export interface Strings {
   title: string;
   tip: string;
   restOver: string;
   startWork: string;
   postpone: (left: number) => string;
-  // 分钟数与 src-tauri/src/timer.rs 的 MEETING_SNOOZE 一致
+  // Minutes match MEETING_SNOOZE in src-tauri/src/timer.rs
   inMeeting: (app: string) => string;
   shrink: string;
   unshrink: string;
-  // 不强制休息时遮罩上的按钮
+  // Button on the overlay when the break isn't forced
   skipBreak: string;
 }
 
@@ -212,7 +212,7 @@ export function strings(lang: UiLang): Strings {
   return overlay[lang] ?? overlay.en;
 }
 
-// 设置面板（src/routes/+page.svelte）
+// Settings panel (src/routes/+page.svelte)
 export interface SettingsStrings {
   title: string;
   timing: string;
@@ -1047,7 +1047,7 @@ export function settingsStrings(lang: UiLang): SettingsStrings {
   return settings[lang] ?? settings.en;
 }
 
-// 关于页面（src/routes/about/+page.svelte）
+// About page (src/routes/about/+page.svelte)
 export interface AboutStrings {
   tagline: string;
   version: string;

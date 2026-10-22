@@ -1,11 +1,11 @@
-# 在 PR 阶段验证 Linux 能正常打出 .deb、.rpm 和 Arch 包，提前暴露系统依赖等问题，
-# 不上传任何产物。正式发布由 release.yml 的 linux job 负责。
+# Verifies at PR time that Linux builds the .deb, .rpm and Arch packages, surfacing system dependency issues early;
+# uploads nothing. Actual releases are handled by the linux job in release.yml.
 name: Linux build check
 
 on:
   pull_request:
     branches: [dev, main, master]
-    # 只改文档或发布流程时，不影响 Linux 构建，跳过
+    # Changes only to docs or the release workflow don't affect the Linux build, so skip
     paths-ignore:
       - "**.md"
       - "docs/**"
@@ -14,7 +14,7 @@ on:
       - ".github/workflows/release.yml"
   workflow_dispatch:
 
-# 同一个 PR 连续推送时，取消还在跑的旧检查
+# Cancel older runs still in progress when a PR gets new pushes
 concurrency:
   group: linux-build-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true

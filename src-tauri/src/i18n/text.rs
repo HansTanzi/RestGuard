@@ -1,9 +1,9 @@
-//! 后端（托盘、窗口标题、错误提示、配置文件注释）用到的文字。
-//! `{app}`、`{e}` 等占位符由调用方替换
+//! Text used by the backend (tray, window titles, error messages, config file comments).
+//! Placeholders such as `{app}` and `{e}` are substituted by the caller
 
 use super::Tr;
 
-// 托盘菜单（src-tauri/src/tray.rs）
+// Tray menu (src-tauri/src/tray.rs)
 
 pub const REST_NOW: Tr = Tr {
     zh: "提前休息",
@@ -101,7 +101,7 @@ pub const LEVEL_MENU: Tr = Tr {
     id: "Profil ketegasan",
 };
 
-/// 内置强制等级的名字，与 src/lib/i18n.ts 的 levels 一致
+/// Names of the built-in enforcement levels; matches levels in src/lib/i18n.ts
 pub const LEVEL_HIGH: Tr = Tr {
     zh: "高等强制",
     en: "High enforcement",
@@ -166,7 +166,7 @@ pub const FOLLOW_SYSTEM: Tr = Tr {
     id: "Ikuti sistem",
 };
 
-/// 托盘状态行：前台有会议等软件时暂缓休息，`{app}` 为软件名
+/// Tray status line: break held off while meeting software etc. is in the foreground; `{app}` is the app name
 pub const BREAK_HELD: Tr = Tr {
     zh: "{app} 使用中，休息暂缓",
     en: "Break on hold: {app} in use",
@@ -183,7 +183,7 @@ pub const BREAK_HELD: Tr = Tr {
     id: "Istirahat ditunda: {app} sedang digunakan",
 };
 
-/// 托盘状态行，后接倒计时
+/// Tray status line, followed by the countdown
 pub const BREAK_IN: Tr = Tr {
     zh: "距离休息",
     en: "Break in",
@@ -200,7 +200,7 @@ pub const BREAK_IN: Tr = Tr {
     id: "Istirahat dalam",
 };
 
-/// 托盘状态行，后接倒计时
+/// Tray status line, followed by the countdown
 pub const RESTING: Tr = Tr {
     zh: "休息中",
     en: "Resting",
@@ -233,7 +233,7 @@ pub const BREAK_OVER: Tr = Tr {
     id: "Istirahat selesai",
 };
 
-/// 推送到手机的通知正文，标题用 BREAK_OVER
+/// Body of the phone notification; the title is BREAK_OVER
 pub const PHONE_MESSAGE: Tr = Tr {
     zh: "休息时间到了，回到电脑前开始工作吧",
     en: "Your break is over. Time to get back to work.",
@@ -250,7 +250,7 @@ pub const PHONE_MESSAGE: Tr = Tr {
     id: "Istirahat Anda sudah selesai. Saatnya kembali bekerja.",
 };
 
-/// 设置面板发送测试通知失败。`{e}` 为具体的错误信息
+/// Sending a test notification from the settings panel failed. `{e}` is the error detail
 pub const PHONE_FAILED: Tr = Tr {
     zh: "推送失败，请检查服务器地址、主题和网络：{e}",
     en: "Couldn't send the notification. Check the server, topic and network: {e}",
@@ -267,7 +267,7 @@ pub const PHONE_FAILED: Tr = Tr {
     id: "Notifikasi gagal dikirim. Periksa server, topik, dan jaringan: {e}",
 };
 
-/// 设置面板选择提示音文件时，文件对话框里的类型名称
+/// File type name in the file dialog when choosing a sound file in the settings panel
 pub const AUDIO_FILES: Tr = Tr {
     zh: "音频文件",
     en: "Audio files",
@@ -284,7 +284,7 @@ pub const AUDIO_FILES: Tr = Tr {
     id: "File audio",
 };
 
-/// 试听自选文件播放失败时的提示（多半是格式不受支持）
+/// Message when previewing a custom file fails (usually an unsupported format)
 pub const SOUND_FILE_FAILED: Tr = Tr {
     zh: "无法播放这个文件，可能是本系统不支持它的格式，请换一个文件",
     en: "Couldn't play this file. Its format may not be supported on this system; please choose another file.",
@@ -301,7 +301,7 @@ pub const SOUND_FILE_FAILED: Tr = Tr {
     id: "File ini tidak dapat diputar. Formatnya mungkin tidak didukung di sistem ini; silakan pilih file lain.",
 };
 
-// 窗口标题
+// Window titles
 
 pub const SETTINGS_TITLE: Tr = Tr {
     zh: "RestGuard 设置",
@@ -335,7 +335,7 @@ pub const ABOUT_TITLE: Tr = Tr {
     id: "Tentang RestGuard",
 };
 
-// 返回给前端的错误提示（src-tauri/src/lib.rs）
+// Error messages returned to the frontend (src-tauri/src/lib.rs)
 
 pub const SETTINGS_LOCKED: Tr = Tr {
     zh: "休息期间不能修改设置",
@@ -353,7 +353,7 @@ pub const SETTINGS_LOCKED: Tr = Tr {
     id: "Pengaturan tidak bisa diubah saat istirahat",
 };
 
-/// `{e}` 为具体的错误信息
+/// `{e}` is the error detail
 pub const SAVE_FAILED: Tr = Tr {
     zh: "无法保存配置文件：{e}",
     en: "Couldn't save the config file: {e}",
@@ -370,7 +370,7 @@ pub const SAVE_FAILED: Tr = Tr {
     id: "Tidak dapat menyimpan file konfigurasi: {e}",
 };
 
-/// `{e}` 为具体的错误信息
+/// `{e}` is the error detail
 pub const CONFIG_READ_FAILED: Tr = Tr {
     zh: "无法读取配置文件：{e}",
     en: "Couldn't read the config file: {e}",
@@ -387,7 +387,7 @@ pub const CONFIG_READ_FAILED: Tr = Tr {
     id: "Tidak dapat membaca file konfigurasi: {e}",
 };
 
-/// 手动编辑的配置文件有语法错误。`{line}` 为行号，`{e}` 为具体的错误信息
+/// A manually edited config file has a syntax error. `{line}` is the line number, `{e}` the error detail
 pub const CONFIG_INVALID: Tr = Tr {
     zh: "配置文件第 {line} 行有误，修改未生效：{e}",
     en: "Config file error on line {line}, changes not applied: {e}",
@@ -420,7 +420,7 @@ pub const LINKS_LOCKED: Tr = Tr {
     id: "Tautan tidak bisa dibuka saat istirahat",
 };
 
-/// 配置文件里的注释（src-tauri/src/config.rs）。每条都是单行，不能含换行
+/// Comments in the config file (src-tauri/src/config.rs). Each must be a single line without newlines
 pub mod config {
     use super::Tr;
 
@@ -648,7 +648,7 @@ pub mod config {
         id: "Topik ntfy: hanya huruf, angka, - dan _. Di server publik siapa pun yang tahu bisa berlangganan, jadi pilih nama yang sulit ditebak",
     };
 
-    /// 用于测试：所有注释
+    /// For tests: all comments
     #[cfg(test)]
     pub const ALL: [&Tr; 14] = [
         &HEADER,

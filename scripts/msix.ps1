@@ -1,6 +1,6 @@
-# 用法: pnpm msix [-SkipBuild]
-# 生成提交微软商店用的 MSIX 包 src-tauri/target/msix/RestGuard_<version>_x64.msix。
-# 包不需要自己签名，上传到合作伙伴中心后由商店签名
+# Usage: pnpm msix [-SkipBuild]
+# Builds the MSIX package for Microsoft Store submission: src-tauri/target/msix/RestGuard_<version>_x64.msix.
+# No need to sign it ourselves; the Store signs it after upload to Partner Center
 param(
     [switch]$SkipBuild
 )
@@ -9,12 +9,12 @@ $ErrorActionPreference = "Stop"
 Set-Location (Split-Path $PSScriptRoot -Parent)
 
 $version = (Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
-# 商店要求四段版本号且最后一段为 0，不支持预发布后缀
+# The Store requires a four-part version ending in 0 and doesn't support pre-release suffixes
 if ($version -notmatch '^\d+\.\d+\.\d+$') {
     throw "MSIX packages need a stable version, got '$version'"
 }
 
-# 取已安装的最新版 Windows SDK 中的 makeappx.exe
+# Use makeappx.exe from the latest installed Windows SDK
 $makeappx = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\makeappx.exe" -ErrorAction SilentlyContinue |
     Sort-Object { [version]$_.Directory.Parent.Name } |
     Select-Object -Last 1

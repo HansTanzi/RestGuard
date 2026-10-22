@@ -1,4 +1,4 @@
-//! 设置面板：从托盘菜单打开的普通窗口，加载前端根路由（src/routes/+page.svelte）。
+//! Settings panel: a regular window opened from the tray menu that loads the frontend root route (src/routes/+page.svelte).
 
 use crate::i18n::{t, text};
 use std::{path::Path, process::Command};
@@ -10,8 +10,8 @@ fn title() -> &'static str {
     t(&text::SETTINGS_TITLE)
 }
 
-/// 打开设置窗口；已经打开时把它带到前台。
-/// 与 overlay::open_all 一样，在 Windows 上不能在事件回调线程里直接创建窗口，调用方要放在独立线程
+/// Opens the settings window; brings it to the front if already open.
+/// Like overlay::open_all, windows can't be created directly on the event callback thread on Windows, so callers must use a separate thread
 pub fn open(app: &AppHandle) {
     if let Some(window) = app.get_webview_window(LABEL) {
         let _ = window.unminimize();
@@ -19,32 +19,32 @@ pub fn open(app: &AppHandle) {
         let _ = window.set_focus();
         return;
     }
-    // WebviewUrl::default() 即 index.html，对应根路由
+    // WebviewUrl::default() is index.html, i.e. the root route
     let built = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::default())
         .title(title())
-        // 还原后是这个大小
+        // Size when restored
         .inner_size(440.0, 600.0)
         .min_inner_size(360.0, 480.0)
         .center()
-        // 与页面背景（+page.svelte 的 --bg-1）一致，页面加载出来之前不会先闪一下白色
+        // Matches the page background (--bg-1 in +page.svelte) so there's no white flash before the page loads
         .background_color(Color(0x0f, 0x17, 0x2a, 0xff))
-        // 先隐藏创建，最大化后再显示，避免先出现一个窄窗口再变宽
+        // Create hidden and show after maximizing, so a narrow window doesn't appear first and then widen
         .visible(false)
         .build();
     match built {
         Ok(window) => {
-            // 默认最大化，分组可以多列排开
+            // Maximized by default so the groups can spread across multiple columns
             let _ = window.maximize();
             let _ = window.show();
             let _ = window.set_focus();
         }
-        Err(e) => eprintln!("创建设置窗口失败：{e}"),
+        Err(e) => eprintln!("Failed to create the settings window: {e}"),
     }
 }
 
-/// 用系统默认的程序打开配置文件，供用户手动编辑。
-/// 在进程内调用 ShellExecute：商店（MSIX）版的 AppData 写入是虚拟化的，
-/// 交给 explorer 打开会找不到文件，由本进程启动的编辑器才能看到同一份文件
+/// Opens the config file with the system default program for manual editing.
+/// Calls ShellExecute in-process: AppData writes in the Store (MSIX) version are virtualized,
+/// so explorer wouldn't find the file; only an editor launched by this process sees the same file
 #[cfg(windows)]
 pub fn open_file(path: &Path) -> Result<(), String> {
     use windows::{
@@ -55,17 +55,17 @@ pub fn open_file(path: &Path) -> Result<(), String> {
     let code = unsafe {
         ShellExecuteW(None, w!("open"), &file, PCWSTR::null(), PCWSTR::null(), SW_SHOWNORMAL)
     };
-    // 返回值大于 32 表示成功
+    // A return value greater than 32 means success
     if code.0 as isize > 32 {
         return Ok(());
     }
-    // .toml 没有关联的程序时用记事本打开
+    // Use Notepad when no program is associated with .toml
     Command::new("notepad").arg(path).spawn().map(drop).map_err(|e| e.to_string())
 }
 
 #[cfg(target_os = "macos")]
 pub fn open_file(path: &Path) -> Result<(), String> {
-    // -t：用默认的文本编辑器打开，.toml 没有关联的程序时也能打开
+    // -t: open with the default text editor, which works even when no program is associated with .toml
     Command::new("open").arg("-t").arg(path).spawn().map(drop).map_err(|e| e.to_string())
 }
 
@@ -74,7 +74,7 @@ pub fn open_file(path: &Path) -> Result<(), String> {
     Command::new("xdg-open").arg(path).spawn().map(drop).map_err(|e| e.to_string())
 }
 
-/// 语言切换后更新窗口标题（页面内文字由前端监听 LANG_EVENT 自行更新）
+/// Updates the window title after a language change (the page text is updated by the frontend listening for LANG_EVENT)
 pub fn refresh_language(app: &AppHandle) {
     if let Some(window) = app.get_webview_window(LABEL) {
         let _ = window.set_title(title());

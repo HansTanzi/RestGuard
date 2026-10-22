@@ -1,9 +1,9 @@
-//! 空闲检测：距离上一次键盘鼠标输入过了多久。人离开电脑的时间不算工作
+//! Idle detection: how long since the last keyboard or mouse input. Time away from the computer doesn't count as work
 
 use std::time::Duration;
 
-// 各平台的 idle_time：用户已经多久没有操作键盘鼠标。无法检测时返回 None，此时按一直在操作处理。
-// 不参考“屏幕常亮”请求来识别看视频：很多应用没在播放时也一直持有它，会让空闲检测永远不生效
+// Per-platform idle_time: how long the user hasn't touched the keyboard or mouse. Returns None when it can't be detected, which is treated as always active.
+// Keep-display-on requests aren't used to detect video playback: many apps hold them even when not playing, which would stop idle detection from ever kicking in
 
 #[cfg(windows)]
 pub fn idle_time() -> Option<Duration> {
@@ -19,7 +19,7 @@ pub fn idle_time() -> Option<Duration> {
         if !GetLastInputInfo(&mut info).as_bool() {
             return None;
         }
-        // 两者都是开机后的毫秒数，约 49.7 天回绕一次，用回绕减法
+        // Both are milliseconds since boot and wrap around about every 49.7 days, so use wrapping subtraction
         let ms = GetTickCount().wrapping_sub(info.dwTime);
         Some(Duration::from_millis(ms.into()))
     }
@@ -41,8 +41,8 @@ pub fn idle_time() -> Option<Duration> {
     Duration::try_from_secs_f64(secs).ok()
 }
 
-/// Linux：通过 D-Bus 询问桌面环境。每次都要启动 gdbus 进程，
-/// 所以结果缓存几秒，期间按经过的时间推算
+/// Linux: asks the desktop environment over D-Bus. Each query spawns a gdbus process,
+/// so the result is cached for a few seconds and extrapolated from the elapsed time in between
 #[cfg(not(any(windows, target_os = "macos")))]
 pub fn idle_time() -> Option<Duration> {
     use std::{sync::Mutex, time::Instant};
@@ -65,15 +65,15 @@ pub fn idle_time() -> Option<Duration> {
 mod linux {
     use std::{process::Command, time::Duration};
 
-    /// (服务名, 对象路径, 方法)。两者返回的都是毫秒
+    /// (service name, object path, method). Both return milliseconds
     const SOURCES: &[(&str, &str, &str)] = &[
-        // GNOME（X11 和 Wayland 都支持）
+        // GNOME (both X11 and Wayland)
         (
             "org.gnome.Mutter.IdleMonitor",
             "/org/gnome/Mutter/IdleMonitor/Core",
             "org.gnome.Mutter.IdleMonitor.GetIdletime",
         ),
-        // KDE Plasma 等实现了 freedesktop 屏保接口的桌面
+        // KDE Plasma and other desktops implementing the freedesktop screensaver interface
         (
             "org.freedesktop.ScreenSaver",
             "/org/freedesktop/ScreenSaver",
@@ -95,7 +95,7 @@ mod linux {
         })
     }
 
-    /// gdbus 的输出形如 `(uint64 12345,)`
+    /// gdbus output looks like `(uint64 12345,)`
     fn parse(text: &str) -> Option<u64> {
         let digits = text.trim().trim_start_matches('(').split_whitespace().nth(1)?;
         digits.trim_end_matches([',', ')']).parse().ok()
@@ -116,7 +116,7 @@ mod linux {
 mod tests {
     #[test]
     fn reads_idle_time() {
-        // 只要不崩溃即可；打印出来方便手动核对
+        // Only needs not to crash; printed for manual checking
         println!("idle: {:?}", super::idle_time());
     }
 }

@@ -1,4 +1,4 @@
-//! 休息遮罩：每块显示器一个无边框、置顶的窗口。强制休息时关不掉，否则关掉即跳过这次休息。
+//! Break overlay: one borderless, always-on-top window per display. It can't be closed during a forced break; otherwise closing it skips the break.
 
 use std::{
     collections::HashMap,
@@ -10,10 +10,10 @@ use tauri::{
 };
 
 const PREFIX: &str = "overlay-";
-/// 主屏幕上的遮罩，打开时获得焦点
+/// The overlay on the primary screen, focused when opened
 pub const PRIMARY_LABEL: &str = "overlay-primary";
 
-/// 显示器区域，单位与系统窗口坐标一致（见 unit_scale）
+/// Display area, in the same units as system window coordinates (see unit_scale)
 #[derive(Clone, Copy)]
 struct Rect {
     x: f64,
@@ -35,8 +35,8 @@ impl Rect {
     }
 }
 
-/// 物理像素换算到窗口坐标单位的比例。Windows/Linux 用物理像素，避免多屏 DPI 不同时错位；
-/// macOS 的全局坐标以逻辑点为单位，Retina 屏和普通外接屏混用时物理像素没有统一坐标系，所以用逻辑点
+/// Ratio from physical pixels to window coordinate units. Windows/Linux use physical pixels to avoid misplacement across monitors with different DPI;
+/// macOS global coordinates are in logical points, and physical pixels have no common coordinate space when mixing Retina and regular external displays, so logical points are used
 fn unit_scale(scale_factor: f64) -> f64 {
     if cfg!(target_os = "macos") {
         scale_factor
@@ -61,12 +61,12 @@ fn size(w: f64, h: f64) -> Size {
     }
 }
 
-/// 遮罩的布局，窗口移动后据此约束位置
+/// Overlay layout, used to constrain positions after a window moves
 #[derive(Default)]
 struct Layout {
-    /// 每个遮罩所属的显示器。可拖动时也只能留在这块屏幕上
+    /// The display each overlay belongs to. Even when draggable it must stay on that screen
     homes: HashMap<String, Rect>,
-    /// 当前覆盖比例，不可拖动时窗口固定在按它居中的位置
+    /// Current coverage fraction; when not draggable, windows are pinned to the centered position it implies
     coverage: f64,
     movable: bool,
 }
@@ -77,18 +77,18 @@ pub fn is_overlay(label: &str) -> bool {
     label.starts_with(PREFIX)
 }
 
-/// 在所有显示器上打开遮罩。`forced` 为 false 时窗口可以用 Alt+F4 等关掉（关掉即跳过这次休息）；
-/// `movable` 为 false 时窗口固定在屏幕中央，拖动或用快捷键移动都会被拉回。
-/// 在 Windows 上，事件回调或同步 command 里创建窗口会死锁，所以调用方要放在独立线程。
+/// Opens overlays on all displays. When `forced` is false, windows can be closed with Alt+F4 etc. (closing skips the break);
+/// when `movable` is false, windows stay centered and are pulled back if dragged or moved with shortcuts.
+/// On Windows, creating windows in an event callback or synchronous command deadlocks, so callers must use a separate thread.
 pub fn open_all(app: &AppHandle, coverage: f64, forced: bool, movable: bool) {
     let monitors = match app.available_monitors() {
         Ok(m) if !m.is_empty() => m,
         Ok(_) => {
-            eprintln!("没有检测到显示器，无法打开遮罩");
+            eprintln!("No display detected, cannot open the overlay");
             return;
         }
         Err(e) => {
-            eprintln!("获取显示器失败：{e}");
+            eprintln!("Failed to get displays: {e}");
             return;
         }
     };
@@ -116,7 +116,7 @@ pub fn open_all(app: &AppHandle, coverage: f64, forced: bool, movable: bool) {
         }
 
         let home = Rect::of_monitor(monitor);
-        // 先登记再建窗口，创建过程中触发的 Moved 事件也能被约束
+        // Register before creating windows so Moved events fired during creation are constrained too
         LAYOUT.lock().unwrap().homes.insert(label.clone(), home);
 
         let built = WebviewWindowBuilder::new(app, &label, WebviewUrl::App("overlay".into()))
@@ -146,14 +146,14 @@ pub fn open_all(app: &AppHandle, coverage: f64, forced: bool, movable: bool) {
             }
             Err(e) => {
                 LAYOUT.lock().unwrap().homes.remove(&label);
-                eprintln!("创建遮罩窗口 {label} 失败：{e}");
+                eprintln!("Failed to create overlay window {label}: {e}");
             }
         }
     }
 }
 
-/// macOS 上 always_on_top 只是浮动窗口级别，盖不住菜单栏和 Dock，也进不了其他应用的全屏空间。
-/// 提升到屏保级别，并让遮罩出现在所有空间（包括全屏应用）里
+/// On macOS, always_on_top is only the floating window level, which doesn't cover the menu bar or Dock or enter other apps' full-screen spaces.
+/// Raise it to the screen saver level and make the overlay appear in all spaces (including full-screen apps)
 #[cfg(target_os = "macos")]
 fn cover_everything(window: &tauri::WebviewWindow) {
     use objc2_app_kit::{NSWindow, NSWindowCollectionBehavior};
@@ -161,7 +161,7 @@ fn cover_everything(window: &tauri::WebviewWindow) {
     const SCREEN_SAVER_LEVEL: isize = 1000;
 
     let w = window.clone();
-    // AppKit 只能在主线程调用
+    // AppKit can only be called on the main thread
     let _ = window.run_on_main_thread(move || {
         let Ok(ptr) = w.ns_window() else {
             return;
@@ -183,17 +183,17 @@ fn cover_everything(window: &tauri::WebviewWindow) {
 pub fn close_all(app: &AppHandle) {
     for (label, window) in app.webview_windows() {
         if is_overlay(&label) {
-            // destroy 不触发 CloseRequested，绕过关闭拦截
+            // destroy doesn't fire CloseRequested, bypassing the close interception
             let _ = window.destroy();
         }
     }
     LAYOUT.lock().unwrap().homes.clear();
 }
 
-/// 把所有遮罩按比例缩放（仍居中置顶）。紧急模式传入较小的比例，露出四周以便保存文件等；
-/// 退出时传回正常比例，恢复原大小并回到屏幕中央
+/// Scales all overlays to a fraction (still centered and on top). Urgent mode passes a smaller fraction, exposing the edges for saving files etc.;
+/// leaving it passes the normal fraction back, restoring the original size and centering
 pub fn set_coverage(app: &AppHandle, coverage: f64) {
-    // 先更新比例再移动窗口，随之触发的 Moved 按新位置约束
+    // Update the fraction before moving windows so the resulting Moved events are constrained to the new position
     let homes = {
         let mut layout = LAYOUT.lock().unwrap();
         layout.coverage = coverage;
@@ -208,8 +208,8 @@ pub fn set_coverage(app: &AppHandle, coverage: f64) {
     }
 }
 
-/// 窗口移动后调用：如果被拖出（或用 Win+Shift+方向键移出）所属屏幕，就拉回屏幕内；
-/// 不可拖动时拉回屏幕中央
+/// Called after a window moves: if it was dragged (or moved with Win+Shift+arrow) off its screen, pulls it back;
+/// when not draggable, pulls it back to the center
 pub fn keep_on_home(window: &Window, pos: PhysicalPosition<i32>) {
     let (home, coverage, movable) = {
         let layout = LAYOUT.lock().unwrap();
@@ -225,7 +225,7 @@ pub fn keep_on_home(window: &Window, pos: PhysicalPosition<i32>) {
     let (x, y) = (pos.x as f64 / s, pos.y as f64 / s);
     let (fx, fy) = if movable {
         let (w, h) = (win_size.width as f64 / s, win_size.height as f64 / s);
-        // 窗口比屏幕大时贴住左/上边
+        // Stick to the left/top edge when the window is larger than the screen
         let clamp = |v: f64, origin: f64, screen: f64, len: f64| {
             v.clamp(origin, origin + (screen - len).max(0.0))
         };
@@ -234,13 +234,13 @@ pub fn keep_on_home(window: &Window, pos: PhysicalPosition<i32>) {
         let area = cover_rect(home, coverage);
         (area.x, area.y)
     };
-    // 忽略取整误差，避免反复触发 Moved
+    // Ignore rounding errors to avoid repeatedly triggering Moved
     if (fx - x).abs() >= 0.5 || (fy - y).abs() >= 0.5 {
         let _ = window.set_position(position(fx, fy));
     }
 }
 
-/// 按比例计算居中覆盖区域
+/// Computes the centered area covering the given fraction
 fn cover_rect(home: Rect, coverage: f64) -> Rect {
     let (w, h) = (home.w * coverage, home.h * coverage);
     Rect {

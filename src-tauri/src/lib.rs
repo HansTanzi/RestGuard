@@ -387,12 +387,32 @@ pub fn run() {
         .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
         .plugin(tauri_plugin_dialog::init())
-        // The default macOS menu has Cmd+Q, which would quit the app during a break
+        // The default macOS menu has Cmd+Q, which would quit the app during a break; setup installs an Edit-only menu instead
         .enable_macos_default_menu(false)
         .setup(|app| {
             // On macOS, show only a menu bar icon, not a Dock icon
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            // Text fields only get Cmd+C/V/X/A/Z through the key equivalents of an Edit menu; it stays hidden under the Accessory policy
+            #[cfg(target_os = "macos")]
+            {
+                use tauri::menu::{Menu, PredefinedMenuItem, Submenu};
+                let edit = Submenu::with_items(
+                    app,
+                    "Edit",
+                    true,
+                    &[
+                        &PredefinedMenuItem::undo(app, None)?,
+                        &PredefinedMenuItem::redo(app, None)?,
+                        &PredefinedMenuItem::separator(app)?,
+                        &PredefinedMenuItem::cut(app, None)?,
+                        &PredefinedMenuItem::copy(app, None)?,
+                        &PredefinedMenuItem::paste(app, None)?,
+                        &PredefinedMenuItem::select_all(app, None)?,
+                    ],
+                )?;
+                app.set_menu(Menu::with_items(app, &[&edit])?)?;
+            }
             let dir = app.path().app_config_dir()?;
             // Dev builds use separate config and language files so debugging doesn't affect the installed release
             let (lang_name, cfg_name) = if cfg!(debug_assertions) {

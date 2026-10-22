@@ -1,6 +1,6 @@
 # RestGuard
 
-English | [简体中文](README.zh-CN.md)
+English | [简体中文](README.zh-CN.md) | [Deutsch](README.de.md)
 
 A cross-platform break reminder with three built-in enforcement levels: it can remind you to take a break, or make you take one. Enforcement is what sets it apart from other break reminders.
 

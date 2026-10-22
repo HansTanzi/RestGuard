@@ -1,20 +1,20 @@
-//! 工作/休息的状态机。不依赖 Tauri，所有方法都显式传入当前时间，便于测试。
+//! Work/break state machine. Independent of Tauri; every method takes the current time explicitly, for testability.
 
 use crate::config::{Config, Profile};
 use serde::Serialize;
 use std::time::{Duration, Instant};
 
-/// 点击“我在开会”后多久再提醒休息，与 src/lib/i18n.ts 的按钮文字一致
+/// How long after clicking "I'm in a meeting" to remind again; matches the button text in src/lib/i18n.ts
 pub const MEETING_SNOOZE: Duration = Duration::from_secs(15 * 60);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Phase {
-    /// 工作中，倒计时结束后进入休息
+    /// Working; a break starts when the countdown ends
     Working,
-    /// 强制休息中，遮罩无法关闭
+    /// On a forced break; the overlay can't be closed
     Resting,
-    /// 休息时间已到，等待用户点击“开始工作”
+    /// Break time is over, waiting for the user to click "Start working"
     RestOver,
 }
 
@@ -24,7 +24,7 @@ pub enum TimerEvent {
     RestFinished,
 }
 
-/// 发给前端和托盘的状态快照
+/// State snapshot sent to the frontend and tray
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Snapshot {
@@ -33,19 +33,19 @@ pub struct Snapshot {
     pub total_secs: u64,
     pub can_postpone: bool,
     pub postpones_left: u32,
-    /// 休息时间已到，但因该豁免应用在前台而暂缓
+    /// A break is due but held off because this exempt app is in the foreground
     pub held_by: Option<String>,
-    /// 休息开始时正在运行的会议软件，此时遮罩提供“我在开会”
+    /// Meeting software running when the break started; the overlay then offers "I'm in a meeting"
     pub meeting_app: Option<String>,
-    /// 强制休息；false 时遮罩可以关掉
+    /// Forced break; when false the overlay can be closed
     pub forced: bool,
-    /// 遮罩上提供“跳过这次休息”
+    /// Offer "Skip this break" on the overlay
     pub can_skip: bool,
-    /// 遮罩上提供“有急事，缩小一下”
+    /// Offer "Urgent? Shrink it" on the overlay
     pub can_shrink: bool,
-    /// 遮罩没有占满屏幕时可以在本屏幕内拖动
+    /// The overlay can be dragged within its screen when it doesn't fill it
     pub movable: bool,
-    /// 正常模式下遮罩占满屏幕（此时即使 movable 也拖不动）
+    /// The overlay fills the screen in normal mode (so it can't be dragged even if movable)
     pub full_screen: bool,
 }
 
@@ -53,20 +53,20 @@ pub struct Timer {
     work: Duration,
     rest: Duration,
     postpone: Duration,
-    /// 当前强制等级的方案
+    /// Profile of the current enforcement level
     profile: Profile,
-    /// 无操作超过这么久算离开，None 表示关闭空闲检测
+    /// No input for this long counts as away; None disables idle detection
     idle_threshold: Option<Duration>,
 
     phase: Phase,
     started: Instant,
     deadline: Instant,
     postpones_used: u32,
-    /// 本次休息是用户主动开始的，主动休息不提供推迟
+    /// This break was started by the user; voluntary breaks can't be postponed
     voluntary: bool,
     held_by: Option<String>,
     meeting_app: Option<String>,
-    /// 用户离开期间冻结的工作剩余时间
+    /// Remaining work time frozen while the user is away
     away_remaining: Option<Duration>,
 }
 
@@ -89,9 +89,9 @@ impl Timer {
         }
     }
 
-    /// 告知用户已多久没有操作。需在 tick 之前调用。
-    /// 工作期间离开超过阈值时暂停倒计时（离开的整段时间都不算工作）；
-    /// 离开时间达到一次休息的长度，就当已经完整休息过，回来后重新开始计时
+    /// Reports how long the user has been inactive. Must be called before tick.
+    /// While working, pauses the countdown once away past the threshold (the whole time away doesn't count as work);
+    /// being away for a full break length counts as a full break, and the timer restarts on return
     pub fn idle(&mut self, now: Instant, idle: Duration) {
         if self.phase != Phase::Working {
             return;
@@ -101,7 +101,7 @@ impl Timer {
             return;
         };
         if idle < threshold {
-            // 回来了，从冻结的剩余时间继续
+            // Back: continue from the frozen remaining time
             self.away_remaining = None;
         } else if idle >= self.rest {
             self.postpones_used = 0;
@@ -117,12 +117,12 @@ impl Timer {
         }
     }
 
-    /// 工作倒计时已结束，即将开始休息
+    /// The work countdown has ended and a break is about to start
     pub fn rest_due(&self, now: Instant) -> bool {
         self.phase == Phase::Working && now >= self.deadline
     }
 
-    /// 设置暂缓休息的豁免应用，None 表示不暂缓。需在 tick 之前调用
+    /// Sets the exempt app holding off the break, None for no hold. Must be called before tick
     pub fn hold(&mut self, app: Option<String>) {
         self.held_by = app;
     }
@@ -145,7 +145,7 @@ impl Timer {
         }
     }
 
-    /// 托盘“提前休息”
+    /// Tray "Rest now"
     pub fn rest_now(&mut self, now: Instant) -> bool {
         if self.phase != Phase::Working {
             return false;
@@ -154,7 +154,7 @@ impl Timer {
         true
     }
 
-    /// 休息中点击“过会儿再休息”
+    /// "Rest later" clicked during a break
     pub fn postpone(&mut self, now: Instant) -> bool {
         if !self.can_postpone() {
             return false;
@@ -164,12 +164,12 @@ impl Timer {
         true
     }
 
-    /// 休息开始时记录正在运行的会议软件。无法确定是否在开会，交给用户决定
+    /// Records meeting software running when the break starts. Whether a meeting is on can't be determined, so the user decides
     pub fn set_meeting_app(&mut self, app: Option<String>) {
         self.meeting_app = app;
     }
 
-    /// 休息中点击“我在开会”：回到工作，一段时间后再提醒，不占用推迟次数
+    /// "I'm in a meeting" clicked during a break: back to work, remind again later, without using a postponement
     pub fn in_meeting(&mut self, now: Instant) -> bool {
         if !self.can_claim_meeting() {
             return false;
@@ -178,7 +178,7 @@ impl Timer {
         true
     }
 
-    /// 休息结束后点击“开始工作”。完整休息过一次，推迟次数清零
+    /// "Start working" clicked after the break. A full break was taken, so postponements reset
     pub fn start_work(&mut self, now: Instant) -> bool {
         if self.phase != Phase::RestOver {
             return false;
@@ -188,7 +188,7 @@ impl Timer {
         true
     }
 
-    /// 不强制休息时，关掉遮罩即跳过这次休息
+    /// When the break isn't forced, closing the overlay skips it
     pub fn dismiss(&mut self, now: Instant) -> bool {
         if self.phase == Phase::Working || self.profile.force_rest {
             return false;
@@ -198,7 +198,7 @@ impl Timer {
         true
     }
 
-    /// 遮罩上点击“跳过这次休息”。强制等级不允许跳过时拒绝
+    /// "Skip this break" clicked on the overlay. Refused when the enforcement level doesn't allow skipping
     pub fn skip(&mut self, now: Instant) -> bool {
         if self.phase == Phase::Working || !self.profile.can_skip() {
             return false;
@@ -208,7 +208,7 @@ impl Timer {
         true
     }
 
-    /// 开发调试用：无论休息是否结束，直接回到工作
+    /// For development: go straight back to work whether or not the break is over
     pub fn skip_rest(&mut self, now: Instant) -> bool {
         if self.phase == Phase::Working {
             return false;
@@ -218,8 +218,8 @@ impl Timer {
         true
     }
 
-    /// 设置面板保存后立即应用新配置。
-    /// 正常工作期间修改了工作时长时，按新时长重新开始倒计时；推迟期间的倒计时不受影响
+    /// Applies the new config right after the settings panel saves.
+    /// If the work duration changed during normal work, restart the countdown with the new duration; a postponement countdown is unaffected
     pub fn apply_config(&mut self, cfg: &Config, now: Instant) {
         let work_changed = cfg.work() != self.work;
         self.work = cfg.work();
@@ -227,7 +227,7 @@ impl Timer {
         self.postpone = cfg.postpone();
         self.profile = cfg.profile();
         self.idle_threshold = cfg.idle();
-        // 推迟次数清零前，postpones_used > 0 说明当前处于推迟后的倒计时
+        // Before postponements are reset, postpones_used > 0 means we're in a post-postponement countdown
         if self.phase == Phase::Working && self.postpones_used == 0 && work_changed {
             self.begin_work(now, self.work);
         }
@@ -312,7 +312,7 @@ mod tests {
 
         assert_eq!(t.tick(t0 + 59 * MIN), None);
         assert_eq!(t.tick(t0 + 60 * MIN), Some(TimerEvent::RestStarted));
-        assert!(!t.start_work(t0 + 61 * MIN), "休息没结束不能开始工作");
+        assert!(!t.start_work(t0 + 61 * MIN), "Cannot start work before the break is over");
 
         assert_eq!(t.tick(t0 + 70 * MIN), Some(TimerEvent::RestFinished));
         assert_eq!(t.tick(t0 + 71 * MIN), None);
@@ -341,7 +341,7 @@ mod tests {
         assert!(t.start_work(now));
         now += 60 * MIN;
         t.tick(now);
-        assert!(t.snapshot(now).can_postpone, "完整休息后推迟次数应清零");
+        assert!(t.snapshot(now).can_postpone, "Postponements should reset after a full break");
     }
 
     #[test]
@@ -349,7 +349,7 @@ mod tests {
         let t0 = Instant::now();
         let mut t = timer(t0);
         assert!(t.rest_now(t0 + MIN));
-        assert!(!t.rest_now(t0 + MIN), "已经在休息");
+        assert!(!t.rest_now(t0 + MIN), "Already on a break");
         assert!(!t.snapshot(t0 + MIN).can_postpone);
         assert!(!t.postpone(t0 + MIN));
     }
@@ -379,7 +379,7 @@ mod tests {
         let mut t = timer(t0);
         let now = t0 + 60 * MIN;
         assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
-        assert!(!t.in_meeting(now), "没有会议软件在运行");
+        assert!(!t.in_meeting(now), "No meeting software running");
 
         t.set_meeting_app(Some("Zoom".into()));
         assert_eq!(t.snapshot(now).meeting_app.as_deref(), Some("Zoom"));
@@ -390,7 +390,7 @@ mod tests {
         assert_eq!(snap.postpones_left, 3);
         assert_eq!(snap.meeting_app, None);
 
-        // 再次休息时需要重新检测
+        // Must detect again on the next break
         assert_eq!(t.tick(now + 15 * MIN), Some(TimerEvent::RestStarted));
         assert!(!t.in_meeting(now + 15 * MIN));
     }
@@ -409,7 +409,7 @@ mod tests {
     fn skip_rest_works_mid_rest() {
         let t0 = Instant::now();
         let mut t = timer(t0);
-        assert!(!t.skip_rest(t0), "工作中无需跳过");
+        assert!(!t.skip_rest(t0), "Nothing to skip while working");
         assert!(t.rest_now(t0 + MIN));
         assert!(t.skip_rest(t0 + 2 * MIN));
         assert_eq!(t.snapshot(t0 + 2 * MIN).phase, Phase::Working);
@@ -421,7 +421,7 @@ mod tests {
         let mut t = timer(t0);
         let now = t0 + 10 * MIN;
 
-        // 只改休息时长：工作倒计时不变
+        // Only the break duration changed: work countdown unchanged
         let cfg = Config {
             rest_minutes: 3.0,
             ..Config::default()
@@ -429,7 +429,7 @@ mod tests {
         t.apply_config(&cfg, now);
         assert_eq!(t.snapshot(now).remaining_secs, 50 * 60);
 
-        // 改工作时长：按新时长重新计时
+        // Work duration changed: restart with the new duration
         let cfg = Config {
             work_minutes: 25.0,
             ..cfg
@@ -437,12 +437,12 @@ mod tests {
         t.apply_config(&cfg, now);
         assert_eq!(t.snapshot(now).remaining_secs, 25 * 60);
 
-        // 新的休息时长在下次休息生效
+        // The new break duration takes effect on the next break
         let now = now + 25 * MIN;
         assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
         assert_eq!(t.snapshot(now).total_secs, 3 * 60);
 
-        // 推迟期间改工作时长，不打断推迟倒计时
+        // Changing the work duration during a postponement doesn't interrupt its countdown
         assert!(t.postpone(now));
         let cfg = Config {
             work_minutes: 30.0,
@@ -468,8 +468,8 @@ mod tests {
         assert!(!snap.can_shrink);
         assert!(snap.forced);
         assert!(!snap.can_skip);
-        assert!(!t.dismiss(t0 + 60 * MIN), "强制休息不能关掉");
-        assert!(!t.skip(t0 + 60 * MIN), "高等级不能跳过");
+        assert!(!t.dismiss(t0 + 60 * MIN), "A forced break cannot be dismissed");
+        assert!(!t.skip(t0 + 60 * MIN), "The high level cannot skip");
     }
 
     #[test]
@@ -485,14 +485,14 @@ mod tests {
             ..Config::default()
         };
         let mut t = Timer::new(&cfg, t0);
-        assert!(!t.skip(t0), "工作中无需跳过");
+        assert!(!t.skip(t0), "Nothing to skip while working");
         assert!(!t.snapshot(t0).can_skip);
         let now = t0 + 60 * MIN;
         assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
         let snap = t.snapshot(now);
         assert!(snap.forced);
         assert!(snap.can_skip);
-        assert!(!t.dismiss(now), "允许跳过也不能直接关掉遮罩");
+        assert!(!t.dismiss(now), "Allowing skip still does not allow dismissing the overlay");
         assert!(t.skip(now + MIN));
         let snap = t.snapshot(now + MIN);
         assert_eq!(snap.phase, Phase::Working);
@@ -527,7 +527,7 @@ mod tests {
             ..Config::default()
         };
         let mut t = Timer::new(&cfg, t0);
-        assert!(!t.dismiss(t0), "工作中没有可关的弹窗");
+        assert!(!t.dismiss(t0), "No overlay to dismiss while working");
         let now = t0 + 60 * MIN;
         assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
         let snap = t.snapshot(now);
@@ -544,7 +544,7 @@ mod tests {
     fn short_absence_pauses_countdown() {
         let t0 = Instant::now();
         let mut t = timer(t0);
-        // 工作 20 分钟后离开，6 分钟后才越过 5 分钟阈值：离开的 6 分钟都不算
+        // Away after 20 minutes of work, crossing the 5-minute threshold after 6 minutes: none of the 6 minutes away count
         let left = t0 + 20 * MIN;
         let mut now = left + 6 * MIN;
         t.idle(now, now - left);
@@ -556,7 +556,7 @@ mod tests {
         assert_eq!(t.tick(now), None);
         assert_eq!(t.snapshot(now).remaining_secs, 40 * 60);
 
-        // 回来后从 40 分钟继续倒计时
+        // On return, the countdown continues from 40 minutes
         t.idle(now, Duration::ZERO);
         now += 40 * MIN;
         t.idle(now, Duration::ZERO);
@@ -580,7 +580,7 @@ mod tests {
         assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
         assert!(t.postpone(now));
 
-        // 推迟期间离开了 10 分钟（一次休息的长度）：回来后完整计时，推迟次数清零
+        // Away for 10 minutes (one break length) during a postponement: full countdown on return, postponements reset
         let left = now + MIN;
         now = left + 10 * MIN;
         t.idle(now, now - left);

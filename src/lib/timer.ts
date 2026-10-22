@@ -1,4 +1,4 @@
-// 与 src-tauri/src/timer.rs 中的 Snapshot 保持一致
+// Keep in sync with Snapshot in src-tauri/src/timer.rs
 export type Phase = "working" | "resting" | "restOver";
 
 export interface Snapshot {
@@ -7,19 +7,19 @@ export interface Snapshot {
   totalSecs: number;
   canPostpone: boolean;
   postponesLeft: number;
-  /** 休息时间已到，但因该豁免应用在前台而暂缓 */
+  /** A break is due but held off because this exempt app is in the foreground */
   heldBy: string | null;
-  /** 休息开始时正在运行的会议软件，此时遮罩提供“我在开会” */
+  /** Meeting software running when the break started; the overlay then offers "I'm in a meeting" */
   meetingApp: string | null;
-  /** 强制休息；false 时遮罩可以关掉 */
+  /** Forced break; when false the overlay can be closed */
   forced: boolean;
-  /** 遮罩上提供“跳过这次休息” */
+  /** Offer "Skip this break" on the overlay */
   canSkip: boolean;
-  /** 遮罩上提供“有急事，缩小一下” */
+  /** Offer "Urgent? Shrink it" on the overlay */
   canShrink: boolean;
-  /** 遮罩没有占满屏幕时可以在本屏幕内拖动 */
+  /** The overlay can be dragged within its screen when it doesn't fill it */
   movable: boolean;
-  /** 正常模式下遮罩占满屏幕（此时即使 movable 也拖不动） */
+  /** The overlay fills the screen in normal mode (so it can't be dragged even if movable) */
   fullScreen: boolean;
 }
 

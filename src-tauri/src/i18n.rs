@@ -1,5 +1,5 @@
-//! 界面语言：默认跟随系统（系统语言不在支持列表里时显示英文），也可以在托盘菜单里手动切换。
-//! 手动选择保存在配置目录下的 `language` 文件里。
+//! UI language: follows the system by default (English if the system language isn't supported) and can be switched manually from the tray menu.
+//! A manual choice is saved in the `language` file in the config directory.
 
 pub mod text;
 
@@ -12,7 +12,7 @@ use std::{
     },
 };
 
-/// 判别值与 ALL 中的下标一致，用于存进 AtomicU8
+/// Discriminants match the indices in ALL, so the value can be stored in an AtomicU8
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Lang {
     Auto,
@@ -49,7 +49,7 @@ impl Lang {
         Lang::Id,
     ];
 
-    /// 与 src/lib/i18n.ts 的 UI_LANGS 一致
+    /// Matches UI_LANGS in src/lib/i18n.ts
     pub fn id(self) -> &'static str {
         match self {
             Lang::Auto => "auto",
@@ -69,8 +69,8 @@ impl Lang {
         }
     }
 
-    /// 语言名称始终用其本身的文字显示，方便看不懂当前语言的用户找到。
-    /// 与 src/lib/i18n.ts 的 LANG_NAMES 一致
+    /// Language names are always shown in their own language, so users who can't read the current language can still find theirs.
+    /// Matches LANG_NAMES in src/lib/i18n.ts
     pub fn native_name(self) -> &'static str {
         match self {
             Lang::Auto => "Auto",
@@ -94,7 +94,7 @@ impl Lang {
         Self::ALL.into_iter().find(|l| l.id() == id.trim())
     }
 
-    /// 由系统区域设置（如 "pt-BR"、"zh_CN"）得到界面语言，不支持的语言显示英文
+    /// UI language for a system locale (e.g. "pt-BR", "zh_CN"); unsupported languages fall back to English
     fn from_locale(locale: &str) -> Self {
         let primary = locale
             .split(['-', '_'])
@@ -102,7 +102,7 @@ impl Lang {
             .unwrap_or_default()
             .to_ascii_lowercase();
         match primary.as_str() {
-            // 旧式的印尼语代码
+            // Legacy Indonesian code
             "in" => Lang::Id,
             p => Self::from_id(p)
                 .filter(|l| *l != Lang::Auto)
@@ -119,7 +119,7 @@ impl Lang {
     }
 }
 
-/// 各语言的同一句文字，按 resolved() 取用
+/// The same text in every language, picked by resolved()
 pub struct Tr {
     pub zh: &'static str,
     pub en: &'static str,
@@ -165,7 +165,7 @@ fn system_lang() -> Lang {
     *SYSTEM.get_or_init(|| sys_locale::get_locale().map_or(Lang::En, |l| Lang::from_locale(&l)))
 }
 
-/// 读取保存的语言选择；文件不存在或内容无效时跟随系统
+/// Reads the saved language choice; follows the system if the file is missing or invalid
 pub fn init(path: &Path) {
     let _ = FILE.set(path.to_path_buf());
     let lang = fs::read_to_string(path)
@@ -175,12 +175,12 @@ pub fn init(path: &Path) {
     CURRENT.store(lang.to_u8(), Ordering::Relaxed);
 }
 
-/// 用户的选择，可能是 Auto
+/// The user's choice, possibly Auto
 pub fn current() -> Lang {
     Lang::from_u8(CURRENT.load(Ordering::Relaxed))
 }
 
-/// 切换语言并保存到文件
+/// Switches the language and saves it to the file
 pub fn set(lang: Lang) -> io::Result<()> {
     CURRENT.store(lang.to_u8(), Ordering::Relaxed);
     let Some(path) = FILE.get() else {
@@ -192,7 +192,7 @@ pub fn set(lang: Lang) -> io::Result<()> {
     fs::write(path, lang.id())
 }
 
-/// 实际显示的语言，不会是 Auto
+/// The language actually displayed, never Auto
 pub fn resolved() -> Lang {
     match current() {
         Lang::Auto => system_lang(),
@@ -200,7 +200,7 @@ pub fn resolved() -> Lang {
     }
 }
 
-/// 按当前语言取文字
+/// Picks the text for the current language
 pub fn t(tr: &Tr) -> &'static str {
     tr.get(resolved())
 }

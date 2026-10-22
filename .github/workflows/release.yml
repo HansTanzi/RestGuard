@@ -7,13 +7,13 @@ on:
 permissions:
   contents: write
 
-# 两个阶段：
-# 1. build-*：编译并上传 GitHub Release 文件。文件已存在时跳过：构建不可复现，重编会改变哈希，
-#    导致已更新的各渠道清单校验失败
-# 2. 分发渠道（scoop、homebrew、apt、winget、msix）：各自一个 job，互不依赖，只从 Release 下载文件，
-#    各自检查本渠道是否需要更新。只要对应平台的 Release 文件就绪，一个渠道失败不影响其他渠道
+# Two stages:
+# 1. build-*: compile and upload the GitHub Release files. Skipped when the files already exist: builds aren't reproducible, so rebuilding would change hashes
+#    and break checksum verification of channel manifests already updated
+# 2. Distribution channels (scoop, homebrew, apt, winget, msix): one independent job each, downloading files only from the Release;
+#    each checks whether its channel needs updating. As long as the platform's Release files are ready, one channel failing doesn't affect the others
 jobs:
-  # 校验版本号，确保 Release 存在（让两个 build job 无需相互等待），并检查各平台文件是否已上传
+  # Validate the version, make sure the Release exists (so the two build jobs needn't wait on each other), and check which platforms' files are already uploaded
   prepare:
     runs-on: ubuntu-latest
     outputs:
@@ -40,7 +40,7 @@ jobs:
             gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
           fi
           assets=$(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name')
-          # 一个平台的所有文件都已存在才跳过该平台的编译
+          # Skip a platform's build only if all of its files already exist
           check() {
             platform="$1"; shift
             for name in "$@"; do
@@ -80,10 +80,10 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Scoop 安装便携版 exe，不需要安装包
+      # Scoop installs the portable exe, no installer needed
       - run: pnpm tauri build --no-bundle
 
-      # 不加 --clobber：文件已存在时上传失败，绝不覆盖已发布的文件
+      # No --clobber: upload fails if the file exists, never overwriting published files
       - name: Upload asset
         shell: pwsh
         env:
@@ -120,10 +120,10 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # 同时支持 Apple Silicon 和 Intel 的通用版 .app
+      # Universal .app for both Apple Silicon and Intel
       - run: pnpm tauri build --target universal-apple-darwin --bundles app
 
-      # 不加 --clobber：文件已存在时上传失败，绝不覆盖已发布的文件
+      # No --clobber: upload fails if the file exists, never overwriting published files
       - name: Upload asset
         env:
           GH_TOKEN: ${{ github.token }}
@@ -139,7 +139,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Tauri v2 的 Linux 构建依赖：webkit2gtk、托盘用的 appindicator 等
+      # Linux build dependencies for Tauri v2: webkit2gtk, appindicator for the tray, etc.
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -171,10 +171,10 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # x86_64 的 .deb（Debian/Ubuntu）和 .rpm（Fedora/openSUSE），都使用系统的 webkit2gtk
+      # x86_64 .deb (Debian/Ubuntu) and .rpm (Fedora/openSUSE), both using the system webkit2gtk
       - run: pnpm tauri build --bundles deb rpm
 
-      # README 和 HansTanzi/apt 里写的是 apt install rest-guard（Tauri 由 productName 生成的包名），变了要同步改文档
+      # The README and HansTanzi/apt say apt install rest-guard (the package name Tauri derives from productName); update the docs if it changes
       - name: Check deb package name
         run: |
           package=$(dpkg-deb -f "src-tauri/target/release/bundle/deb/RestGuard_${{ needs.prepare.outputs.version }}_amd64.deb" Package)
@@ -183,16 +183,16 @@ jobs:
             exit 1
           fi
 
-      # Arch 的 .pkg.tar.zst，由 .deb 重新打包
+      # Arch .pkg.tar.zst, repackaged from the .deb
       - run: bash scripts/arch-package.sh "${{ needs.prepare.outputs.version }}"
 
-      # 只上传 Release 上还没有的文件（比如上次只传成功了一个），不加 --clobber，绝不覆盖
+      # Upload only files not yet on the Release (e.g. only one succeeded last time); no --clobber, never overwrite
       - name: Upload assets
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
-          # Tauri 的 rpm 文件名是 RestGuard-<版本>-1.x86_64.rpm 的格式，改成与其他平台一致的命名
+          # Tauri names the rpm RestGuard-<version>-1.x86_64.rpm; rename it to match the other platforms
           rpms=(src-tauri/target/release/bundle/rpm/*.rpm)
           if [ "${#rpms[@]}" != 1 ]; then
             echo "::error::Expected exactly one rpm, found: ${rpms[*]}"
@@ -212,17 +212,17 @@ jobs:
             fi
           done
 
-  # 直接更新 HansTanzi/scoop-bucket（用户添加的 bucket），发布后立即可用，不用等它的 Excavator 定时任务。
-  # 用该仓库的 deploy key（secret SCOOP_BUCKET_DEPLOY_KEY，需写权限）推送到其默认分支。
-  # 清单已是此版本和哈希时（比如 Excavator 抢先更新了）不提交。
-  # 只替换 version、url、hash 三处文本，保留 Excavator 的 JSON 格式，避免两边来回改格式。
-  # 推送被拒绝（Excavator 同时提交）时，重置到远端最新再改一遍，而不是 rebase（两边改的是同几行，会冲突）
+  # Update HansTanzi/scoop-bucket (the bucket users add) directly, so the release is available immediately without waiting for its scheduled Excavator.
+  # Pushes to its default branch with that repo's deploy key (secret SCOOP_BUCKET_DEPLOY_KEY, write access required).
+  # Doesn't commit if the manifest already has this version and hash (e.g. Excavator got there first).
+  # Only the version, url and hash text is replaced, keeping Excavator's JSON formatting so the two don't keep reformatting each other.
+  # If the push is rejected (Excavator committed at the same time), reset to the latest remote and redo the edit rather than rebasing (both touch the same lines and would conflict)
   scoop:
     needs: [prepare, build-windows]
     if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-windows.result) }}
     runs-on: ubuntu-latest
     steps:
-      # 私钥有密码或格式不对时 ssh 会无限等待输入，用超时让它尽快失败
+      # ssh waits for input forever if the private key has a passphrase or a bad format; a timeout makes it fail fast
       - uses: actions/checkout@v4
         timeout-minutes: 5
         with:
@@ -249,7 +249,7 @@ jobs:
             git reset --hard "@{u}"
             if ($LASTEXITCODE -ne 0) { throw "git reset failed" }
 
-            # autoupdate 里的 url 含 $version，不会被 url 的替换匹配到
+            # The url in autoupdate contains $version, so the url replacement won't match it
             $text = Get-Content $path -Raw
             $text = $text -replace '(?m)^(\s*"version":\s*")[^"]*', "`${1}$env:VERSION"
             $text = $text -replace '(?m)^(\s*"url":\s*")[^"$]*(")', "`${1}$url`${2}"
@@ -270,10 +270,10 @@ jobs:
             Start-Sleep 5
           }
 
-  # 直接更新 HansTanzi/homebrew-tap（用户添加的 tap），用该仓库的 deploy key
-  # （secret HOMEBREW_TAP_DEPLOY_KEY，需写权限）推送到其默认分支。
-  # cask 已是此版本和哈希时 git diff 为空，不会提交；推送被拒绝时 rebase 后重试。
-  # 同一个 cask 在 macOS 上装 .app，在 Linux 上取 Arch 包里的 usr/bin/restguard，版本号共用，所以要等两个平台都就绪
+  # Update HansTanzi/homebrew-tap (the tap users add) directly, pushing to its default branch with that repo's deploy key
+  # (secret HOMEBREW_TAP_DEPLOY_KEY, write access required).
+  # If the cask already has this version and hashes, git diff is empty and nothing is committed; if the push is rejected, rebase and retry.
+  # The same cask installs the .app on macOS and takes usr/bin/restguard from the Arch package on Linux with a shared version, so it waits for both platforms
   homebrew:
     needs: [prepare, build-macos, build-linux]
     if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-macos.result) && contains(fromJSON('["success", "skipped"]'), needs.build-linux.result) }}
@@ -297,7 +297,7 @@ jobs:
           mac_hash=$(sha "RestGuard_${VERSION}_universal.zip")
           linux_hash=$(sha "RestGuard_${VERSION}_x86_64.pkg.tar.zst")
 
-          # 两个 sha256 分别在 on_macos 和 on_linux 块里，按所在的块替换
+          # The two sha256 values live in the on_macos and on_linux blocks; replace each within its block
           path="Casks/restguard.rb"
           sed -i -E \
             -e "s/^(  version \")[^\"]+/\1${VERSION}/" \
@@ -322,9 +322,9 @@ jobs:
             sleep 5
           done
 
-  # 通知 HansTanzi/apt 重新生成 APT 源：它从各应用的最新 Release 下载 .deb，签名后部署到 GitHub Pages。
-  # 签名密钥只在 apt 仓库中。需要 secret APT_DISPATCH_TOKEN（仅限 HansTanzi/apt、只有 Actions 读写权限的
-  # fine-grained PAT；不要给 Contents 写权限，否则令牌泄露后可改 apps.txt 发布任意包），未配置时跳过。预发布版本跳过
+  # Tell HansTanzi/apt to regenerate the APT repo: it downloads the .deb from each app's latest Release, signs them and deploys to GitHub Pages.
+  # The signing key lives only in the apt repo. Requires secret APT_DISPATCH_TOKEN (a fine-grained PAT limited to HansTanzi/apt with only Actions read/write;
+  # don't grant Contents write, or a leaked token could edit apps.txt to publish arbitrary packages); skipped if unset. Skipped for pre-releases
   apt:
     needs: [prepare, build-linux]
     if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-linux.result) && !contains(github.ref_name, '-') }}
@@ -340,8 +340,8 @@ jobs:
           fi
           gh workflow run publish.yml -R HansTanzi/apt
 
-  # 向 microsoft/winget-pkgs 提交新版本 PR，winget-releaser 自行从 Release 读取安装文件。
-  # 需要仓库 secret WINGET_TOKEN（classic PAT，public_repo 权限），预发布版本跳过
+  # Open a new-version PR on microsoft/winget-pkgs; winget-releaser reads the installers from the Release itself.
+  # Requires repo secret WINGET_TOKEN (classic PAT, public_repo scope); skipped for pre-releases
   winget:
     needs: [prepare, build-windows]
     if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-windows.result) && !contains(github.ref_name, '-') }}
@@ -350,8 +350,8 @@ jobs:
       WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
       VERSION: ${{ needs.prepare.outputs.version }}
     steps:
-      # 未配置 token、包还不存在于 winget-pkgs（首个版本需手动提交，见 README）、
-      # 已有此版本或已有待合并的 PR 时跳过
+      # Skip if the token isn't set, the package isn't in winget-pkgs yet (the first version must be submitted manually, see README),
+      # this version already exists, or a PR is already pending
       - name: Check winget
         id: winget
         shell: pwsh
@@ -383,8 +383,8 @@ jobs:
           installers-regex: '_x64\.exe$'
           token: ${{ secrets.WINGET_TOKEN }}
 
-  # 微软商店包：未签名（由商店签名），不放进 Release，作为构建产物供手动上传到合作伙伴中心。
-  # 商店提交是手动的，无从检查，每次都用 Release 上的 exe 打包。商店不支持预发布版本号，预发布版本跳过
+  # Microsoft Store package: unsigned (the Store signs it) and not added to the Release; kept as a build artifact for manual upload to Partner Center.
+  # Store submission is manual and can't be checked, so always package the exe from the Release. The Store doesn't support pre-release versions, so those are skipped
   msix:
     needs: [prepare, build-windows]
     if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-windows.result) && !contains(github.ref_name, '-') }}
@@ -392,7 +392,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 放到构建输出位置，msix.ps1 -SkipBuild 从这里取 exe
+      # Put it in the build output location, where msix.ps1 -SkipBuild picks up the exe
       - name: Download asset
         shell: pwsh
         env:

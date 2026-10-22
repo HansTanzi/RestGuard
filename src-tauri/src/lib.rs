@@ -24,13 +24,13 @@ use tauri_plugin_autostart::MacosLauncher;
 use timer::{Phase, Snapshot, Timer, TimerEvent};
 
 const STATE_EVENT: &str = "timer:state";
-/// 载荷为切换后实际显示的语言（见 ui_lang），与 src/lib/i18n.ts 的 LANG_EVENT 一致
+/// Payload is the language actually displayed after the switch (see ui_lang); matches LANG_EVENT in src/lib/i18n.ts
 const LANG_EVENT: &str = "lang:changed";
-/// 载荷为遮罩是否已缩小，与 src/routes/overlay/+page.svelte 的 SHRINK_EVENT 一致
+/// Payload is whether the overlay is shrunk; matches SHRINK_EVENT in src/routes/overlay/+page.svelte
 const SHRINK_EVENT: &str = "overlay:shrunk";
-/// 载荷为开机自启是否开启，与 src/lib/config.ts 的 AUTOSTART_EVENT 一致
+/// Payload is whether autostart is enabled; matches AUTOSTART_EVENT in src/lib/config.ts
 const AUTOSTART_EVENT: &str = "autostart:changed";
-/// 载荷为新的配置，与 src/lib/config.ts 的 CONFIG_EVENT 一致
+/// Payload is the new config; matches CONFIG_EVENT in src/lib/config.ts
 const CONFIG_EVENT: &str = "config:changed";
 
 struct AppState {
@@ -40,8 +40,8 @@ struct AppState {
 }
 
 impl AppState {
-    /// 遮罩覆盖屏幕的比例，`urgent` 为紧急模式（遮罩缩小）时的比例。
-    /// 以计时器的方案为准：它与这次休息是按同一份方案开始的
+    /// Fraction of the screen the overlay covers; `urgent` is the fraction in urgent mode (overlay shrunk).
+    /// Taken from the timer's profile, since this break was started with that same profile
     fn overlay_coverage(&self, urgent: bool) -> f64 {
         self.timer.lock().unwrap().profile().coverage(urgent)
     }
@@ -54,14 +54,14 @@ fn get_state(app: AppHandle) -> Snapshot {
     snap
 }
 
-/// 实际显示的界面语言（不会是 auto），各页面据此选择文字
+/// The UI language actually displayed (never auto); pages pick their text by it
 #[tauri::command]
 fn ui_lang() -> &'static str {
     i18n::resolved().id()
 }
 
-/// 用户的语言选择（可能是 auto），设置面板和遮罩的语言选项共用。
-/// 取值见 i18n::Lang::id
+/// The user's language choice (possibly auto), shared by the language selectors in the settings panel and overlay.
+/// See i18n::Lang::id for values
 #[tauri::command]
 fn get_lang() -> &'static str {
     i18n::current().id()
@@ -69,7 +69,7 @@ fn get_lang() -> &'static str {
 
 #[tauri::command]
 fn set_lang(app: AppHandle, lang: String) -> Result<(), String> {
-    let lang = i18n::Lang::from_id(&lang).ok_or("未知的语言")?;
+    let lang = i18n::Lang::from_id(&lang).ok_or("Unknown language")?;
     set_language(&app, lang);
     Ok(())
 }
@@ -80,33 +80,33 @@ fn get_config(app: AppHandle) -> Config {
     cfg
 }
 
-/// 设置面板保存：写入配置文件并立即生效，返回修正后的实际配置。
-/// 休息期间不允许修改，防止通过缩短休息时长绕过休息
+/// Settings panel save: writes the config file and applies it immediately, returning the sanitized config in effect.
+/// Not allowed during a break, so the break can't be dodged by shortening it
 #[tauri::command]
 fn save_config(app: AppHandle, config: Config) -> Result<Config, String> {
     apply_config(&app, config)
 }
 
-/// 托盘切换强制方案：只改 level，其余配置不变
+/// Switches the enforcement profile from the tray: only level changes, the rest of the config stays
 pub(crate) fn set_level(app: &AppHandle, level: &str) {
     let mut config = app.state::<AppState>().config.lock().unwrap().clone();
     config.level = level.to_string();
     if let Err(e) = apply_config(app, config) {
-        eprintln!("切换强制方案失败：{e}");
-        // 点击已经自动切换了被点项的勾选，按实际选择重设
+        eprintln!("Failed to switch enforcement profile: {e}");
+        // The click already toggled the clicked item's check, so reset to the actual selection
         tray::refresh_levels(app);
     }
 }
 
-/// 设置面板的“打开配置文件”：用系统默认的程序打开，供用户手动编辑。
-/// 休息期间不允许，与 save_config 一样
+/// "Open config file" in the settings panel: opens it with the system default program for manual editing.
+/// Not allowed during a break, like save_config
 #[tauri::command]
 fn open_config_file(app: AppHandle) -> Result<(), String> {
     if get_state(app.clone()).phase != Phase::Working {
         return Err(i18n::t(&i18n::text::SETTINGS_LOCKED).into());
     }
     let state = app.state::<AppState>();
-    // 文件被删掉时先写回当前配置，免得编辑器打开一个空文件
+    // If the file was deleted, write the current config back first so the editor doesn't open an empty file
     if !state.config_path.exists() {
         let config = state.config.lock().unwrap().clone();
         config
@@ -116,8 +116,8 @@ fn open_config_file(app: AppHandle) -> Result<(), String> {
     settings::open_file(&state.config_path)
 }
 
-/// 重新读取手动编辑过的配置文件，有变化时立即生效。设置面板获得焦点时调用。
-/// 返回生效的新配置，没有变化时返回 None
+/// Re-reads a manually edited config file and applies any changes immediately. Called when the settings panel gains focus.
+/// Returns the new config in effect, or None if nothing changed
 #[tauri::command]
 fn reload_config(app: AppHandle) -> Result<Option<Config>, String> {
     let state = app.state::<AppState>();
@@ -125,16 +125,16 @@ fn reload_config(app: AppHandle) -> Result<Option<Config>, String> {
     if *state.config.lock().unwrap() == config {
         return Ok(None);
     }
-    // 不写回文件：用户可能还开着编辑器
+    // Don't write back to the file: the user may still have it open in an editor
     commit_config(&app, config, false).map(Some)
 }
 
-/// 保存配置并立即生效，通知托盘和设置面板。设置面板与托盘共用
+/// Saves the config, applies it immediately and notifies the tray and settings panel. Shared by the settings panel and tray
 fn apply_config(app: &AppHandle, config: Config) -> Result<Config, String> {
     commit_config(app, config.sanitized(), true)
 }
 
-/// 让已修正过的配置生效，`save` 为是否写入配置文件。休息期间拒绝修改
+/// Applies an already sanitized config; `save` controls whether it's written to the config file. Refuses changes during a break
 fn commit_config(app: &AppHandle, config: Config, save: bool) -> Result<Config, String> {
     let state = app.state::<AppState>();
     let snap = {
@@ -158,22 +158,22 @@ fn commit_config(app: &AppHandle, config: Config, save: bool) -> Result<Config, 
     Ok(config)
 }
 
-/// 设置面板的“试听”：按表单里还没保存的设置播放一遍，播不了时把提示返回给前端。
-/// async：要等播完，不能占着主线程
+/// "Preview" in the settings panel: plays the sound using the form's unsaved settings, returning a message to the frontend if it can't play.
+/// async: it waits for playback to finish and mustn't block the main thread
 #[tauri::command]
 async fn preview_sound(config: Config) -> Result<(), String> {
     sound::preview(&config.sanitized())
 }
 
-/// 设置面板的“发送测试”：按表单里还没保存的设置推送一条通知到手机，失败时把提示返回给前端。
-/// async：要等网络请求，不能占着主线程
+/// "Send test" in the settings panel: pushes a notification to the phone using the form's unsaved settings, returning a message to the frontend on failure.
+/// async: it waits on a network request and mustn't block the main thread
 #[tauri::command]
 async fn test_phone_notify(config: Config) -> Result<(), String> {
     phone::test(&config.sanitized())
 }
 
-/// 设置面板选择提示音文件，返回完整路径；取消时返回 None。
-/// async：对话框会阻塞到用户选完，不能占着主线程
+/// Picks a sound file for the settings panel and returns its full path; returns None if cancelled.
+/// async: the dialog blocks until the user chooses, so it mustn't run on the main thread
 #[tauri::command]
 async fn pick_sound_file(window: tauri::WebviewWindow) -> Option<String> {
     use tauri_plugin_dialog::DialogExt;
@@ -193,7 +193,7 @@ fn get_autostart(app: AppHandle) -> bool {
     tray::autostart_enabled(&app)
 }
 
-/// 返回切换后系统里的实际状态
+/// Returns the actual system state after toggling
 #[tauri::command]
 fn set_autostart(app: AppHandle, on: bool) -> bool {
     apply_autostart(&app, on)
@@ -204,8 +204,8 @@ fn get_about(app: AppHandle) -> about::AboutInfo {
     about::info(&app)
 }
 
-/// 关于页面的链接：link 为 "repo" 或 "issues"。
-/// 休息期间不允许打开浏览器，防止借此绕过休息
+/// Links on the About page: link is "repo" or "issues".
+/// Opening a browser isn't allowed during a break, so it can't be used to dodge the break
 #[tauri::command]
 fn open_link(app: AppHandle, link: String) -> Result<(), String> {
     let snap = get_state(app);
@@ -225,38 +225,38 @@ fn postpone(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::postpone)
 }
 
-/// 遮罩上的“我在开会”：会议软件在运行但无法确定是否在开会时，由用户确认
+/// "I'm in a meeting" on the overlay: the user confirms when meeting software is running but it's unclear whether a meeting is on
 #[tauri::command]
 fn in_meeting(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::in_meeting)
 }
 
-/// 遮罩上的“跳过这次休息”，强制等级不允许跳过时拒绝
+/// "Skip this break" on the overlay; refused when the enforcement level doesn't allow skipping
 #[tauri::command]
 fn dismiss_break(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::skip)
 }
 
-/// 遮罩上的“缩小窗口”按钮：紧急时缩小遮罩处理一下手头的事，但不结束休息。
-/// 当前强制等级不允许紧急模式时拒绝缩小。
-/// 用 async 让它跑在主线程之外，避免在 Windows 上调整窗口时卡住
+/// The overlay's "shrink" button: shrinks the overlay to deal with something urgent without ending the break.
+/// Refused when the current enforcement level doesn't allow urgent mode.
+/// async so it runs off the main thread, avoiding a hang while resizing windows on Windows
 #[tauri::command]
 async fn set_overlay_shrunk(app: AppHandle, shrunk: bool) -> Result<(), String> {
     if shrunk && !get_state(app.clone()).can_shrink {
-        return Err("当前强制等级不允许紧急模式".into());
+        return Err("The current enforcement level does not allow urgent mode".into());
     }
     let coverage = app.state::<AppState>().overlay_coverage(shrunk);
     overlay::set_coverage(&app, coverage);
-    // 通知所有遮罩（包括副屏）切换可拖动状态
+    // Notify all overlays (including secondary screens) to update their draggable state
     let _ = app.emit(SHRINK_EVENT, shrunk);
     Ok(())
 }
 
-/// 仅开发构建可用：遮罩上按 Esc 直接结束休息，方便调试
+/// Dev builds only: pressing Esc on the overlay ends the break immediately, for debugging
 #[tauri::command]
 fn dev_skip_rest(app: AppHandle) -> Result<(), String> {
     if !cfg!(debug_assertions) {
-        return Err("仅开发构建可用".into());
+        return Err("Only available in dev builds".into());
     }
     end_rest(&app, Timer::skip_rest)
 }
@@ -267,7 +267,7 @@ fn end_rest(app: &AppHandle, action: fn(&mut Timer, Instant) -> bool) -> Result<
         let mut timer = state.timer.lock().unwrap();
         let now = Instant::now();
         if !action(&mut timer, now) {
-            return Err("当前状态不允许此操作".into());
+            return Err("Not allowed in the current state".into());
         }
         timer.snapshot(now)
     };
@@ -292,7 +292,7 @@ pub(crate) fn rest_now(app: &AppHandle) {
 
 pub(crate) fn set_language(app: &AppHandle, lang: i18n::Lang) {
     if let Err(e) = i18n::set(lang) {
-        eprintln!("无法保存语言设置：{e}");
+        eprintln!("Failed to save language setting: {e}");
     }
     tray::refresh_language(app);
     settings::refresh_language(app);
@@ -306,7 +306,7 @@ pub(crate) fn set_language(app: &AppHandle, lang: i18n::Lang) {
     tray::update(app, &snap);
 }
 
-/// 托盘和设置面板共用，切换后通知设置面板同步开关状态
+/// Shared by the tray and settings panel; notifies the settings panel to sync the toggle afterward
 pub(crate) fn apply_autostart(app: &AppHandle, on: bool) -> bool {
     let actual = tray::set_autostart(app, on);
     let _ = app.emit(AUTOSTART_EVENT, actual);
@@ -315,22 +315,22 @@ pub(crate) fn apply_autostart(app: &AppHandle, on: bool) -> bool {
 
 pub(crate) fn open_settings(app: &AppHandle) {
     let app = app.clone();
-    // 见 overlay::open_all 的说明：不能在事件回调线程里直接创建窗口
+    // See overlay::open_all: windows can't be created directly on the event callback thread
     thread::spawn(move || settings::open(&app));
 }
 
 pub(crate) fn open_about(app: &AppHandle) {
     let app = app.clone();
-    // 见 overlay::open_all 的说明：不能在事件回调线程里直接创建窗口
+    // See overlay::open_all: windows can't be created directly on the event callback thread
     thread::spawn(move || about::open(&app));
 }
 
 fn open_overlays(app: &AppHandle) {
     let app = app.clone();
-    // 见 overlay::open_all 的说明：不能在事件回调线程里直接创建窗口
+    // See overlay::open_all: windows can't be created directly on the event callback thread
     thread::spawn(move || {
         let state = app.state::<AppState>();
-        // 以计时器为准：它与这次休息是按同一份方案开始的
+        // Use the timer's profile, since this break was started with it
         let profile = state.timer.lock().unwrap().profile().clone();
         overlay::open_all(&app, profile.coverage(false), profile.force_rest, profile.movable);
     });
@@ -344,7 +344,7 @@ fn broadcast(app: &AppHandle, snap: &Snapshot) {
 fn spawn_ticker(app: AppHandle) {
     thread::spawn(move || loop {
         thread::sleep(Duration::from_millis(500));
-        // 在加锁前查询：Linux 上需要启动外部进程
+        // Query before taking the lock: on Linux this spawns an external process
         let idle = idle::idle_time();
         let (event, snap) = {
             let state = app.state::<AppState>();
@@ -353,7 +353,7 @@ fn spawn_ticker(app: AppHandle) {
             if let Some(idle) = idle {
                 timer.idle(now, idle);
             }
-            // 只在休息到点后才检测前台应用；强制等级可以关闭会议软件检测
+            // Only check the foreground app once a break is due; the enforcement level can disable meeting detection
             let detect = timer.profile().meeting_detection;
             let held = if detect && timer.rest_due(now) {
                 bypass::active_app()
@@ -383,24 +383,24 @@ fn spawn_ticker(app: AppHandle) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        // 必须最先注册：重复启动时直接退出新进程
+        // Must be registered first: a second launch exits the new process immediately
         .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
         .plugin(tauri_plugin_dialog::init())
-        // macOS 默认菜单带 Cmd+Q，休息时按下会直接退出
+        // The default macOS menu has Cmd+Q, which would quit the app during a break
         .enable_macos_default_menu(false)
         .setup(|app| {
-            // macOS 上只在菜单栏显示图标，不占 Dock
+            // On macOS, show only a menu bar icon, not a Dock icon
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
             let dir = app.path().app_config_dir()?;
-            // 开发构建用单独的配置和语言文件，调试时不影响已安装的正式版
+            // Dev builds use separate config and language files so debugging doesn't affect the installed release
             let (lang_name, cfg_name) = if cfg!(debug_assertions) {
                 ("language.dev", "config.dev.toml")
             } else {
                 ("language", "config.toml")
             };
-            // 先确定语言：首次运行生成的配置文件注释语言依赖它
+            // Resolve the language first: the comments in the config file generated on first run depend on it
             i18n::init(&dir.join(lang_name));
             let config_path = dir.join(cfg_name);
             let cfg = Config::load_or_create(&config_path);
@@ -418,8 +418,8 @@ pub fn run() {
                 return;
             }
             match event {
-                // 拦截 Alt+F4 等系统关闭操作，遮罩只能由程序销毁。
-                // 不强制休息时关掉任一遮罩即跳过这次休息（强制休息时 Timer::dismiss 会拒绝）
+                // Intercept system close actions such as Alt+F4; overlays can only be destroyed by the app.
+                // When the break isn't forced, closing any overlay skips the break (Timer::dismiss refuses when it is forced)
                 WindowEvent::CloseRequested { api, .. } => {
                     api.prevent_close();
                     let app = window.app_handle().clone();
@@ -427,7 +427,7 @@ pub fn run() {
                         let _ = end_rest(&app, Timer::dismiss);
                     });
                 }
-                // 强制等级允许时可拖动，但不能离开所属屏幕
+                // Draggable when the enforcement level allows, but can't leave its own screen
                 WindowEvent::Moved(pos) => overlay::keep_on_home(window, *pos),
                 _ => {}
             }
@@ -458,7 +458,7 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|_app, event| {
-            // 没有窗口时保持后台运行；只有托盘“退出”（带退出码）才真正退出
+            // Keep running in the background with no windows; only the tray's "Quit" (with an exit code) really exits
             if let RunEvent::ExitRequested { code: None, api, .. } = event {
                 api.prevent_exit();
             }

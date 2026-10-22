@@ -1,4 +1,4 @@
-<!-- 设置面板：从托盘菜单“设置…”打开（src-tauri/src/settings.rs）。休息遮罩在 /overlay。 -->
+<!-- Settings panel: opened from "Settings…" in the tray menu (src-tauri/src/settings.rs). The break overlay is at /overlay. -->
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
   import { listen } from "@tauri-apps/api/event";
@@ -32,15 +32,15 @@
   let autostart = $state(false);
   let phase = $state<Snapshot["phase"]>("working");
 
-  // saved 是后端当前生效的配置，draft 是表单里正在编辑的值
+  // saved is the config currently in effect in the backend; draft holds the values being edited in the form
   let saved = $state<Config | null>(null);
   let draft = $state<Config>(structuredClone(DEFAULT_CONFIG));
-  // 选中的强制方案：内置等级 id，或 "custom:<下标>"。
-  // 自定义方案按下标而不是名字选中，与名字无关
+  // Selected enforcement profile: a built-in level id, or "custom:<index>".
+  // Custom profiles are selected by index, not by name
   let selected = $state<string>(DEFAULT_CONFIG.level);
-  // 下拉框里“新建自定义…”选项的值，选中时新建方案而不是切换
+  // Value of the "New custom…" option in the dropdown; selecting it creates a profile instead of switching
   const NEW_PROFILE = "new";
-  // 重命名弹窗：确定后才写回 draft
+  // Rename dialog: only written back to draft on confirm
   let renameDialog = $state<HTMLDialogElement>();
   let newName = $state("");
   let saving = $state(false);
@@ -54,16 +54,16 @@
       ? draft.profiles[customIndex]
       : BUILTIN_PROFILES[isBuiltinLevel(selected) ? selected : "medium"],
   );
-  // 要保存的配置：level 换成选中方案的名字
+  // Config to save: level replaced with the selected profile's name
   const output = $derived<Config>({
     ...draft,
     level: customIndex >= 0 ? draft.profiles[customIndex].name.trim() : selected,
   });
 
-  // bind:value 在输入框清空时给出 null
+  // bind:value gives null when the input is cleared
   const positive = (v: number | null) => typeof v === "number" && Number.isFinite(v) && v > 0;
   const count = (v: number | null) => Number.isInteger(v) && v! >= 0;
-  // 名字用来引用方案，不能为空、与内置等级重名或彼此重复（与 config.rs 的 sanitized 一致）
+  // Names are used to refer to profiles, so they can't be empty, clash with built-in levels, or duplicate each other (consistent with sanitized in config.rs)
   const nameInvalid = (raw: string, i: number) => {
     const name = raw.trim();
     return (
@@ -79,17 +79,17 @@
     postpone_minutes: !positive(draft.postpone_minutes),
     idle_minutes: !(positive(draft.idle_minutes) || draft.idle_minutes === 0),
     max_postpones: !count(profile.max_postpones),
-    // 关掉提示音时不检查，后端会把没有文件的 file 换成默认提示音
+    // Not checked when the sound is off; the backend replaces file with no path by the default sound
     sound_file: draft.sound_prompt && draft.sound === "file" && !draft.sound_file.trim(),
-    // 关掉推送时不检查
+    // Not checked when push is off
     ntfy_topic: draft.phone_notify && !NTFY_TOPIC_PATTERN.test(draft.ntfy_topic.trim()),
   });
-  // 切到别的方案后，之前编辑过的方案也要有效
+  // Profiles edited earlier must stay valid after switching to another one
   const valid = $derived(
     !Object.values(errors).some(Boolean) &&
       draft.profiles.every((p, i) => !badName(i) && count(p.max_postpones)),
   );
-  // 字段顺序都来自后端返回值（新方案也按同样的顺序构造），可以直接比较 JSON
+  // Field order always comes from the backend response (new profiles are built in the same order), so JSON can be compared directly
   const dirty = $derived(saved !== null && JSON.stringify(saved) !== JSON.stringify(output));
 
   function load(config: Config) {
@@ -99,12 +99,12 @@
     selected = i >= 0 ? `custom:${i}` : config.level;
   }
 
-  // 只有自定义方案可以修改
+  // Only custom profiles can be edited
   function edit(patch: Partial<Profile>) {
     if (customIndex >= 0) Object.assign(draft.profiles[customIndex], patch);
   }
 
-  // 以当前选中的方案为模板新建
+  // Create a new profile based on the currently selected one
   function addProfile() {
     if (!s) return;
     const names = new Set(draft.profiles.map((p) => p.name.trim()));
@@ -138,14 +138,14 @@
     invoke<LangId>("get_lang").then((id) => (lang = id));
   }
 
-  // 按表单里还没保存的设置播放一遍
+  // Play once using the form's unsaved settings
   function preview() {
     invoke("preview_sound", { config: $state.snapshot(output) }).catch((e) =>
       flash(String(e), true),
     );
   }
 
-  // 首次打开推送时生成一个不易猜到的主题，公共服务器上知道主题的人都能订阅
+  // Generate a hard-to-guess topic the first time push is enabled; anyone who knows the topic can subscribe on the public server
   function changePhoneNotify() {
     if (draft.phone_notify && !draft.ntfy_topic.trim()) {
       const bytes = crypto.getRandomValues(new Uint8Array(6));
@@ -153,7 +153,18 @@
     }
   }
 
-  // 按表单里还没保存的设置推送一条测试通知
+  // Split a pasted full subscription URL (e.g. ntfy.sh/mytopic) into server and topic
+  function splitTopicUrl() {
+    const value = draft.ntfy_topic.trim().replace(/\/+$/, "");
+    const at = value.lastIndexOf("/");
+    const server = value.slice(0, at);
+    // No path, or just a scheme like https://
+    if (at <= 0 || server.endsWith("/")) return;
+    draft.ntfy_server = /^[a-z][a-z0-9+.-]*:\/\//i.test(server) ? server : "https://" + server;
+    draft.ntfy_topic = value.slice(at + 1);
+  }
+
+  // Push a test notification using the form's unsaved settings
   let sendingTest = $state(false);
   function testPhone() {
     if (!s) return;
@@ -185,7 +196,7 @@
     saving = true;
     try {
       const result = await invoke<Config>("save_config", { config: $state.snapshot(output) });
-      // 后端可能修正了越界的值，以返回值为准
+      // The backend may have corrected out-of-range values; trust the returned value
       load(result);
       flash(s.saved);
     } catch (e) {
@@ -199,8 +210,8 @@
     invoke("open_config_file").catch((e) => flash(String(e), true));
   }
 
-  // 窗口获得焦点时重新读取配置文件，手动编辑完切回来即可生效。
-  // 有变化时后端会发出 CONFIG_EVENT，表单在那里更新
+  // Re-read the config file when the window gains focus, so manual edits apply on switching back.
+  // If anything changed the backend emits CONFIG_EVENT, where the form is updated
   function reloadConfig() {
     invoke<Config | null>("reload_config")
       .then((config) => config && s && flash(s.reloaded))
@@ -219,7 +230,7 @@
 
   onMount(() => {
     invoke<UiLang>("ui_lang").then(applyLang);
-    // 窗口刚打开时不会触发 focus，先载入手动编辑过的配置文件，再取当前配置
+    // focus doesn't fire when the window first opens, so load the manually edited config file first, then fetch the current config
     invoke("reload_config")
       .catch((e) => flash(String(e), true))
       .finally(() => invoke<Config>("get_config").then(load));
@@ -228,7 +239,7 @@
     const unlistens = [
       listen<UiLang>(LANG_EVENT, (e) => applyLang(e.payload)),
       listen<boolean>(AUTOSTART_EVENT, (e) => (autostart = e.payload)),
-      // 有未保存的修改时不覆盖表单，只更新 saved，保存时以表单为准
+      // With unsaved changes, don't overwrite the form; only update saved, and the form wins on save
       listen<Config>(CONFIG_EVENT, (e) => (dirty ? (saved = e.payload) : load(e.payload))),
       listen<Snapshot>(STATE_EVENT, (e) => (phase = e.payload.phase)),
     ];
@@ -243,7 +254,7 @@
 
 {#if s}
   <main>
-    <!-- 整页一个表单：标题和保存栏在顶部，分组流动排列 -->
+    <!-- One form for the whole page: title and save bar at the top, groups flowing below -->
     <form
       class="flow"
       onsubmit={(e) => {
@@ -257,7 +268,7 @@
           {locked ? s.lockedDuringBreak : (message?.text ?? "")}
         </p>
         <div class="actions">
-          <!-- 鼠标停在按钮上（或键盘聚焦）时，在按钮下方显示说明 -->
+          <!-- Show a description below the button on hover (or keyboard focus) -->
           <span class="tip">
             <button
               type="button"
@@ -275,7 +286,7 @@
             class="ghost"
             disabled={locked}
             onclick={() => {
-              // 自定义方案是用户自己建的，恢复默认值时保留
+              // Custom profiles are user-created, so they're kept when restoring defaults
               draft = { ...structuredClone(DEFAULT_CONFIG), profiles: $state.snapshot(draft.profiles) };
               selected = DEFAULT_CONFIG.level;
             }}
@@ -288,14 +299,14 @@
         </div>
       </header>
 
-      <!-- 语言和开机自启立即生效，不需要保存；不放进 fieldset，休息期间也能改 -->
+      <!-- Language and autostart apply immediately without saving; kept outside the fieldset so they can be changed during a break -->
       <section>
         <h2>{s.general}</h2>
         <label>
           <span>{s.language}</span>
           <select bind:value={lang} onchange={changeLang}>
             <option value="auto">{s.followSystem}</option>
-            <!-- 语言名称始终用其本身的文字显示，与托盘菜单一致 -->
+            <!-- Language names are always shown in their own language, as in the tray menu -->
             {#each UI_LANGS as id (id)}
               <option value={id}>{LANG_NAMES[id]}</option>
             {/each}
@@ -305,7 +316,7 @@
           <input type="checkbox" bind:checked={autostart} onchange={changeAutostart} />
           <span>{s.autostart}</span>
         </label>
-        <!-- 结束提醒需要保存才生效，休息期间锁定 -->
+        <!-- Break-over alerts only apply after saving and are locked during a break -->
         <fieldset disabled={locked}>
           <label class="check">
             <input type="checkbox" bind:checked={draft.sound_prompt} />
@@ -320,7 +331,7 @@
             </select>
           </label>
           {#if draft.sound === "file"}
-            <!-- 只能通过对话框选择，路径太长时显示文件名，完整路径在悬停提示里 -->
+            <!-- Chosen only via the dialog; long paths show just the file name, with the full path in the tooltip -->
             <div class="row sub">
               <span>{s.soundFile}</span>
               <span class="file">
@@ -379,8 +390,12 @@
               class:invalid={errors.ntfy_topic}
               disabled={!draft.phone_notify}
               bind:value={draft.ntfy_topic}
+              onchange={splitTopicUrl}
             />
           </label>
+          {#if errors.ntfy_topic}
+            <p class="hint sub warn">{s.ntfyTopicRule}</p>
+          {/if}
           <p class="hint sub">{s.phoneHint}</p>
           <div class="actions profile-actions">
             <button
@@ -447,7 +462,7 @@
       </fieldset>
 
       <fieldset disabled={locked}>
-        <!-- 内置等级只读展示，自定义方案可以修改 -->
+        <!-- Built-in levels are read-only; custom profiles are editable -->
         <section>
           <h2>{s.enforcement}</h2>
           <label>
@@ -503,7 +518,7 @@
             />
             <span>{s.allowExit}</span>
           </label>
-          <!-- 不强制休息时总能跳过 -->
+          <!-- Unforced breaks can always be skipped -->
           <label class="check">
             <input
               type="checkbox"
@@ -522,7 +537,7 @@
             />
             <span>{s.urgentMode}</span>
           </label>
-          <!-- 缩小比例从属于紧急模式，缩进表示 -->
+          <!-- The shrink ratio belongs to urgent mode, shown by indentation -->
           <label class="sub">
             <span>{s.urgentScale}</span>
             <span class="range">
@@ -572,7 +587,7 @@
       </fieldset>
     </form>
 
-    <!-- 放在设置表单外，回车只提交弹窗自己的表单 -->
+    <!-- Outside the settings form so Enter only submits the dialog's own form -->
     <dialog bind:this={renameDialog}>
       <form
         onsubmit={(e) => {
@@ -625,7 +640,7 @@
     --line: rgb(255 255 255 / 0.12);
 
     box-sizing: border-box;
-    /* 窗口默认最大化，宽屏上最多三列（见 .flow） */
+    /* The window is maximized by default; up to three columns on wide screens (see .flow) */
     max-width: 1200px;
     margin: 0 auto;
     padding: 1.25rem 1.5rem 1.5rem;
@@ -641,7 +656,7 @@
     color-scheme: dark;
   }
 
-  /* 标题和保存栏：滚动时固定在顶部 */
+  /* Title and save bar: stick to the top when scrolling */
   header {
     position: sticky;
     top: 0;
@@ -681,7 +696,7 @@
     opacity: 0.5;
   }
 
-  /* 分组随窗口宽度流动排列：窄窗口一列，宽窗口多列 */
+  /* Groups flow with the window width: one column when narrow, several when wide */
   .flow {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
@@ -719,7 +734,7 @@
     padding-inline-start: 1.6rem;
   }
 
-  /* 与 label 相同的一行布局，但里面有按钮，不能用 label */
+  /* Same one-row layout as label, but it contains buttons so it can't be a label */
   .row {
     display: flex;
     align-items: center;
@@ -771,13 +786,13 @@
     outline-offset: -1px;
   }
 
-  /* 部分语言名称较长（如 Bahasa Indonesia） */
+  /* Some language names are long (e.g. Bahasa Indonesia) */
   select {
     width: auto;
     min-width: 7.5rem;
   }
 
-  /* 提示内容和语音名字较长 */
+  /* Hint text and sound names are long */
   input.invalid {
     border-color: var(--warn);
   }
@@ -813,9 +828,13 @@
     color: var(--accent);
   }
 
+  .hint.warn {
+    color: var(--warn);
+  }
+
   .actions {
     display: flex;
-    /* 标题栏有三个按钮，窄窗口下换行 */
+    /* The title bar has three buttons, which wrap in narrow windows */
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: 0.75rem;
@@ -825,7 +844,7 @@
     position: relative;
   }
 
-  /* 与按钮左对齐：按钮在最左边，窄窗口换行后也不会超出窗口 */
+  /* Left-aligned with the button: the button is leftmost, so it stays inside the window even after wrapping */
   .tip [role="tooltip"] {
     position: absolute;
     top: calc(100% + 0.4rem);
@@ -915,7 +934,7 @@
     background: rgb(255 255 255 / 0.06);
   }
 
-  /* 夹在标题和按钮之间，占满剩余宽度；太窄时换到下一行 */
+  /* Sits between the title and buttons, filling the remaining width; wraps to the next line when too narrow */
   .message {
     flex: 1 1 8rem;
     min-height: 1.2em;

@@ -1,5 +1,5 @@
 fn main() {
-    // tauri-build 只在 tauri.conf.json 变化时重跑，图标改了也要重新嵌入 exe
+    // tauri-build only reruns when tauri.conf.json changes, but icon changes must also be re-embedded into the exe
     println!("cargo:rerun-if-changed=icons");
     tauri_build::build()
 }

@@ -1,30 +1,30 @@
 import type { UiLang } from "./i18n";
 
-// 强制等级的配置方案，与 src-tauri/src/config.rs 中的 Profile 保持一致
+// Settings profile for an enforcement level; keep in sync with Profile in src-tauri/src/config.rs
 export interface Profile {
-  // 自定义方案的名字，Config.level 用它引用方案；内置方案为空
+  // Name of a custom profile, used by Config.level to refer to it; empty for built-in profiles
   name: string;
   max_postpones: number;
-  // 遮罩上提供“有急事，缩小一下”
+  // Offer "Urgent? Shrink it" on the overlay
   urgent_mode: boolean;
-  // 会议软件在使用时暂缓休息，休息时提供“我在开会”
+  // Hold off breaks while meeting software is in use, and offer "I'm in a meeting" during a break
   meeting_detection: boolean;
-  // false 时遮罩可以关掉
+  // When false the overlay can be closed
   force_rest: boolean;
-  // 强制休息时，遮罩上仍提供“跳过这次休息”。不强制休息时总能跳过
+  // Still offer "Skip this break" on the overlay when the break is forced. Unforced breaks can always be skipped
   allow_skip: boolean;
-  // 遮罩覆盖屏幕的比例（正常模式）
+  // Fraction of the screen the overlay covers (normal mode)
   overlay_coverage: number;
-  // 紧急模式（遮罩缩小后）相对正常模式的缩放因子，小于 1 保证比正常模式小
+  // Scale factor relative to normal mode in urgent mode (overlay shrunk); below 1 so it's always smaller than normal mode
   urgent_scale: number;
-  // 遮罩没有占满屏幕时（缩小后或覆盖比例小于 1）能否在本屏幕内拖动
+  // Whether the overlay can be dragged within its screen when it doesn't fill it (shrunk, or coverage below 1)
   movable: boolean;
 }
 
 export const BUILTIN_LEVELS = ["high", "medium", "low"] as const;
 export type BuiltinLevel = (typeof BUILTIN_LEVELS)[number];
 
-// 与 src-tauri/src/config.rs 的 Profile::builtin 一致
+// Matches Profile::builtin in src-tauri/src/config.rs
 export const BUILTIN_PROFILES: Record<BuiltinLevel, Profile> = {
   high: {
     name: "",
@@ -65,35 +65,35 @@ export function isBuiltinLevel(level: string): level is BuiltinLevel {
   return (BUILTIN_LEVELS as readonly string[]).includes(level);
 }
 
-// 休息结束时的提示音：内置音效或自选的音频文件。与 src-tauri/src/config.rs 的 SOUNDS 一致
+// Sound played when a break ends: a built-in sound or a user-chosen audio file. Matches SOUNDS in src-tauri/src/config.rs
 export const SOUNDS = ["beep", "chime", "rise", "file"] as const;
 export type SoundId = (typeof SOUNDS)[number];
 
-// 与 src-tauri/src/config.rs 中的 Config 保持一致（字段名与配置文件相同，用 snake_case）
+// Keep in sync with Config in src-tauri/src/config.rs (field names match the config file, in snake_case)
 export interface Config {
   work_minutes: number;
   rest_minutes: number;
   postpone_minutes: number;
   idle_minutes: number;
-  // 内置等级，或某个自定义方案的名字
+  // A built-in level or the name of a custom profile
   level: string;
-  // 休息结束时播放提示音
+  // Play a sound when a break ends
   sound_prompt: boolean;
   sound: SoundId;
-  // sound 为 "file" 时播放的音频文件
+  // When sound is "file", the audio file to play
   sound_file: string;
-  // 休息结束时通过 ntfy 推送到手机
+  // Push to the phone via ntfy when a break ends
   phone_notify: boolean;
   ntfy_server: string;
-  // 手机上订阅同一个主题，只能用字母、数字、- 和 _
+  // Subscribe to the same topic on the phone; letters, digits, - and _ only
   ntfy_topic: string;
   profiles: Profile[];
 }
 
-// ntfy 主题允许的字符
+// Characters allowed in an ntfy topic
 export const NTFY_TOPIC_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 
-// 字段顺序与 config.rs 一致，设置面板直接比较 JSON 判断是否有修改
+// Field order matches config.rs; the settings panel compares JSON directly to detect changes
 export const DEFAULT_CONFIG: Config = {
   work_minutes: 60,
   rest_minutes: 10,
@@ -109,11 +109,11 @@ export const DEFAULT_CONFIG: Config = {
   profiles: [],
 };
 
-// 与 src-tauri/src/i18n.rs 的 Lang::id 一致
+// Matches Lang::id in src-tauri/src/i18n.rs
 export type LangId = "auto" | UiLang;
 
-// 托盘或设置面板切换开机自启时广播，载荷为是否开启
+// Broadcast when the tray or settings panel toggles autostart; payload is whether it's enabled
 export const AUTOSTART_EVENT = "autostart:changed";
 
-// 配置保存后广播（包括从托盘切换强制方案），载荷为新的配置
+// Broadcast after the config is saved (including switching profiles from the tray); payload is the new config
 export const CONFIG_EVENT = "config:changed";

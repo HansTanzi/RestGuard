@@ -13,30 +13,30 @@ use tauri_plugin_autostart::ManagerExt;
 
 const TRAY_ID: &str = "main";
 const LANG_ID_PREFIX: &str = "lang:";
-/// 后接内置等级或自定义方案的名字（两者不会重名，见 Config::sanitized）
+/// Followed by a built-in level or custom profile name (they never clash, see Config::sanitized)
 const LEVEL_ID_PREFIX: &str = "level:";
 
-/// 需要随状态或语言更新的菜单项
+/// Menu items that update with state or language
 struct TrayItems {
     status: MenuItem<Wry>,
     rest_now: MenuItem<Wry>,
     settings: MenuItem<Wry>,
     autostart: CheckMenuItem<Wry>,
-    /// 强制方案子菜单，方案列表随配置变化，由 refresh_levels 整个重建
+    /// Enforcement profile submenu; the list changes with the config and is rebuilt wholesale by refresh_levels
     level_menu: Submenu<Wry>,
-    /// 与 Lang::ALL 顺序一致
+    /// Same order as Lang::ALL
     langs: Vec<CheckMenuItem<Wry>>,
     about: MenuItem<Wry>,
     quit: MenuItem<Wry>,
-    /// 当前托盘图标，变化时才重设
+    /// Current tray icon, reset only when it changes
     icon: Mutex<IconKey>,
 }
 
-/// 托盘图标的选择依据：(是否在休息, 任务栏是否为浅色)
+/// What the tray icon is chosen by: (on a break, light taskbar)
 type IconKey = (bool, bool);
 
 fn icon_key(phase: Phase) -> IconKey {
-    // macOS 用模板图，由系统按菜单栏配色着色，始终只用一个图标
+    // macOS uses a template image tinted by the system to match the menu bar, so a single icon is always used
     if cfg!(target_os = "macos") {
         return (false, false);
     }
@@ -55,7 +55,7 @@ fn icon_image(key: IconKey) -> Image<'static> {
     }
 }
 
-/// Windows 读取任务栏的深浅色设置；Linux 面板大多是深色，按深色处理
+/// Windows reads the taskbar's light/dark setting; Linux panels are mostly dark, so treat them as dark
 fn light_taskbar() -> bool {
     #[cfg(windows)]
     {
@@ -113,7 +113,7 @@ fn level_menu_text() -> &'static str {
     t(&text::LEVEL_MENU)
 }
 
-/// 内置等级显示翻译后的名字，自定义方案显示它自己的名字
+/// Built-in levels show their translated name; custom profiles show their own name
 fn level_text(level: &str) -> &str {
     match level {
         "high" => t(&text::LEVEL_HIGH),
@@ -123,7 +123,7 @@ fn level_text(level: &str) -> &str {
     }
 }
 
-/// 按当前配置重建强制方案子菜单：内置等级与自定义方案之间加分隔线
+/// Rebuilds the enforcement profile submenu from the current config, with a separator between built-in levels and custom profiles
 fn fill_levels(app: &AppHandle, menu: &Submenu<Wry>) -> tauri::Result<()> {
     let (current, customs) = {
         let state = app.state::<crate::AppState>();
@@ -154,14 +154,14 @@ fn fill_levels(app: &AppHandle, menu: &Submenu<Wry>) -> tauri::Result<()> {
     Ok(())
 }
 
-/// 配置变化或切换方案后刷新子菜单（自定义方案会增删、改名；
-/// 点击 CheckMenuItem 会自动切换它的勾选，也要按实际选择重设）
+/// Refreshes the submenu after a config change or profile switch (custom profiles may be added, removed or renamed;
+/// clicking a CheckMenuItem toggles its check automatically, so it also has to be reset to the actual selection)
 pub fn refresh_levels(app: &AppHandle) {
     let Some(items) = app.try_state::<TrayItems>() else {
         return;
     };
     if let Err(e) = fill_levels(app, &items.level_menu) {
-        eprintln!("刷新强制方案菜单失败：{e}");
+        eprintln!("Failed to refresh the enforcement profile menu: {e}");
     }
 }
 
@@ -192,7 +192,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
             )
         })
         .collect::<tauri::Result<Vec<_>>>()?;
-    // “跟随系统”与具体语言之间加分隔线
+    // Separator between "Follow system" and the specific languages
     let separator = PredefinedMenuItem::separator(app)?;
     let mut lang_entries: Vec<&dyn IsMenuItem<Wry>> = vec![&langs[0], &separator];
     lang_entries.extend(langs[1..].iter().map(|item| item as &dyn IsMenuItem<Wry>));
@@ -257,7 +257,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
     Ok(())
 }
 
-/// 语言切换后刷新菜单文字和勾选状态（状态行由随后的 update 刷新）
+/// Refreshes menu text and checks after a language change (the status line is refreshed by the following update)
 pub fn refresh_language(app: &AppHandle) {
     let Some(items) = app.try_state::<TrayItems>() else {
         return;
@@ -268,7 +268,7 @@ pub fn refresh_language(app: &AppHandle) {
     let _ = items.level_menu.set_text(level_menu_text());
     let _ = items.about.set_text(about_text());
     let _ = items.quit.set_text(quit_text());
-    // 点击 CheckMenuItem 会自动切换它的勾选，这里统一按实际选择重设
+    // Clicking a CheckMenuItem toggles its check automatically, so reset all of them to the actual selection here
     let current = i18n::current();
     for (item, lang) in items.langs.iter().zip(Lang::ALL) {
         let _ = item.set_text(lang_text(lang));
@@ -293,14 +293,14 @@ pub fn update(app: &AppHandle, snap: &Snapshot) {
     if let Some(items) = app.try_state::<TrayItems>() {
         let _ = items.status.set_text(&text);
         let _ = items.rest_now.set_enabled(working);
-        // 休息期间不允许从托盘退出，也不允许打开设置或切换方案来缩短休息；
-        // 关于页面能打开浏览器，同样禁用
+        // During a break, quitting from the tray isn't allowed, nor is opening settings or switching profiles to shorten the break;
+        // the About page can open a browser, so it's disabled too
         let _ = items.settings.set_enabled(working);
         let _ = items.level_menu.set_enabled(working);
         let _ = items.about.set_enabled(working);
         let _ = items.quit.set_enabled(working);
 
-        // 每次刷新都重新判断，任务栏切换深浅色后图标随之更新
+        // Re-evaluated on every refresh so the icon follows taskbar light/dark changes
         let key = icon_key(snap.phase);
         let mut icon = items.icon.lock().unwrap();
         if *icon != key {
@@ -323,12 +323,12 @@ pub fn autostart_enabled(app: &AppHandle) -> bool {
     app.autolaunch().is_enabled().unwrap_or(false)
 }
 
-/// 开启或关闭开机自启，返回系统里的实际状态
+/// Enables or disables autostart and returns the actual system state
 pub fn set_autostart(app: &AppHandle, on: bool) -> bool {
     if let Err(e) = toggle_autostart(app, on) {
-        eprintln!("切换开机自启失败：{e}");
+        eprintln!("Failed to toggle autostart: {e}");
     }
-    // 以系统里的实际状态为准，防止菜单勾选与真实状态不一致
+    // Go by the actual system state so the menu check never disagrees with reality
     let actual = autostart_enabled(app);
     if let Some(items) = app.try_state::<TrayItems>() {
         let _ = items.autostart.set_checked(actual);

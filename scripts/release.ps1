@@ -1,5 +1,5 @@
-# 用法: pnpm release 0.2.0
-# 同步更新版本号 -> 提交 -> 打 tag -> 推送，由 .github/workflows/release.yml 完成构建和发布
+# Usage: pnpm release 0.2.0
+# Bump versions -> commit -> tag -> push; .github/workflows/release.yml does the build and release
 param(
     [Parameter(Mandatory)]
     [string]$Version
@@ -27,7 +27,7 @@ Invoke-Git fetch origin --tags
 Invoke-Git pull --ff-only
 if (git tag --list $tag) { throw "Tag $tag already exists" }
 
-# 只替换版本字段的文本，保留文件原有格式
+# Replace only the version field text, preserving the file's formatting
 $targets = @(
     @{ Path = "package.json";              Pattern = '(?m)^(\s*"version":\s*")[^"]+' }
     @{ Path = "src-tauri/tauri.conf.json"; Pattern = '(?m)^(\s*"version":\s*")[^"]+' }

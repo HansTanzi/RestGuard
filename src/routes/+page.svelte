@@ -19,6 +19,7 @@
     BUILTIN_LEVELS,
     BUILTIN_PROFILES,
     DEFAULT_CONFIG,
+    NTFY_TOPIC_PATTERN,
     SOUNDS,
     isBuiltinLevel,
     type Config,
@@ -80,6 +81,8 @@
     max_postpones: !count(profile.max_postpones),
     // 关掉提示音时不检查，后端会把没有文件的 file 换成默认提示音
     sound_file: draft.sound_prompt && draft.sound === "file" && !draft.sound_file.trim(),
+    // 关掉推送时不检查
+    ntfy_topic: draft.phone_notify && !NTFY_TOPIC_PATTERN.test(draft.ntfy_topic.trim()),
   });
   // 切到别的方案后，之前编辑过的方案也要有效
   const valid = $derived(
@@ -140,6 +143,26 @@
     invoke("preview_sound", { config: $state.snapshot(output) }).catch((e) =>
       flash(String(e), true),
     );
+  }
+
+  // 首次打开推送时生成一个不易猜到的主题，公共服务器上知道主题的人都能订阅
+  function changePhoneNotify() {
+    if (draft.phone_notify && !draft.ntfy_topic.trim()) {
+      const bytes = crypto.getRandomValues(new Uint8Array(6));
+      draft.ntfy_topic = "restguard-" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    }
+  }
+
+  // 按表单里还没保存的设置推送一条测试通知
+  let sendingTest = $state(false);
+  function testPhone() {
+    if (!s) return;
+    const sent = s.testSent;
+    sendingTest = true;
+    invoke("test_phone_notify", { config: $state.snapshot(output) })
+      .then(() => flash(sent))
+      .catch((e) => flash(String(e), true))
+      .finally(() => (sendingTest = false));
   }
 
   function pickFile() {
@@ -328,6 +351,49 @@
           </div>
         </fieldset>
       </section>
+
+      <fieldset disabled={locked}>
+        <section>
+          <h2>{s.phone}</h2>
+          <label class="check">
+            <input type="checkbox" bind:checked={draft.phone_notify} onchange={changePhoneNotify} />
+            <span>{s.phoneNotify}</span>
+          </label>
+          <label class="sub">
+            <span>{s.ntfyServer}</span>
+            <input
+              type="text"
+              class="wide"
+              spellcheck="false"
+              placeholder={DEFAULT_CONFIG.ntfy_server}
+              disabled={!draft.phone_notify}
+              bind:value={draft.ntfy_server}
+            />
+          </label>
+          <label class="sub">
+            <span>{s.ntfyTopic}</span>
+            <input
+              type="text"
+              class="wide"
+              spellcheck="false"
+              class:invalid={errors.ntfy_topic}
+              disabled={!draft.phone_notify}
+              bind:value={draft.ntfy_topic}
+            />
+          </label>
+          <p class="hint sub">{s.phoneHint}</p>
+          <div class="actions profile-actions">
+            <button
+              type="button"
+              class="ghost"
+              disabled={!draft.phone_notify || errors.ntfy_topic || sendingTest}
+              onclick={testPhone}
+            >
+              {s.sendTest}
+            </button>
+          </div>
+        </section>
+      </fieldset>
 
       <fieldset disabled={locked}>
         <section>
@@ -805,7 +871,8 @@
     background: rgb(0 0 0 / 0.5);
   }
 
-  dialog input[type="text"] {
+  dialog input[type="text"],
+  input.wide {
     width: 12rem;
   }
 

@@ -263,6 +263,13 @@ export interface SettingsStrings {
   noFile: string;
   fileHint: string;
   preview: string;
+  phone: string;
+  phoneNotify: string;
+  ntfyServer: string;
+  ntfyTopic: string;
+  phoneHint: string;
+  sendTest: string;
+  testSent: string;
 }
 
 const settings: Record<UiLang, SettingsStrings> = {
@@ -316,6 +323,13 @@ const settings: Record<UiLang, SettingsStrings> = {
     noFile: "未选择",
     fileHint: "支持 mp3、wav 等常见格式；Linux 上请用 wav、ogg 或 flac",
     preview:"试听",
+    phone: "手机通知",
+    phoneNotify: "休息结束时推送到手机（ntfy）",
+    ntfyServer: "服务器",
+    ntfyTopic: "主题",
+    phoneHint: "在手机上安装 ntfy 应用，订阅上面的服务器和主题。通知为最高优先级；Android 上在 ntfy 设置里打开“Keep alerting for highest priority”，就会像闹钟一样一直响到点掉。知道主题的人都能订阅，请不要公开。",
+    sendTest: "发送测试通知",
+    testSent: "已发送，请查看手机",
   },
   en: {
     title: "Settings",
@@ -367,6 +381,13 @@ const settings: Record<UiLang, SettingsStrings> = {
     noFile: "None selected",
     fileHint: "Common formats such as mp3 and wav work; on Linux use wav, ogg or flac.",
     preview:"Preview",
+    phone: "Phone notification",
+    phoneNotify: "Notify my phone when a break ends (ntfy)",
+    ntfyServer: "Server",
+    ntfyTopic: "Topic",
+    phoneHint: "Install the ntfy app on your phone and subscribe to the server and topic above. Notifications are sent at the highest priority; on Android, turn on “Keep alerting for highest priority” in ntfy's settings to have it ring like an alarm until you dismiss it. Anyone who knows the topic can subscribe, so keep it private.",
+    sendTest: "Send test notification",
+    testSent: "Sent. Check your phone",
   },
   hi: {
     title: "सेटिंग्स",
@@ -418,6 +439,13 @@ const settings: Record<UiLang, SettingsStrings> = {
     noFile: "कोई फ़ाइल नहीं चुनी",
     fileHint: "mp3, wav जैसे आम फ़ॉर्मैट चलते हैं; Linux पर wav, ogg या flac इस्तेमाल करें।",
     preview:"सुनें",
+    phone: "फ़ोन सूचना",
+    phoneNotify: "ब्रेक खत्म होने पर फ़ोन पर सूचना भेजें (ntfy)",
+    ntfyServer: "सर्वर",
+    ntfyTopic: "टॉपिक",
+    phoneHint: "फ़ोन पर ntfy ऐप इंस्टॉल करें और ऊपर दिए सर्वर व टॉपिक की सदस्यता लें। सूचनाएँ सबसे ऊँची प्राथमिकता से भेजी जाती हैं; Android पर ntfy की सेटिंग्स में “Keep alerting for highest priority” चालू करें, तो यह अलार्म की तरह तब तक बजेगी जब तक आप इसे हटा न दें। टॉपिक जानने वाला कोई भी सदस्यता ले सकता है, इसलिए इसे निजी रखें।",
+    sendTest: "परीक्षण सूचना भेजें",
+    testSent: "भेज दी गई, फ़ोन देखें",
   },
   es: {
     title: "Ajustes",
@@ -469,6 +497,13 @@ const settings: Record<UiLang, SettingsStrings> = {
     noFile: "Ninguno seleccionado",
     fileHint: "Funcionan formatos comunes como mp3 y wav; en Linux usa wav, ogg o flac.",
     preview:"Escuchar",
+    phone: "Notificación al móvil",
+    phoneNotify: "Avisar al móvil al terminar el descanso (ntfy)",
+    ntfyServer: "Servidor",
+    ntfyTopic: "Tema",
+    phoneHint: "Instala la app ntfy en el móvil y suscríbete al servidor y tema de arriba. Las notificaciones se envían con la máxima prioridad; en Android, activa “Keep alerting for highest priority” en los ajustes de ntfy para que suene como una alarma hasta que la descartes. Cualquiera que conozca el tema puede suscribirse, así que mantenlo en privado.",
+    sendTest: "Enviar notificación de prueba",
+    testSent: "Enviada. Revisa el móvil",
   },
   ar: {
     title: "الإعدادات",
@@ -520,6 +555,13 @@ const settings: Record<UiLang, SettingsStrings> = {
     noFile: "لم يُختر ملف",
     fileHint: "تعمل الصيغ الشائعة مثل mp3 وwav؛ على Linux استخدم wav أو ogg أو flac.",
     preview:"استماع",
+    phone: "إشعار الهاتف",
+    phoneNotify: "إرسال إشعار إلى الهاتف عند انتهاء الاستراحة (ntfy)",
+    ntfyServer: "الخادم",
+    ntfyTopic: "الموضوع",
+    phoneHint: "ثبّت تطبيق ntfy على هاتفك واشترك في الخادم والموضوع أعلاه. تُرسَل الإشعارات بأعلى أولوية؛ على Android فعّل «Keep alerting for highest priority» في إعدادات ntfy ليرنّ كالمنبّه حتى تغلقه. يمكن لأي شخص يعرف الموضوع الاشتراك فيه، لذا أبقِه خاصًا.",
+    sendTest: "إرسال إشعار تجريبي",
+    testSent: "تم الإرسال، تحقّق من هاتفك",
   },
   fr: {
     title: "Paramètres",
@@ -571,6 +613,13 @@ const settings: Record<UiLang, SettingsStrings> = {
     noFile: "Aucun fichier",
     fileHint: "Les formats courants comme mp3 et wav fonctionnent ; sous Linux, utilisez wav, ogg ou flac.",
     preview:"Écouter",
+    phone: "Notification sur le téléphone",
+    phoneNotify: "Prévenir mon téléphone à la fin de la pause (ntfy)",
+    ntfyServer: "Serveur",
+    ntfyTopic: "Sujet",
+    phoneHint: "Installez l'appli ntfy sur votre téléphone et abonnez-vous au serveur et au sujet ci-dessus. Les notifications sont envoyées en priorité maximale ; sur Android, activez « Keep alerting for highest priority » dans les paramètres de ntfy pour qu'elle sonne comme un réveil jusqu'à ce que vous la fermiez. Quiconque connaît le sujet peut s'y abonner : gardez-le privé.",
+    sendTest: "Envoyer une notification de test",
+    testSent: "Envoyée. Vérifiez votre téléphone",
   },
   bn: {
     title: "সেটিংস",
@@ -622,6 +671,13 @@ const settings: Record<UiLang, SettingsStrings> = {
     noFile: "কিছু বাছাই করা হয়নি",
     fileHint: "mp3, wav-এর মতো সাধারণ ফরম্যাট চলে; Linux-এ wav, ogg বা flac ব্যবহার করুন।",
     preview:"শুনুন",
+    phone: "ফোন নোটিফিকেশন",
+    phoneNotify: "বিরতি শেষ হলে ফোনে জানান (ntfy)",
+    ntfyServer: "সার্ভার",
+    ntfyTopic: "টপিক",
+    phoneHint: "ফোনে ntfy অ্যাপ ইনস্টল করে ওপরের সার্ভার ও টপিকে সাবস্ক্রাইব করুন। নোটিফিকেশন সর্বোচ্চ অগ্রাধিকারে পাঠানো হয়; Android-এ ntfy-এর সেটিংসে “Keep alerting for highest priority” চালু করলে আপনি বন্ধ না করা পর্যন্ত এটি অ্যালার্মের মতো বাজতে থাকবে। টপিক জানলে যে কেউ সাবস্ক্রাইব করতে পারে, তাই এটি গোপন রাখুন।",
+    sendTest: "পরীক্ষামূলক নোটিফিকেশন পাঠান",
+    testSent: "পাঠানো হয়েছে, ফোন দেখুন",
   },
   pt: {
     title: "Configurações",
@@ -673,6 +729,13 @@ const settings: Record<UiLang, SettingsStrings> = {
     noFile: "Nenhum selecionado",
     fileHint: "Formatos comuns como mp3 e wav funcionam; no Linux use wav, ogg ou flac.",
     preview:"Ouvir",
+    phone: "Notificação no celular",
+    phoneNotify: "Avisar o celular ao fim da pausa (ntfy)",
+    ntfyServer: "Servidor",
+    ntfyTopic: "Tópico",
+    phoneHint: "Instale o app ntfy no celular e assine o servidor e o tópico acima. As notificações são enviadas com prioridade máxima; no Android, ative “Keep alerting for highest priority” nas configurações do ntfy para que toque como um alarme até você dispensá-la. Qualquer pessoa que conheça o tópico pode assiná-lo, então mantenha-o privado.",
+    sendTest: "Enviar notificação de teste",
+    testSent: "Enviada. Confira o celular",
   },
   de: {
     title: "Einstellungen",
@@ -724,6 +787,13 @@ const settings: Record<UiLang, SettingsStrings> = {
     noFile: "Keine ausgewählt",
     fileHint: "Gängige Formate wie mp3 und wav funktionieren; unter Linux wav, ogg oder flac verwenden.",
     preview:"Anhören",
+    phone: "Handy-Benachrichtigung",
+    phoneNotify: "Am Ende der Pause das Handy benachrichtigen (ntfy)",
+    ntfyServer: "Server",
+    ntfyTopic: "Thema",
+    phoneHint: "Installiere die ntfy-App auf dem Handy und abonniere den Server und das Thema oben. Benachrichtigungen werden mit höchster Priorität gesendet; unter Android in den ntfy-Einstellungen „Keep alerting for highest priority“ einschalten, dann klingelt es wie ein Wecker, bis du es wegwischst. Jeder, der das Thema kennt, kann es abonnieren – halte es also privat.",
+    sendTest: "Testbenachrichtigung senden",
+    testSent: "Gesendet. Schau auf dein Handy",
   },
   ja: {
     title: "設定",
@@ -775,6 +845,13 @@ const settings: Record<UiLang, SettingsStrings> = {
     noFile: "未選択",
     fileHint: "mp3 や wav などの一般的な形式に対応しています。Linux では wav、ogg、flac を使ってください",
     preview:"試聴",
+    phone: "スマホ通知",
+    phoneNotify: "休憩が終わったらスマホに通知（ntfy）",
+    ntfyServer: "サーバー",
+    ntfyTopic: "トピック",
+    phoneHint: "スマホに ntfy アプリを入れて、上のサーバーとトピックを購読してください。通知は最高優先度で送られます。Android では ntfy の設定で「Keep alerting for highest priority」をオンにすると、閉じるまでアラームのように鳴り続けます。トピックを知っていれば誰でも購読できるので、公開しないでください。",
+    sendTest: "テスト通知を送信",
+    testSent: "送信しました。スマホを確認してください",
   },
   it: {
     title: "Impostazioni",
@@ -826,6 +903,13 @@ const settings: Record<UiLang, SettingsStrings> = {
     noFile: "Nessuno selezionato",
     fileHint: "Funzionano i formati comuni come mp3 e wav; su Linux usa wav, ogg o flac.",
     preview:"Ascolta",
+    phone: "Notifica sul telefono",
+    phoneNotify: "Avvisa il telefono alla fine della pausa (ntfy)",
+    ntfyServer: "Server",
+    ntfyTopic: "Argomento",
+    phoneHint: "Installa l'app ntfy sul telefono e iscriviti al server e all'argomento qui sopra. Le notifiche vengono inviate con la massima priorità; su Android attiva «Keep alerting for highest priority» nelle impostazioni di ntfy per farla suonare come una sveglia finché non la chiudi. Chiunque conosca l'argomento può iscriversi, quindi tienilo privato.",
+    sendTest: "Invia notifica di prova",
+    testSent: "Inviata. Controlla il telefono",
   },
   ko: {
     title: "설정",
@@ -877,6 +961,13 @@ const settings: Record<UiLang, SettingsStrings> = {
     noFile: "선택 안 함",
     fileHint: "mp3, wav 등 일반적인 형식을 지원합니다. Linux에서는 wav, ogg, flac을 사용하세요.",
     preview:"미리 듣기",
+    phone: "휴대폰 알림",
+    phoneNotify: "휴식이 끝나면 휴대폰으로 알림(ntfy)",
+    ntfyServer: "서버",
+    ntfyTopic: "토픽",
+    phoneHint: "휴대폰에 ntfy 앱을 설치하고 위의 서버와 토픽을 구독하세요. 알림은 최고 우선순위로 전송됩니다. Android에서는 ntfy 설정에서 “Keep alerting for highest priority”를 켜면 닫을 때까지 알람처럼 계속 울립니다. 토픽을 아는 사람은 누구나 구독할 수 있으니 공개하지 마세요.",
+    sendTest: "테스트 알림 보내기",
+    testSent: "보냈습니다. 휴대폰을 확인하세요",
   },
   id: {
     title: "Pengaturan",
@@ -928,6 +1019,13 @@ const settings: Record<UiLang, SettingsStrings> = {
     noFile: "Belum dipilih",
     fileHint: "Format umum seperti mp3 dan wav didukung; di Linux gunakan wav, ogg, atau flac.",
     preview:"Dengarkan",
+    phone: "Notifikasi ponsel",
+    phoneNotify: "Beri tahu ponsel saat istirahat selesai (ntfy)",
+    ntfyServer: "Server",
+    ntfyTopic: "Topik",
+    phoneHint: "Pasang aplikasi ntfy di ponsel dan berlangganan server serta topik di atas. Notifikasi dikirim dengan prioritas tertinggi; di Android, aktifkan “Keep alerting for highest priority” di pengaturan ntfy agar berbunyi seperti alarm sampai Anda menutupnya. Siapa pun yang tahu topiknya bisa berlangganan, jadi rahasiakan.",
+    sendTest: "Kirim notifikasi uji",
+    testSent: "Terkirim. Periksa ponsel Anda",
   },
 };
 

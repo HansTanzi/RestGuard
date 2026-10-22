@@ -64,6 +64,12 @@
 - 会议检测（Windows、macOS）：Zoom、Microsoft Teams、Webex、腾讯会议在前台（Windows 上还包括正在使用麦克风）时暂缓休息，会后再开始；休息时也可以点「我在开会」，15 分钟后再提醒
 - 空闲检测：5 分钟没有键盘鼠标操作就算离开电脑，工作倒计时暂停；离开满一次休息的时长就当已经休息过，回来不会立刻被叫去休息
 
+### 离开电脑也不会错过
+
+- 休息结束时播放提示音，可选内置音效或自己的音频文件
+- 手机通知：通过 [ntfy](https://ntfy.sh) 推送到手机（Android、iOS），走开休息也能及时知道该回来了；Android 上可以设成像闹钟一样一直响到点掉
+- 智能手表：手机收到的通知会同步到配对的 Apple Watch、Wear OS、Galaxy Watch 以及小米、华为、Garmin 等手表手环，抬手就能看到（设置方法见[手机和智能手表通知](#手机和智能手表通知)）
+
 ### 小巧轻快
 
 - 基于 Rust + Tauri 2 构建，使用系统自带的 WebView，不捆绑浏览器内核，常驻后台几乎不占资源
@@ -173,6 +179,9 @@ level = "medium"         # 强制等级："high"、"medium"、"low"，或某个�
 sound_prompt = true      # 休息结束时播放提示音
 sound = "beep"           # "beep"（滴滴）、"chime"（叮咚）、"rise"（上扬三音）或 "file"（播放 sound_file）
 sound_file = ""          # 自选音频文件的完整路径，sound = "file" 时使用
+phone_notify = false     # 休息结束时通过 ntfy 推送到手机
+ntfy_server = "https://ntfy.sh"  # ntfy 服务器，公共服务器或自建的
+ntfy_topic = ""          # 在 ntfy 应用里订阅的主题，请取一个不易猜到的名字
 
 [[profiles]]             # 自定义方案，每个方案一个 [[profiles]]
 name = "专注"
@@ -185,6 +194,28 @@ overlay_coverage = 1.0   # 遮罩覆盖屏幕的比例 0.1 ~ 1.0
 urgent_scale = 0.5       # 紧急模式（缩小遮罩）时相对上面比例的缩放因子 0.1 ~ 0.9
 movable = false          # 遮罩未占满屏幕时允许在本屏幕内拖动（不能拖到其他屏幕）
 ```
+
+### 手机和智能手表通知
+
+1. 在手机上安装 ntfy 应用（[Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy)、[F-Droid](https://f-droid.org/packages/io.heckel.ntfy/)、[iOS](https://apps.apple.com/app/ntfy/id1625396347)）
+2. 在 RestGuard 的设置面板中打开「休息结束时推送到手机（ntfy）」，填一个不易猜到的主题（只能用字母、数字、`-` 和 `_`）。服务器默认是公共的 `https://ntfy.sh`，也可以填自建的
+3. 在 ntfy 应用里订阅同一个服务器和主题，然后点「发送测试通知」确认能收到
+
+通知以最高优先级发送。Android 上在 ntfy 设置里打开「Keep alerting for highest priority」，会像闹钟一样一直响到点掉；iOS 上是时效性通知，专注模式下也能弹出（需允许 ntfy 发送时效性通知）。公共服务器上知道主题的人都能订阅，请不要公开。
+
+手表不需要额外安装，手机收到的通知会由系统同步过去：
+
+| 手表 | 设置 |
+|---|---|
+| Apple Watch | 在 iPhone 的「Watch」App →「通知」中为 ntfy 打开「镜像 iPhone 提醒」。只有 iPhone 锁屏或黑屏时通知才会转到手表 |
+| Wear OS / Galaxy Watch | 默认同步，确认 ntfy 没有在手表的通知设置中被关闭 |
+| 小米、华为、Garmin、Amazfit 等 | 在配套 App（Zepp、华为运动健康、Garmin Connect 等）的应用通知列表中允许 ntfy |
+
+注意：
+
+- 手表上只会震动一次，不会像手机那样持续提醒
+- 手机必须在线且 ntfy 在后台运行，手表才能收到；脱离手机单独使用的手表收不到
+- 使用自建服务器时，iOS 需要在服务器配置中设置 `upstream-base-url: "https://ntfy.sh"` 才能即时收到推送（见 [ntfy 文档](https://docs.ntfy.sh/config/#ios-instant-notifications)）
 
 ## 平台限制
 

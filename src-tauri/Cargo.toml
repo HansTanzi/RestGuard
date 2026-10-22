@@ -27,6 +27,8 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "0.9"
 sys-locale = "0.3"
+# 休息结束时通过 ntfy 推送到手机
+ureq = "3"
 
 # 与 tauri 使用的版本一致，用于把遮罩提升到菜单栏和全屏应用之上，以及检测前台应用
 [target.'cfg(target_os = "macos")'.dependencies]

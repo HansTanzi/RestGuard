@@ -6,6 +6,7 @@ mod idle;
 #[cfg(windows)]
 mod msix;
 mod overlay;
+mod phone;
 mod settings;
 mod sound;
 mod timer;
@@ -162,6 +163,13 @@ fn commit_config(app: &AppHandle, config: Config, save: bool) -> Result<Config, 
 #[tauri::command]
 async fn preview_sound(config: Config) -> Result<(), String> {
     sound::preview(&config.sanitized())
+}
+
+/// 设置面板的“发送测试”：按表单里还没保存的设置推送一条通知到手机，失败时把提示返回给前端。
+/// async：要等网络请求，不能占着主线程
+#[tauri::command]
+async fn test_phone_notify(config: Config) -> Result<(), String> {
+    phone::test(&config.sanitized())
 }
 
 /// 设置面板选择提示音文件，返回完整路径；取消时返回 None。
@@ -362,7 +370,9 @@ fn spawn_ticker(app: AppHandle) {
         match event {
             Some(TimerEvent::RestStarted) => open_overlays(&app),
             Some(TimerEvent::RestFinished) => {
-                sound::announce(&app.state::<AppState>().config.lock().unwrap())
+                let cfg = app.state::<AppState>().config.lock().unwrap().clone();
+                sound::announce(&cfg);
+                phone::announce(&cfg);
             }
             None => {}
         }
@@ -432,6 +442,7 @@ pub fn run() {
             open_config_file,
             reload_config,
             preview_sound,
+            test_phone_notify,
             pick_sound_file,
             get_autostart,
             set_autostart,

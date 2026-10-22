@@ -82,8 +82,16 @@ export interface Config {
   sound: SoundId;
   // sound 为 "file" 时播放的音频文件
   sound_file: string;
+  // 休息结束时通过 ntfy 推送到手机
+  phone_notify: boolean;
+  ntfy_server: string;
+  // 手机上订阅同一个主题，只能用字母、数字、- 和 _
+  ntfy_topic: string;
   profiles: Profile[];
 }
+
+// ntfy 主题允许的字符
+export const NTFY_TOPIC_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 
 // 字段顺序与 config.rs 一致，设置面板直接比较 JSON 判断是否有修改
 export const DEFAULT_CONFIG: Config = {
@@ -95,6 +103,9 @@ export const DEFAULT_CONFIG: Config = {
   sound_prompt: true,
   sound: "beep",
   sound_file: "",
+  phone_notify: false,
+  ntfy_server: "https://ntfy.sh",
+  ntfy_topic: "",
   profiles: [],
 };
 

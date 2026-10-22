@@ -58,6 +58,12 @@ Keep as many custom profiles as you like and switch any time. Work, break, postp
 - Meeting detection (Windows, macOS): while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (or, on Windows, using the microphone), the break waits until the meeting is over; during a break you can also click "I'm in a meeting" to be reminded in 15 minutes
 - Idle detection: after 5 minutes without keyboard or mouse input you count as away and the work countdown pauses; being away as long as a break counts as a full break, so you aren't sent to rest right after coming back
 
+### Never miss the end of a break
+
+- A sound plays when a break ends: pick a built-in one or your own audio file
+- Phone notifications: get a push on your phone (Android, iOS) via [ntfy](https://ntfy.sh), so you know when to come back even after walking away; on Android it can ring like an alarm until you dismiss it
+- Smartwatches: the phone notification is mirrored to a paired Apple Watch, Wear OS, Galaxy Watch, or a Xiaomi, Huawei, Garmin or similar watch or band, so a glance at your wrist is enough (see [Phone and smartwatch notifications](#phone-and-smartwatch-notifications))
+
 ### Small and fast
 
 - Built with Rust + Tauri 2 on the system WebView, with no bundled browser engine, so it barely uses any resources while running in the background
@@ -167,6 +173,9 @@ level = "medium"         # "high", "medium", "low", or the name of a custom prof
 sound_prompt = true      # play a sound when a break ends
 sound = "beep"           # "beep", "chime", "rise" or "file" (plays sound_file)
 sound_file = ""          # full path of your own audio file, used when sound = "file"
+phone_notify = false     # push a notification to your phone via ntfy when a break ends
+ntfy_server = "https://ntfy.sh"  # ntfy server, the public one or your own
+ntfy_topic = ""          # topic to subscribe to in the ntfy app; keep it hard to guess
 
 [[profiles]]             # a custom profile; add one [[profiles]] per profile
 name = "Focus"
@@ -179,6 +188,28 @@ overlay_coverage = 1.0   # fraction of each screen covered, 0.1 ~ 1.0
 urgent_scale = 0.5       # urgent mode (shrunk overlay) scale relative to the above, 0.1 ~ 0.9
 movable = false          # allow dragging the overlay within its own screen when it isn't full screen
 ```
+
+### Phone and smartwatch notifications
+
+1. Install the ntfy app on your phone ([Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy), [F-Droid](https://f-droid.org/packages/io.heckel.ntfy/), [iOS](https://apps.apple.com/app/ntfy/id1625396347))
+2. In RestGuard's Settings, turn on "Notify my phone when a break ends (ntfy)" and enter a hard-to-guess topic (letters, digits, `-` and `_` only). The server defaults to the public `https://ntfy.sh`; you can use your own instead
+3. Subscribe to the same server and topic in the ntfy app, then click "Send test notification" to check that it arrives
+
+Notifications are sent at the highest priority. On Android, turn on "Keep alerting for highest priority" in ntfy's settings to have it ring like an alarm until you dismiss it; on iOS it's a time-sensitive notification that breaks through Focus (if you allow ntfy to send time-sensitive notifications). Anyone who knows the topic can subscribe on the public server, so keep it private.
+
+Nothing needs to be installed on the watch; the system mirrors the phone notification to it:
+
+| Watch | Setup |
+|---|---|
+| Apple Watch | In the Watch app on your iPhone, go to Notifications and turn on "Mirror iPhone alerts" for ntfy. Notifications go to the watch only while the iPhone is locked or its screen is off |
+| Wear OS / Galaxy Watch | Mirrored by default; make sure ntfy isn't turned off in the watch's notification settings |
+| Xiaomi, Huawei, Garmin, Amazfit, etc. | Allow ntfy in the app notification list of the companion app (Zepp, Huawei Health, Garmin Connect, etc.) |
+
+Notes:
+
+- The watch vibrates once; it doesn't keep alerting like the phone does
+- The phone must be online with ntfy running in the background for the watch to get the notification; a watch used on its own without the phone won't
+- With a self-hosted server, iOS needs `upstream-base-url: "https://ntfy.sh"` in the server config to receive notifications instantly (see the [ntfy docs](https://docs.ntfy.sh/config/#ios-instant-notifications))
 
 ## Platform limitations
 

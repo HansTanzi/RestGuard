@@ -30,9 +30,11 @@ sys-locale = "0.3"
 # Push to the phone via ntfy when a break ends
 ureq = "3"
 
-# Same version as tauri uses; raises the overlay above the menu bar and full-screen apps, and detects the frontmost app
+# Same version as tauri uses; raises the overlay above the menu bar and full-screen apps, and detects the frontmost app, running apps and microphone use
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSResponder", "NSWindow", "NSWorkspace", "NSRunningApplication"] }
+objc2-core-foundation = { version = "0.3", default-features = false, features = ["std", "CFString"] }
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSArray", "NSString"] }
 
 # Same version as tauri uses; for Store (MSIX) autostart, detecting the foreground app and microphone use, idle detection, opening the config file, and playing sounds
 [target.'cfg(windows)'.dependencies]

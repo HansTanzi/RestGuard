@@ -1,0 +1,27 @@
+# Fast checks that need no build: comments, logs and assertion messages must be in English
+# (see scripts/check-english.py)
+name: Lint
+
+on:
+  pull_request:
+    branches: [dev, main, master]
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+# Cancel older runs still in progress when a PR gets new pushes
+concurrency:
+  group: lint-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  english-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - run: python scripts/check-english.py

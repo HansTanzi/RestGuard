@@ -13,7 +13,8 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "tauri": "tauri",
     "release": "pwsh -NoProfile -File scripts/release.ps1",
-    "msix": "pwsh -NoProfile -File scripts/msix.ps1"
+    "msix": "pwsh -NoProfile -File scripts/msix.ps1",
+    "lint:english": "python scripts/check-english.py"
   },
   "dependencies": {
     "@tauri-apps/api": "^2"

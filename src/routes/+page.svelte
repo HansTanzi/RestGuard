@@ -153,6 +153,17 @@
     }
   }
 
+  // 粘贴了完整的订阅地址（如 ntfy.sh/mytopic）时拆成服务器和主题
+  function splitTopicUrl() {
+    const value = draft.ntfy_topic.trim().replace(/\/+$/, "");
+    const at = value.lastIndexOf("/");
+    const server = value.slice(0, at);
+    // 没有路径，或只有 https:// 这样的协议头
+    if (at <= 0 || server.endsWith("/")) return;
+    draft.ntfy_server = /^[a-z][a-z0-9+.-]*:\/\//i.test(server) ? server : "https://" + server;
+    draft.ntfy_topic = value.slice(at + 1);
+  }
+
   // 按表单里还没保存的设置推送一条测试通知
   let sendingTest = $state(false);
   function testPhone() {
@@ -379,8 +390,12 @@
               class:invalid={errors.ntfy_topic}
               disabled={!draft.phone_notify}
               bind:value={draft.ntfy_topic}
+              onchange={splitTopicUrl}
             />
           </label>
+          {#if errors.ntfy_topic}
+            <p class="hint sub warn">{s.ntfyTopicRule}</p>
+          {/if}
           <p class="hint sub">{s.phoneHint}</p>
           <div class="actions profile-actions">
             <button
@@ -811,6 +826,10 @@
 
   .hint.accent {
     color: var(--accent);
+  }
+
+  .hint.warn {
+    color: var(--warn);
   }
 
   .actions {

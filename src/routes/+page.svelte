@@ -19,6 +19,8 @@
     BUILTIN_LEVELS,
     BUILTIN_PROFILES,
     DEFAULT_CONFIG,
+    NTFY_TOPIC_PATTERN,
+    SOUNDS,
     isBuiltinLevel,
     type Config,
     type LangId,
@@ -77,6 +79,10 @@
     postpone_minutes: !positive(draft.postpone_minutes),
     idle_minutes: !(positive(draft.idle_minutes) || draft.idle_minutes === 0),
     max_postpones: !count(profile.max_postpones),
+    // 关掉提示音时不检查，后端会把没有文件的 file 换成默认提示音
+    sound_file: draft.sound_prompt && draft.sound === "file" && !draft.sound_file.trim(),
+    // 关掉推送时不检查
+    ntfy_topic: draft.phone_notify && !NTFY_TOPIC_PATTERN.test(draft.ntfy_topic.trim()),
   });
   // 切到别的方案后，之前编辑过的方案也要有效
   const valid = $derived(
@@ -131,6 +137,41 @@
     applyDocumentLang(v);
     invoke<LangId>("get_lang").then((id) => (lang = id));
   }
+
+  // 按表单里还没保存的设置播放一遍
+  function preview() {
+    invoke("preview_sound", { config: $state.snapshot(output) }).catch((e) =>
+      flash(String(e), true),
+    );
+  }
+
+  // 首次打开推送时生成一个不易猜到的主题，公共服务器上知道主题的人都能订阅
+  function changePhoneNotify() {
+    if (draft.phone_notify && !draft.ntfy_topic.trim()) {
+      const bytes = crypto.getRandomValues(new Uint8Array(6));
+      draft.ntfy_topic = "restguard-" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    }
+  }
+
+  // 按表单里还没保存的设置推送一条测试通知
+  let sendingTest = $state(false);
+  function testPhone() {
+    if (!s) return;
+    const sent = s.testSent;
+    sendingTest = true;
+    invoke("test_phone_notify", { config: $state.snapshot(output) })
+      .then(() => flash(sent))
+      .catch((e) => flash(String(e), true))
+      .finally(() => (sendingTest = false));
+  }
+
+  function pickFile() {
+    invoke<string | null>("pick_sound_file")
+      .then((path) => path && (draft.sound_file = path))
+      .catch((e) => flash(String(e), true));
+  }
+
+  const fileName = (path: string) => path.split(/[\\/]/).pop() ?? "";
 
   function flash(text: string, error = false) {
     clearTimeout(messageTimer);
@@ -264,7 +305,95 @@
           <input type="checkbox" bind:checked={autostart} onchange={changeAutostart} />
           <span>{s.autostart}</span>
         </label>
+        <!-- 结束提醒需要保存才生效，休息期间锁定 -->
+        <fieldset disabled={locked}>
+          <label class="check">
+            <input type="checkbox" bind:checked={draft.sound_prompt} />
+            <span>{s.soundPrompt}</span>
+          </label>
+          <label class="sub">
+            <span>{s.soundKind}</span>
+            <select disabled={!draft.sound_prompt} bind:value={draft.sound}>
+              {#each SOUNDS as id (id)}
+                <option value={id}>{s.sounds[id]}</option>
+              {/each}
+            </select>
+          </label>
+          {#if draft.sound === "file"}
+            <!-- 只能通过对话框选择，路径太长时显示文件名，完整路径在悬停提示里 -->
+            <div class="row sub">
+              <span>{s.soundFile}</span>
+              <span class="file">
+                <span class="name" class:invalid={errors.sound_file} title={draft.sound_file}>
+                  {fileName(draft.sound_file) || s.noFile}
+                </span>
+                <button
+                  type="button"
+                  class="ghost small"
+                  disabled={!draft.sound_prompt}
+                  onclick={pickFile}
+                >
+                  {s.chooseFile}
+                </button>
+              </span>
+            </div>
+            <p class="hint sub">{s.fileHint}</p>
+          {/if}
+          <div class="actions profile-actions">
+            <button
+              type="button"
+              class="ghost"
+              disabled={!draft.sound_prompt || errors.sound_file}
+              onclick={preview}
+            >
+              {s.preview}
+            </button>
+          </div>
+        </fieldset>
       </section>
+
+      <fieldset disabled={locked}>
+        <section>
+          <h2>{s.phone}</h2>
+          <label class="check">
+            <input type="checkbox" bind:checked={draft.phone_notify} onchange={changePhoneNotify} />
+            <span>{s.phoneNotify}</span>
+          </label>
+          <label class="sub">
+            <span>{s.ntfyServer}</span>
+            <input
+              type="text"
+              class="wide"
+              spellcheck="false"
+              placeholder={DEFAULT_CONFIG.ntfy_server}
+              disabled={!draft.phone_notify}
+              bind:value={draft.ntfy_server}
+            />
+          </label>
+          <label class="sub">
+            <span>{s.ntfyTopic}</span>
+            <input
+              type="text"
+              class="wide"
+              spellcheck="false"
+              class:invalid={errors.ntfy_topic}
+              disabled={!draft.phone_notify}
+              bind:value={draft.ntfy_topic}
+            />
+          </label>
+          <p class="hint sub">{s.phoneHint}</p>
+          <div class="actions profile-actions">
+            <button
+              type="button"
+              class="ghost"
+              disabled={!draft.phone_notify || errors.ntfy_topic || sendingTest}
+              onclick={testPhone}
+            >
+              {s.sendTest}
+            </button>
+          </div>
+        </section>
+      </fieldset>
 
       <fieldset disabled={locked}>
         <section>
@@ -547,7 +676,8 @@
     min-width: 0;
   }
 
-  fieldset:disabled section {
+  fieldset:disabled section,
+  section fieldset:disabled {
     opacity: 0.5;
   }
 
@@ -583,8 +713,42 @@
     gap: 0.6rem;
   }
 
-  label.sub {
+  label.sub,
+  .row.sub,
+  .hint.sub {
     padding-inline-start: 1.6rem;
+  }
+
+  /* 与 label 相同的一行布局，但里面有按钮，不能用 label */
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.35rem 0;
+  }
+
+  .file {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .file .name {
+    max-width: 10rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--muted);
+  }
+
+  .file .name.invalid {
+    color: var(--warn);
+  }
+
+  button.small {
+    padding: 0.25rem 0.9rem;
   }
 
   input[type="number"],
@@ -613,6 +777,7 @@
     min-width: 7.5rem;
   }
 
+  /* 提示内容和语音名字较长 */
   input.invalid {
     border-color: var(--warn);
   }
@@ -706,7 +871,8 @@
     background: rgb(0 0 0 / 0.5);
   }
 
-  dialog input[type="text"] {
+  dialog input[type="text"],
+  input.wide {
     width: 12rem;
   }
 

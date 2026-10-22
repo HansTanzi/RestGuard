@@ -6,7 +6,9 @@ mod idle;
 #[cfg(windows)]
 mod msix;
 mod overlay;
+mod phone;
 mod settings;
+mod sound;
 mod timer;
 mod tray;
 
@@ -154,6 +156,36 @@ fn commit_config(app: &AppHandle, config: Config, save: bool) -> Result<Config, 
     let _ = app.emit(CONFIG_EVENT, &config);
     broadcast(app, &snap);
     Ok(config)
+}
+
+/// 设置面板的“试听”：按表单里还没保存的设置播放一遍，播不了时把提示返回给前端。
+/// async：要等播完，不能占着主线程
+#[tauri::command]
+async fn preview_sound(config: Config) -> Result<(), String> {
+    sound::preview(&config.sanitized())
+}
+
+/// 设置面板的“发送测试”：按表单里还没保存的设置推送一条通知到手机，失败时把提示返回给前端。
+/// async：要等网络请求，不能占着主线程
+#[tauri::command]
+async fn test_phone_notify(config: Config) -> Result<(), String> {
+    phone::test(&config.sanitized())
+}
+
+/// 设置面板选择提示音文件，返回完整路径；取消时返回 None。
+/// async：对话框会阻塞到用户选完，不能占着主线程
+#[tauri::command]
+async fn pick_sound_file(window: tauri::WebviewWindow) -> Option<String> {
+    use tauri_plugin_dialog::DialogExt;
+    window
+        .dialog()
+        .file()
+        .set_parent(&window)
+        .add_filter(i18n::t(&i18n::text::AUDIO_FILES), sound::EXTENSIONS)
+        .blocking_pick_file()?
+        .into_path()
+        .ok()
+        .map(|p| p.to_string_lossy().into_owned())
 }
 
 #[tauri::command]
@@ -335,8 +367,14 @@ fn spawn_ticker(app: AppHandle) {
             }
             (event, timer.snapshot(now))
         };
-        if event == Some(TimerEvent::RestStarted) {
-            open_overlays(&app);
+        match event {
+            Some(TimerEvent::RestStarted) => open_overlays(&app),
+            Some(TimerEvent::RestFinished) => {
+                let cfg = app.state::<AppState>().config.lock().unwrap().clone();
+                sound::announce(&cfg);
+                phone::announce(&cfg);
+            }
+            None => {}
         }
         broadcast(&app, &snap);
     });
@@ -348,6 +386,7 @@ pub fn run() {
         // 必须最先注册：重复启动时直接退出新进程
         .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
+        .plugin(tauri_plugin_dialog::init())
         // macOS 默认菜单带 Cmd+Q，休息时按下会直接退出
         .enable_macos_default_menu(false)
         .setup(|app| {
@@ -402,6 +441,9 @@ pub fn run() {
             save_config,
             open_config_file,
             reload_config,
+            preview_sound,
+            test_phone_notify,
+            pick_sound_file,
             get_autostart,
             set_autostart,
             get_about,

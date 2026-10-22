@@ -65,6 +65,10 @@ export function isBuiltinLevel(level: string): level is BuiltinLevel {
   return (BUILTIN_LEVELS as readonly string[]).includes(level);
 }
 
+// 休息结束时的提示音：内置音效或自选的音频文件。与 src-tauri/src/config.rs 的 SOUNDS 一致
+export const SOUNDS = ["beep", "chime", "rise", "file"] as const;
+export type SoundId = (typeof SOUNDS)[number];
+
 // 与 src-tauri/src/config.rs 中的 Config 保持一致（字段名与配置文件相同，用 snake_case）
 export interface Config {
   work_minutes: number;
@@ -73,15 +77,35 @@ export interface Config {
   idle_minutes: number;
   // 内置等级，或某个自定义方案的名字
   level: string;
+  // 休息结束时播放提示音
+  sound_prompt: boolean;
+  sound: SoundId;
+  // sound 为 "file" 时播放的音频文件
+  sound_file: string;
+  // 休息结束时通过 ntfy 推送到手机
+  phone_notify: boolean;
+  ntfy_server: string;
+  // 手机上订阅同一个主题，只能用字母、数字、- 和 _
+  ntfy_topic: string;
   profiles: Profile[];
 }
 
+// ntfy 主题允许的字符
+export const NTFY_TOPIC_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+
+// 字段顺序与 config.rs 一致，设置面板直接比较 JSON 判断是否有修改
 export const DEFAULT_CONFIG: Config = {
   work_minutes: 60,
   rest_minutes: 10,
   postpone_minutes: 5,
   idle_minutes: 5,
   level: "medium",
+  sound_prompt: true,
+  sound: "beep",
+  sound_file: "",
+  phone_notify: false,
+  ntfy_server: "https://ntfy.sh",
+  ntfy_topic: "",
   profiles: [],
 };
 

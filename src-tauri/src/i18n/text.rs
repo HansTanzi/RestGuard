@@ -233,6 +233,74 @@ pub const BREAK_OVER: Tr = Tr {
     id: "Istirahat selesai",
 };
 
+/// 推送到手机的通知正文，标题用 BREAK_OVER
+pub const PHONE_MESSAGE: Tr = Tr {
+    zh: "休息时间到了，回到电脑前开始工作吧",
+    en: "Your break is over. Time to get back to work.",
+    hi: "आपका ब्रेक खत्म हो गया। काम पर लौटने का समय है।",
+    es: "Tu descanso ha terminado. Es hora de volver al trabajo.",
+    ar: "انتهت استراحتك. حان وقت العودة إلى العمل.",
+    fr: "Votre pause est terminée. Il est temps de reprendre le travail.",
+    bn: "আপনার বিরতি শেষ। কাজে ফেরার সময় হয়েছে।",
+    pt: "Sua pausa terminou. Hora de voltar ao trabalho.",
+    de: "Deine Pause ist vorbei. Zeit, wieder an die Arbeit zu gehen.",
+    ja: "休憩が終わりました。仕事に戻りましょう",
+    it: "La pausa è finita. È ora di tornare al lavoro.",
+    ko: "휴식이 끝났습니다. 다시 업무로 돌아갈 시간입니다.",
+    id: "Istirahat Anda sudah selesai. Saatnya kembali bekerja.",
+};
+
+/// 设置面板发送测试通知失败。`{e}` 为具体的错误信息
+pub const PHONE_FAILED: Tr = Tr {
+    zh: "推送失败，请检查服务器地址、主题和网络：{e}",
+    en: "Couldn't send the notification. Check the server, topic and network: {e}",
+    hi: "सूचना नहीं भेजी जा सकी। सर्वर, टॉपिक और नेटवर्क जाँचें: {e}",
+    es: "No se pudo enviar la notificación. Revisa el servidor, el tema y la red: {e}",
+    ar: "تعذّر إرسال الإشعار. تحقّق من الخادم والموضوع والشبكة: {e}",
+    fr: "Impossible d'envoyer la notification. Vérifiez le serveur, le sujet et le réseau : {e}",
+    bn: "নোটিফিকেশন পাঠানো যায়নি। সার্ভার, টপিক ও নেটওয়ার্ক পরীক্ষা করুন: {e}",
+    pt: "Não foi possível enviar a notificação. Verifique o servidor, o tópico e a rede: {e}",
+    de: "Die Benachrichtigung konnte nicht gesendet werden. Server, Thema und Netzwerk prüfen: {e}",
+    ja: "通知を送信できませんでした。サーバー、トピック、ネットワークを確認してください：{e}",
+    it: "Impossibile inviare la notifica. Controlla server, argomento e rete: {e}",
+    ko: "알림을 보낼 수 없습니다. 서버, 토픽, 네트워크를 확인하세요: {e}",
+    id: "Notifikasi gagal dikirim. Periksa server, topik, dan jaringan: {e}",
+};
+
+/// 设置面板选择提示音文件时，文件对话框里的类型名称
+pub const AUDIO_FILES: Tr = Tr {
+    zh: "音频文件",
+    en: "Audio files",
+    hi: "ऑडियो फ़ाइलें",
+    es: "Archivos de audio",
+    ar: "ملفات صوتية",
+    fr: "Fichiers audio",
+    bn: "অডিও ফাইল",
+    pt: "Arquivos de áudio",
+    de: "Audiodateien",
+    ja: "音声ファイル",
+    it: "File audio",
+    ko: "오디오 파일",
+    id: "File audio",
+};
+
+/// 试听自选文件播放失败时的提示（多半是格式不受支持）
+pub const SOUND_FILE_FAILED: Tr = Tr {
+    zh: "无法播放这个文件，可能是本系统不支持它的格式，请换一个文件",
+    en: "Couldn't play this file. Its format may not be supported on this system; please choose another file.",
+    hi: "यह फ़ाइल नहीं चल सकी। हो सकता है इस सिस्टम पर इसका फ़ॉर्मैट समर्थित न हो; कृपया दूसरी फ़ाइल चुनें।",
+    es: "No se pudo reproducir este archivo. Puede que su formato no sea compatible con este sistema; elige otro archivo.",
+    ar: "تعذّر تشغيل هذا الملف. قد لا تكون صيغته مدعومة على هذا النظام؛ يُرجى اختيار ملف آخر.",
+    fr: "Impossible de lire ce fichier. Son format n'est peut-être pas pris en charge sur ce système ; choisissez-en un autre.",
+    bn: "এই ফাইলটি চালানো যায়নি। এই সিস্টেমে এর ফরম্যাট সমর্থিত না-ও হতে পারে; অন্য একটি ফাইল বেছে নিন।",
+    pt: "Não foi possível reproduzir este arquivo. O formato pode não ser compatível com este sistema; escolha outro arquivo.",
+    de: "Diese Datei konnte nicht abgespielt werden. Ihr Format wird auf diesem System eventuell nicht unterstützt; bitte eine andere Datei wählen.",
+    ja: "このファイルを再生できません。このシステムでは形式に対応していない可能性があります。別のファイルを選んでください",
+    it: "Impossibile riprodurre questo file. Il formato potrebbe non essere supportato su questo sistema; scegli un altro file.",
+    ko: "이 파일을 재생할 수 없습니다. 이 시스템에서 지원하지 않는 형식일 수 있으니 다른 파일을 선택하세요.",
+    id: "File ini tidak dapat diputar. Formatnya mungkin tidak didukung di sistem ini; silakan pilih file lain.",
+};
+
 // 窗口标题
 
 pub const SETTINGS_TITLE: Tr = Tr {
@@ -484,9 +552,105 @@ pub mod config {
         id: "Profil kustom, satu [[profiles]] untuk masing-masing. max_postpones: penundaan sebelum istirahat penuh; urgent_mode: izinkan memperkecil lapisan; meeting_detection: deteksi aplikasi rapat; force_rest = false hanya menampilkan jendela yang bisa ditutup; allow_skip: tetap tampilkan \"Lewati istirahat ini\" saat istirahat dipaksa;overlay_coverage: bagian setiap layar yang ditutupi, 0.1 ~ 1.0; urgent_scale: skala mode darurat relatif terhadap overlay_coverage, 0.1 ~ 0.9; movable: izinkan menyeret lapisan di dalam layarnya saat tidak layar penuh",
     };
 
+    pub const SOUND_PROMPT: Tr = Tr {
+        zh: "休息结束时是否播放提示音（true / false）",
+        en: "Play a sound when a break ends (true / false)",
+        hi: "ब्रेक खत्म होने पर ध्वनि बजाएँ या नहीं (true / false)",
+        es: "Reproducir un sonido al terminar el descanso (true / false)",
+        ar: "تشغيل صوت عند انتهاء الاستراحة (true / false)",
+        fr: "Jouer un son à la fin de la pause (true / false)",
+        bn: "বিরতি শেষ হলে শব্দ বাজবে কি না (true / false)",
+        pt: "Tocar um som ao fim da pausa (true / false)",
+        de: "Am Ende der Pause einen Ton abspielen (true / false)",
+        ja: "休憩が終わったときに通知音を鳴らすか（true / false）",
+        it: "Riprodurre un suono alla fine della pausa (true / false)",
+        ko: "휴식이 끝나면 알림음을 재생할지 여부(true / false)",
+        id: "Putar suara saat istirahat selesai (true / false)",
+    };
+
+    pub const SOUND: Tr = Tr {
+        zh: "提示音：beep（滴滴）、chime（叮咚）、rise（上扬三音）或 file（播放 sound_file）",
+        en: "Sound: beep, chime, rise (three rising notes), or file (plays sound_file)",
+        hi: "ध्वनि: beep (बीप), chime (घंटी), rise (तीन चढ़ते सुर), या file (sound_file बजाएँ)",
+        es: "Sonido: beep (pitido), chime (campanilla), rise (tres notas ascendentes) o file (reproduce sound_file)",
+        ar: "الصوت: beep (صفير)، chime (رنين)، rise (ثلاث نغمات صاعدة)، أو file (تشغيل sound_file)",
+        fr: "Son : beep (bip), chime (carillon), rise (trois notes montantes) ou file (joue sound_file)",
+        bn: "শব্দ: beep (বিপ), chime (ঘণ্টা), rise (তিনটি ঊর্ধ্বমুখী সুর), অথবা file (sound_file বাজায়)",
+        pt: "Som: beep (bipe), chime (sininho), rise (três notas ascendentes) ou file (toca sound_file)",
+        de: "Ton: beep (Piepton), chime (Gong), rise (drei aufsteigende Töne) oder file (spielt sound_file ab)",
+        ja: "通知音：beep（ピピッ）、chime（ピンポン）、rise（上がる 3 音）、file（sound_file を再生）",
+        it: "Suono: beep (bip), chime (campanello), rise (tre note ascendenti) o file (riproduce sound_file)",
+        ko: "알림음: beep(삐삐), chime(딩동), rise(올라가는 세 음), file(sound_file 재생)",
+        id: "Suara: beep (bip), chime (lonceng), rise (tiga nada naik), atau file (memutar sound_file)",
+    };
+
+    pub const SOUND_FILE: Tr = Tr {
+        zh: "sound 为 \"file\" 时播放的音频文件的完整路径",
+        en: "Full path of the audio file played when sound = \"file\"",
+        hi: "sound = \"file\" होने पर बजाई जाने वाली ऑडियो फ़ाइल का पूरा पथ",
+        es: "Ruta completa del archivo de audio que se reproduce cuando sound = \"file\"",
+        ar: "المسار الكامل لملف الصوت الذي يُشغَّل عندما sound = \"file\"",
+        fr: "Chemin complet du fichier audio joué quand sound = \"file\"",
+        bn: "sound = \"file\" হলে যে অডিও ফাইল বাজবে তার পূর্ণ পথ",
+        pt: "Caminho completo do arquivo de áudio tocado quando sound = \"file\"",
+        de: "Vollständiger Pfad der Audiodatei, die bei sound = \"file\" abgespielt wird",
+        ja: "sound が \"file\" のときに再生する音声ファイルのフルパス",
+        it: "Percorso completo del file audio riprodotto quando sound = \"file\"",
+        ko: "sound가 \"file\"일 때 재생할 오디오 파일의 전체 경로",
+        id: "Path lengkap file audio yang diputar saat sound = \"file\"",
+    };
+
+    pub const PHONE_NOTIFY: Tr = Tr {
+        zh: "休息结束时是否通过 ntfy 推送到手机（true / false），手机上安装 ntfy 应用并订阅 ntfy_topic",
+        en: "Push a notification to your phone via ntfy when a break ends (true / false); install the ntfy app and subscribe to ntfy_topic",
+        hi: "ब्रेक खत्म होने पर ntfy से फ़ोन पर सूचना भेजें (true / false); फ़ोन पर ntfy ऐप इंस्टॉल करके ntfy_topic की सदस्यता लें",
+        es: "Enviar una notificación al móvil mediante ntfy al terminar el descanso (true / false); instala la app ntfy y suscríbete a ntfy_topic",
+        ar: "إرسال إشعار إلى الهاتف عبر ntfy عند انتهاء الاستراحة (true / false)؛ ثبّت تطبيق ntfy واشترك في ntfy_topic",
+        fr: "Envoyer une notification au téléphone via ntfy à la fin de la pause (true / false) ; installez l'appli ntfy et abonnez-vous à ntfy_topic",
+        bn: "বিরতি শেষ হলে ntfy দিয়ে ফোনে নোটিফিকেশন পাঠানো হবে কি না (true / false); ফোনে ntfy অ্যাপ ইনস্টল করে ntfy_topic-এ সাবস্ক্রাইব করুন",
+        pt: "Enviar uma notificação ao celular via ntfy ao fim da pausa (true / false); instale o app ntfy e assine ntfy_topic",
+        de: "Am Ende der Pause per ntfy eine Benachrichtigung ans Handy senden (true / false); ntfy-App installieren und ntfy_topic abonnieren",
+        ja: "休憩が終わったときに ntfy でスマホに通知するか（true / false）。スマホに ntfy アプリを入れて ntfy_topic を購読してください",
+        it: "Inviare una notifica al telefono tramite ntfy alla fine della pausa (true / false); installa l'app ntfy e iscriviti a ntfy_topic",
+        ko: "휴식이 끝나면 ntfy로 휴대폰에 알림을 보낼지 여부(true / false). 휴대폰에 ntfy 앱을 설치하고 ntfy_topic을 구독하세요",
+        id: "Kirim notifikasi ke ponsel lewat ntfy saat istirahat selesai (true / false); pasang aplikasi ntfy dan berlangganan ntfy_topic",
+    };
+
+    pub const NTFY_SERVER: Tr = Tr {
+        zh: "ntfy 服务器地址，默认为公共服务器 https://ntfy.sh，也可以填自建的服务器",
+        en: "ntfy server URL; defaults to the public https://ntfy.sh, or use your own server",
+        hi: "ntfy सर्वर का पता; डिफ़ॉल्ट सार्वजनिक https://ntfy.sh है, या अपना सर्वर इस्तेमाल करें",
+        es: "URL del servidor ntfy; por defecto el público https://ntfy.sh, o usa tu propio servidor",
+        ar: "عنوان خادم ntfy؛ الافتراضي هو الخادم العام https://ntfy.sh، أو استخدم خادمك الخاص",
+        fr: "URL du serveur ntfy ; par défaut le serveur public https://ntfy.sh, ou votre propre serveur",
+        bn: "ntfy সার্ভারের ঠিকানা; ডিফল্ট পাবলিক https://ntfy.sh, অথবা নিজের সার্ভার ব্যবহার করুন",
+        pt: "URL do servidor ntfy; padrão é o público https://ntfy.sh, ou use seu próprio servidor",
+        de: "URL des ntfy-Servers; standardmäßig der öffentliche https://ntfy.sh, oder ein eigener Server",
+        ja: "ntfy サーバーの URL。既定は公開サーバー https://ntfy.sh で、自前のサーバーも指定できます",
+        it: "URL del server ntfy; predefinito il pubblico https://ntfy.sh, oppure il tuo server",
+        ko: "ntfy 서버 주소. 기본값은 공개 서버 https://ntfy.sh이며 직접 운영하는 서버도 쓸 수 있습니다",
+        id: "URL server ntfy; bawaan server publik https://ntfy.sh, atau gunakan server sendiri",
+    };
+
+    pub const NTFY_TOPIC: Tr = Tr {
+        zh: "ntfy 主题，只能用字母、数字、- 和 _。公共服务器上知道主题的人都能订阅，请取一个不易猜到的名字",
+        en: "ntfy topic: letters, digits, - and _ only. Anyone who knows it can subscribe on the public server, so pick something hard to guess",
+        hi: "ntfy टॉपिक: केवल अक्षर, अंक, - और _। सार्वजनिक सर्वर पर इसे जानने वाला कोई भी सदस्यता ले सकता है, इसलिए अनुमान लगाने में कठिन नाम चुनें",
+        es: "Tema de ntfy: solo letras, dígitos, - y _. En el servidor público cualquiera que lo conozca puede suscribirse, así que elige uno difícil de adivinar",
+        ar: "موضوع ntfy: حروف وأرقام و- و_ فقط. على الخادم العام يمكن لأي شخص يعرفه الاشتراك فيه، لذا اختر اسمًا يصعب تخمينه",
+        fr: "Sujet ntfy : lettres, chiffres, - et _ uniquement. Sur le serveur public, quiconque le connaît peut s'y abonner : choisissez un nom difficile à deviner",
+        bn: "ntfy টপিক: শুধু অক্ষর, সংখ্যা, - ও _। পাবলিক সার্ভারে যে কেউ এটি জানলে সাবস্ক্রাইব করতে পারে, তাই অনুমান করা কঠিন এমন নাম দিন",
+        pt: "Tópico do ntfy: apenas letras, dígitos, - e _. No servidor público qualquer pessoa que o conheça pode assinar, então escolha algo difícil de adivinhar",
+        de: "ntfy-Thema: nur Buchstaben, Ziffern, - und _. Auf dem öffentlichen Server kann es jeder abonnieren, der es kennt – also schwer zu erraten wählen",
+        ja: "ntfy のトピック。英数字、-、_ のみ使えます。公開サーバーではトピックを知っていれば誰でも購読できるので、推測されにくい名前にしてください",
+        it: "Argomento ntfy: solo lettere, cifre, - e _. Sul server pubblico chiunque lo conosca può iscriversi, quindi scegline uno difficile da indovinare",
+        ko: "ntfy 토픽. 영문자, 숫자, -, _만 쓸 수 있습니다. 공개 서버에서는 토픽을 아는 사람 누구나 구독할 수 있으니 추측하기 어려운 이름을 쓰세요",
+        id: "Topik ntfy: hanya huruf, angka, - dan _. Di server publik siapa pun yang tahu bisa berlangganan, jadi pilih nama yang sulit ditebak",
+    };
+
     /// 用于测试：所有注释
     #[cfg(test)]
-    pub const ALL: [&Tr; 8] = [
+    pub const ALL: [&Tr; 14] = [
         &HEADER,
         &UNITS,
         &WORK,
@@ -494,6 +658,12 @@ pub mod config {
         &POSTPONE,
         &IDLE,
         &LEVEL,
+        &SOUND_PROMPT,
+        &SOUND,
+        &SOUND_FILE,
+        &PHONE_NOTIFY,
+        &NTFY_SERVER,
+        &NTFY_TOPIC,
         &PROFILES,
     ];
 }

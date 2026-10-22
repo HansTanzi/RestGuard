@@ -64,6 +64,12 @@
 - 会议检测（Windows、macOS）：Zoom、Microsoft Teams、Webex、腾讯会议在前台（Windows 上还包括正在使用麦克风）时暂缓休息，会后再开始；休息时也可以点「我在开会」，15 分钟后再提醒
 - 空闲检测：5 分钟没有键盘鼠标操作就算离开电脑，工作倒计时暂停；离开满一次休息的时长就当已经休息过，回来不会立刻被叫去休息
 
+### 离开电脑也不会错过
+
+- 休息结束时播放提示音，可选内置音效或自己的音频文件
+- 手机通知：通过 [ntfy](https://ntfy.sh) 推送到手机（Android、iOS），走开休息也能及时知道该回来了；Android 上可以设成像闹钟一样一直响到点掉
+- 智能手表：手机收到的通知会同步到配对的 Apple Watch、Wear OS、Galaxy Watch 以及小米、华为、Garmin 等手表手环，抬手就能看到（设置方法见[手机和智能手表通知](#手机和智能手表通知)）
+
 ### 小巧轻快
 
 - 基于 Rust + Tauri 2 构建，使用系统自带的 WebView，不捆绑浏览器内核，常驻后台几乎不占资源
@@ -137,6 +143,19 @@ Arch 安装 `.pkg.tar.zst`：
 sudo pacman -U ./RestGuard_*_x86_64.pkg.tar.zst
 ```
 
+任意发行版（x86_64，glibc 2.35 及以上）也可以通过 [Homebrew](https://brew.sh) 安装和更新。Homebrew 不能安装系统库，需先用发行版的包管理器装好 WebKitGTK 4.1 和 libayatana-appindicator：
+
+```sh
+sudo apt install libwebkit2gtk-4.1-0 libayatana-appindicator3-1                 # Debian/Ubuntu
+sudo dnf install webkit2gtk4.1 libayatana-appindicator-gtk3                     # Fedora
+sudo pacman -S webkit2gtk-4.1 libayatana-appindicator                           # Arch
+sudo zypper install libwebkit2gtk-4_1-0 libayatana-appindicator3-1              # openSUSE
+
+brew install --cask hanstanzi/tap/restguard
+```
+
+这种方式只安装 `restguard` 可执行文件，不会在应用菜单中添加图标：运行一次 `restguard`，再在托盘菜单中打开「开机自启」即可。之后用 `brew upgrade` 更新。
+
 遮罩需要 X11（见[平台限制](#平台限制)）。
 
 ## 配置
@@ -157,6 +176,12 @@ rest_minutes = 10.0      # 每次休息多久
 postpone_minutes = 5.0   # 每次推迟多久
 idle_minutes = 5.0       # 无操作超过这么久算离开电脑，0 表示关闭
 level = "medium"         # 强制等级："high"、"medium"、"low"，或某个自定义方案的名字
+sound_prompt = true      # 休息结束时播放提示音
+sound = "beep"           # "beep"（滴滴）、"chime"（叮咚）、"rise"（上扬三音）或 "file"（播放 sound_file）
+sound_file = ""          # 自选音频文件的完整路径，sound = "file" 时使用
+phone_notify = false     # 休息结束时通过 ntfy 推送到手机
+ntfy_server = "https://ntfy.sh"  # ntfy 服务器，公共服务器或自建的
+ntfy_topic = ""          # 在 ntfy 应用里订阅的主题，请取一个不易猜到的名字
 
 [[profiles]]             # 自定义方案，每个方案一个 [[profiles]]
 name = "专注"
@@ -170,10 +195,33 @@ urgent_scale = 0.5       # 紧急模式（缩小遮罩）时相对上面比例�
 movable = false          # 遮罩未占满屏幕时允许在本屏幕内拖动（不能拖到其他屏幕）
 ```
 
+### 手机和智能手表通知
+
+1. 在手机上安装 ntfy 应用（[Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy)、[F-Droid](https://f-droid.org/packages/io.heckel.ntfy/)、[iOS](https://apps.apple.com/app/ntfy/id1625396347)）
+2. 在 RestGuard 的设置面板中打开「休息结束时推送到手机（ntfy）」，填一个不易猜到的主题（只能用字母、数字、`-` 和 `_`）。服务器默认是公共的 `https://ntfy.sh`，也可以填自建的
+3. 在 ntfy 应用里订阅同一个服务器和主题，然后点「发送测试通知」确认能收到
+
+通知以最高优先级发送。Android 上在 ntfy 设置里打开「Keep alerting for highest priority」，会像闹钟一样一直响到点掉；iOS 上是时效性通知，专注模式下也能弹出（需允许 ntfy 发送时效性通知）。公共服务器上知道主题的人都能订阅，请不要公开。
+
+手表不需要额外安装，手机收到的通知会由系统同步过去：
+
+| 手表 | 设置 |
+|---|---|
+| Apple Watch | 在 iPhone 的「Watch」App →「通知」中为 ntfy 打开「镜像 iPhone 提醒」。只有 iPhone 锁屏或黑屏时通知才会转到手表 |
+| Wear OS / Galaxy Watch | 默认同步，确认 ntfy 没有在手表的通知设置中被关闭 |
+| 小米、华为、Garmin、Amazfit 等 | 在配套 App（Zepp、华为运动健康、Garmin Connect 等）的应用通知列表中允许 ntfy |
+
+注意：
+
+- 手表上只会震动一次，不会像手机那样持续提醒
+- 手机必须在线且 ntfy 在后台运行，手表才能收到；脱离手机单独使用的手表收不到
+- 使用自建服务器时，iOS 需要在服务器配置中设置 `upstream-base-url: "https://ntfy.sh"` 才能即时收到推送（见 [ntfy 文档](https://docs.ntfy.sh/config/#ios-instant-notifications)）
+
 ## 平台限制
 
 - **macOS**：强制退出（`Cmd+Option+Esc`）等系统级操作无法拦截
 - **Linux**：空闲检测需要 GNOME 或实现了 `org.freedesktop.ScreenSaver` 的桌面（如 KDE Plasma），以及 `gdbus`；否则不生效
+- **Linux**：提示音用 `paplay`、`pw-play` 或 `aplay` 播放，自选文件请用 wav、ogg 或 flac（不支持 mp3）
 - **Linux Wayland**：协议不允许应用自行置顶和定位窗口，遮罩可能失效；X11 正常
 
 ## 开发
@@ -189,7 +237,7 @@ cd src-tauri && cargo test
 
 开发构建读取同目录下的 `config.dev.toml` 和 `language.dev`，可以放心改短时长、切换语言，不影响已安装的正式版；遮罩上按 `Esc` 可直接结束休息。调试前请先退出已安装的 RestGuard，否则单实例检查会让开发版直接退出。
 
-发布：在干净的 `dev` 分支上运行 `pnpm release <版本号>`（如 `pnpm release 0.2.0`），脚本会同步修改 `package.json`、`tauri.conf.json`、`Cargo.toml`、`Cargo.lock` 中的版本号，提交并推送 `v<版本号>` 标签。之后 GitHub Actions 会构建 exe、macOS 通用版 `.app`，以及 Linux 的 `.deb`、`.rpm` 和 Arch 的 `.pkg.tar.zst`（用 `src-tauri/arch/PKGBUILD` 由 `.deb` 重新打包）、创建 Release，并把更新后的 `bucket/restguard.json` 推送到 [HansTanzi/scoop-bucket](https://github.com/HansTanzi/scoop-bucket)、`Casks/restguard.rb` 推送到 [HansTanzi/homebrew-tap](https://github.com/HansTanzi/homebrew-tap)。需要配置仓库 secret `SCOOP_BUCKET_DEPLOY_KEY` 和 `HOMEBREW_TAP_DEPLOY_KEY`：分别是这两个仓库中有写权限的 deploy key 的私钥。正式版还会触发 [HansTanzi/apt](https://github.com/HansTanzi/apt) 从各应用的最新 Release 重新生成 APT 源，需要配置仓库 secret `APT_DISPATCH_TOKEN`（仅限该仓库、只有 Actions 读写权限的 fine-grained PAT）。签名密钥和配置方法见该仓库。正式版（不含 `-` 的版本号）还会通过 [winget-releaser](https://github.com/vedantmgoyal9/winget-releaser) 向 [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) 提交 PR，需要配置仓库 secret `WINGET_TOKEN`（具有 `public_repo` 权限的 classic PAT），且 token 所属账号下已 fork `winget-pkgs`。WinGet 的首个版本需手动提交，例如用 [Komac](https://github.com/russellbanks/Komac) 运行 `komac new HansTanzi.RestGuard --version <版本号> --urls <Release 中 exe 的下载地址>`（安装类型选 `portable`，并添加依赖 `Microsoft.EdgeWebView2Runtime`）。
+发布：在干净的 `dev` 分支上运行 `pnpm release <版本号>`（如 `pnpm release 0.2.0`），脚本会同步修改 `package.json`、`tauri.conf.json`、`Cargo.toml`、`Cargo.lock` 中的版本号，提交并推送 `v<版本号>` 标签。之后 GitHub Actions 会构建 exe、macOS 通用版 `.app`，以及 Linux 的 `.deb`、`.rpm` 和 Arch 的 `.pkg.tar.zst`（用 `src-tauri/arch/PKGBUILD` 由 `.deb` 重新打包）、创建 Release，并把更新后的 `bucket/restguard.json` 推送到 [HansTanzi/scoop-bucket](https://github.com/HansTanzi/scoop-bucket)、`Casks/restguard.rb`（macOS 上安装 `.app`，Linux 上安装 Arch 包中的可执行文件）推送到 [HansTanzi/homebrew-tap](https://github.com/HansTanzi/homebrew-tap)。需要配置仓库 secret `SCOOP_BUCKET_DEPLOY_KEY` 和 `HOMEBREW_TAP_DEPLOY_KEY`：分别是这两个仓库中有写权限的 deploy key 的私钥。正式版还会触发 [HansTanzi/apt](https://github.com/HansTanzi/apt) 从各应用的最新 Release 重新生成 APT 源，需要配置仓库 secret `APT_DISPATCH_TOKEN`（仅限该仓库、只有 Actions 读写权限的 fine-grained PAT）。签名密钥和配置方法见该仓库。正式版（不含 `-` 的版本号）还会通过 [winget-releaser](https://github.com/vedantmgoyal9/winget-releaser) 向 [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) 提交 PR，需要配置仓库 secret `WINGET_TOKEN`（具有 `public_repo` 权限的 classic PAT），且 token 所属账号下已 fork `winget-pkgs`。WinGet 的首个版本需手动提交，例如用 [Komac](https://github.com/russellbanks/Komac) 运行 `komac new HansTanzi.RestGuard --version <版本号> --urls <Release 中 exe 的下载地址>`（安装类型选 `portable`，并添加依赖 `Microsoft.EdgeWebView2Runtime`）。
 
 ### 微软商店
 

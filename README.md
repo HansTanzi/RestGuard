@@ -58,6 +58,12 @@ Keep as many custom profiles as you like and switch any time. Work, break, postp
 - Meeting detection (Windows, macOS): while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (or, on Windows, using the microphone), the break waits until the meeting is over; during a break you can also click "I'm in a meeting" to be reminded in 15 minutes
 - Idle detection: after 5 minutes without keyboard or mouse input you count as away and the work countdown pauses; being away as long as a break counts as a full break, so you aren't sent to rest right after coming back
 
+### Never miss the end of a break
+
+- A sound plays when a break ends: pick a built-in one or your own audio file
+- Phone notifications: get a push on your phone (Android, iOS) via [ntfy](https://ntfy.sh), so you know when to come back even after walking away; on Android it can ring like an alarm until you dismiss it
+- Smartwatches: the phone notification is mirrored to a paired Apple Watch, Wear OS, Galaxy Watch, or a Xiaomi, Huawei, Garmin or similar watch or band, so a glance at your wrist is enough (see [Phone and smartwatch notifications](#phone-and-smartwatch-notifications))
+
 ### Small and fast
 
 - Built with Rust + Tauri 2 on the system WebView, with no bundled browser engine, so it barely uses any resources while running in the background
@@ -131,6 +137,19 @@ On Arch, install the `.pkg.tar.zst`:
 sudo pacman -U ./RestGuard_*_x86_64.pkg.tar.zst
 ```
 
+On any distro (x86_64, glibc 2.35+), you can also install and update with [Homebrew](https://brew.sh). Homebrew can't install system libraries, so install WebKitGTK 4.1 and libayatana-appindicator with your distro's package manager first:
+
+```sh
+sudo apt install libwebkit2gtk-4.1-0 libayatana-appindicator3-1                 # Debian/Ubuntu
+sudo dnf install webkit2gtk4.1 libayatana-appindicator-gtk3                     # Fedora
+sudo pacman -S webkit2gtk-4.1 libayatana-appindicator                           # Arch
+sudo zypper install libwebkit2gtk-4_1-0 libayatana-appindicator3-1              # openSUSE
+
+brew install --cask hanstanzi/tap/restguard
+```
+
+This installs only the `restguard` executable, with no app menu entry: run `restguard` once, then turn on "Start at login" from the tray menu. Later versions arrive with `brew upgrade`.
+
 The overlay needs X11 (see [Platform limitations](#platform-limitations)).
 
 ## Configuration
@@ -151,6 +170,12 @@ rest_minutes = 10.0      # how long each break lasts
 postpone_minutes = 5.0   # how long each postpone lasts
 idle_minutes = 5.0       # no input for this long counts as away, 0 = off
 level = "medium"         # "high", "medium", "low", or the name of a custom profile
+sound_prompt = true      # play a sound when a break ends
+sound = "beep"           # "beep", "chime", "rise" or "file" (plays sound_file)
+sound_file = ""          # full path of your own audio file, used when sound = "file"
+phone_notify = false     # push a notification to your phone via ntfy when a break ends
+ntfy_server = "https://ntfy.sh"  # ntfy server, the public one or your own
+ntfy_topic = ""          # topic to subscribe to in the ntfy app; keep it hard to guess
 
 [[profiles]]             # a custom profile; add one [[profiles]] per profile
 name = "Focus"
@@ -164,10 +189,33 @@ urgent_scale = 0.5       # urgent mode (shrunk overlay) scale relative to the ab
 movable = false          # allow dragging the overlay within its own screen when it isn't full screen
 ```
 
+### Phone and smartwatch notifications
+
+1. Install the ntfy app on your phone ([Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy), [F-Droid](https://f-droid.org/packages/io.heckel.ntfy/), [iOS](https://apps.apple.com/app/ntfy/id1625396347))
+2. In RestGuard's Settings, turn on "Notify my phone when a break ends (ntfy)" and enter a hard-to-guess topic (letters, digits, `-` and `_` only). The server defaults to the public `https://ntfy.sh`; you can use your own instead
+3. Subscribe to the same server and topic in the ntfy app, then click "Send test notification" to check that it arrives
+
+Notifications are sent at the highest priority. On Android, turn on "Keep alerting for highest priority" in ntfy's settings to have it ring like an alarm until you dismiss it; on iOS it's a time-sensitive notification that breaks through Focus (if you allow ntfy to send time-sensitive notifications). Anyone who knows the topic can subscribe on the public server, so keep it private.
+
+Nothing needs to be installed on the watch; the system mirrors the phone notification to it:
+
+| Watch | Setup |
+|---|---|
+| Apple Watch | In the Watch app on your iPhone, go to Notifications and turn on "Mirror iPhone alerts" for ntfy. Notifications go to the watch only while the iPhone is locked or its screen is off |
+| Wear OS / Galaxy Watch | Mirrored by default; make sure ntfy isn't turned off in the watch's notification settings |
+| Xiaomi, Huawei, Garmin, Amazfit, etc. | Allow ntfy in the app notification list of the companion app (Zepp, Huawei Health, Garmin Connect, etc.) |
+
+Notes:
+
+- The watch vibrates once; it doesn't keep alerting like the phone does
+- The phone must be online with ntfy running in the background for the watch to get the notification; a watch used on its own without the phone won't
+- With a self-hosted server, iOS needs `upstream-base-url: "https://ntfy.sh"` in the server config to receive notifications instantly (see the [ntfy docs](https://docs.ntfy.sh/config/#ios-instant-notifications))
+
 ## Platform limitations
 
 - **macOS**: system-level actions such as Force Quit (`Cmd+Option+Esc`) can't be blocked
 - **Linux**: idle detection needs GNOME or a desktop implementing `org.freedesktop.ScreenSaver` (e.g. KDE Plasma), plus `gdbus`; otherwise it's off
+- **Linux**: sounds are played with `paplay`, `pw-play` or `aplay`, so use wav, ogg or flac for your own file (mp3 isn't supported)
 - **Linux Wayland**: the protocol doesn't let apps keep themselves on top or position their own windows, so the overlay may not work; X11 is fine
 
 ## Development
@@ -183,7 +231,7 @@ cd src-tauri && cargo test
 
 Dev builds read `config.dev.toml` and `language.dev` (same directory as `config.toml`), so you can use short durations or switch languages without touching the installed app. Press `Esc` on the overlay to end a break immediately. Quit the installed RestGuard first, otherwise the single-instance check makes the dev build exit right away.
 
-To release, run `pnpm release <version>` (e.g. `pnpm release 0.2.0`) on a clean `dev` branch. It bumps the version in `package.json`, `tauri.conf.json`, `Cargo.toml` and `Cargo.lock`, commits, and pushes a `v<version>` tag. GitHub Actions then builds the exe, a universal macOS `.app`, and the Linux `.deb`, `.rpm` and Arch `.pkg.tar.zst` (repackaged from the `.deb` with `src-tauri/arch/PKGBUILD`), creates the Release, and pushes the updated `bucket/restguard.json` to [HansTanzi/scoop-bucket](https://github.com/HansTanzi/scoop-bucket) and `Casks/restguard.rb` to [HansTanzi/homebrew-tap](https://github.com/HansTanzi/homebrew-tap). This needs the repository secrets `SCOOP_BUCKET_DEPLOY_KEY` and `HOMEBREW_TAP_DEPLOY_KEY`: the private halves of deploy keys with write access on those repos. For stable versions it also triggers [HansTanzi/apt](https://github.com/HansTanzi/apt) to rebuild the APT repository from the latest releases; this needs an `APT_DISPATCH_TOKEN` repository secret (a fine-grained PAT limited to that repo with only Actions read and write). The signing key and setup are described in that repo. For stable versions it also opens a PR to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) via [winget-releaser](https://github.com/vedantmgoyal9/winget-releaser); this needs a `WINGET_TOKEN` repository secret (a classic PAT with `public_repo` scope) and a fork of `winget-pkgs` under the token owner's account. The very first WinGet version must be submitted by hand, e.g. `komac new HansTanzi.RestGuard --version <version> --urls <exe release URL>` with [Komac](https://github.com/russellbanks/Komac) (pick the `portable` installer type and add `Microsoft.EdgeWebView2Runtime` as a package dependency).
+To release, run `pnpm release <version>` (e.g. `pnpm release 0.2.0`) on a clean `dev` branch. It bumps the version in `package.json`, `tauri.conf.json`, `Cargo.toml` and `Cargo.lock`, commits, and pushes a `v<version>` tag. GitHub Actions then builds the exe, a universal macOS `.app`, and the Linux `.deb`, `.rpm` and Arch `.pkg.tar.zst` (repackaged from the `.deb` with `src-tauri/arch/PKGBUILD`), creates the Release, and pushes the updated `bucket/restguard.json` to [HansTanzi/scoop-bucket](https://github.com/HansTanzi/scoop-bucket) and `Casks/restguard.rb` (the macOS `.app`, and on Linux the executable from the Arch package) to [HansTanzi/homebrew-tap](https://github.com/HansTanzi/homebrew-tap). This needs the repository secrets `SCOOP_BUCKET_DEPLOY_KEY` and `HOMEBREW_TAP_DEPLOY_KEY`: the private halves of deploy keys with write access on those repos. For stable versions it also triggers [HansTanzi/apt](https://github.com/HansTanzi/apt) to rebuild the APT repository from the latest releases; this needs an `APT_DISPATCH_TOKEN` repository secret (a fine-grained PAT limited to that repo with only Actions read and write). The signing key and setup are described in that repo. For stable versions it also opens a PR to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) via [winget-releaser](https://github.com/vedantmgoyal9/winget-releaser); this needs a `WINGET_TOKEN` repository secret (a classic PAT with `public_repo` scope) and a fork of `winget-pkgs` under the token owner's account. The very first WinGet version must be submitted by hand, e.g. `komac new HansTanzi.RestGuard --version <version> --urls <exe release URL>` with [Komac](https://github.com/russellbanks/Komac) (pick the `portable` installer type and add `Microsoft.EdgeWebView2Runtime` as a package dependency).
 
 ### Microsoft Store
 

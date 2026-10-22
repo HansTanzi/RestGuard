@@ -5,6 +5,12 @@ use std::{fs, io, path::Path, time::Duration};
 const DEFAULT_LEVEL: &str = "medium";
 /// 内置强制等级，与 src/lib/config.ts 的 BUILTIN_LEVELS 一致
 pub const BUILTIN_LEVELS: [&str; 3] = ["high", "medium", "low"];
+/// 休息结束时的提示音：内置音效（见 sound::builtin）或自选的音频文件。
+/// 与 src/lib/config.ts 的 SOUNDS 一致
+pub const SOUNDS: [&str; 4] = ["beep", "chime", "rise", "file"];
+const DEFAULT_SOUND: &str = "beep";
+/// 推送到手机用的 ntfy 服务器，与 src/lib/config.ts 的 DEFAULT_CONFIG 一致
+const DEFAULT_NTFY_SERVER: &str = "https://ntfy.sh";
 
 /// 强制等级对应的配置方案。内置高、中、低三种，用户还可以自定义多个。
 /// 与 src/lib/config.ts 的 Profile 保持一致
@@ -86,6 +92,18 @@ pub struct Config {
     pub idle_minutes: f64,
     /// 当前强制等级：内置等级（见 Profile::builtin），或某个自定义方案的名字
     pub level: String,
+    /// 休息结束时播放提示音
+    pub sound_prompt: bool,
+    /// 提示音，取值见 SOUNDS
+    pub sound: String,
+    /// sound 为 "file" 时播放的音频文件
+    pub sound_file: String,
+    /// 休息结束时通过 ntfy 推送到手机
+    pub phone_notify: bool,
+    /// ntfy 服务器地址，默认公共服务器，也可以填自建的
+    pub ntfy_server: String,
+    /// ntfy 主题，手机上订阅同一个主题。公共服务器上谁知道主题都能订阅，应取不易猜到的名字
+    pub ntfy_topic: String,
     /// 自定义方案
     pub profiles: Vec<Profile>,
 }
@@ -98,6 +116,12 @@ impl Default for Config {
             postpone_minutes: 5.0,
             idle_minutes: 5.0,
             level: DEFAULT_LEVEL.to_string(),
+            sound_prompt: true,
+            sound: DEFAULT_SOUND.to_string(),
+            sound_file: String::new(),
+            phone_notify: false,
+            ntfy_server: DEFAULT_NTFY_SERVER.to_string(),
+            ntfy_topic: String::new(),
             profiles: Vec::new(),
         }
     }
@@ -161,6 +185,12 @@ impl Config {
              # {}\npostpone_minutes = {:?}\n\n\
              # {}\nidle_minutes = {:?}\n\n\
              # {}\nlevel = {}\n\n\
+             # {}\nsound_prompt = {}\n\n\
+             # {}\nsound = {}\n\n\
+             # {}\nsound_file = {}\n\n\
+             # {}\nphone_notify = {}\n\n\
+             # {}\nntfy_server = {}\n\n\
+             # {}\nntfy_topic = {}\n\n\
              # {}\n",
             c(&comment::HEADER),
             c(&comment::UNITS),
@@ -174,6 +204,18 @@ impl Config {
             self.idle_minutes,
             c(&comment::LEVEL),
             quote(&self.level),
+            c(&comment::SOUND_PROMPT),
+            self.sound_prompt,
+            c(&comment::SOUND),
+            quote(&self.sound),
+            c(&comment::SOUND_FILE),
+            quote(&self.sound_file),
+            c(&comment::PHONE_NOTIFY),
+            self.phone_notify,
+            c(&comment::NTFY_SERVER),
+            quote(&self.ntfy_server),
+            c(&comment::NTFY_TOPIC),
+            quote(&self.ntfy_topic),
             c(&comment::PROFILES),
         );
         // 表必须写在所有顶层键之后
@@ -221,6 +263,19 @@ impl Config {
         } else {
             d.level
         };
+        // 选了自选文件却没给路径时，退回默认提示音
+        let sound_file = self.sound_file.trim().to_string();
+        let sound = match self.sound.trim() {
+            "file" if sound_file.is_empty() => d.sound,
+            s if SOUNDS.contains(&s) => s.to_string(),
+            _ => d.sound,
+        };
+        // 没写协议时按 https，去掉末尾的斜杠，空着时用公共服务器
+        let ntfy_server = match self.ntfy_server.trim().trim_end_matches('/') {
+            "" => d.ntfy_server,
+            s if s.contains("://") => s.to_string(),
+            s => format!("https://{s}"),
+        };
         Self {
             work_minutes: positive(self.work_minutes, d.work_minutes),
             rest_minutes: positive(self.rest_minutes, d.rest_minutes),
@@ -231,6 +286,12 @@ impl Config {
                 d.idle_minutes
             },
             level,
+            sound_prompt: self.sound_prompt,
+            sound,
+            sound_file,
+            phone_notify: self.phone_notify,
+            ntfy_server,
+            ntfy_topic: self.ntfy_topic.trim().to_string(),
             profiles,
         }
     }
@@ -276,6 +337,12 @@ mod tests {
             postpone_minutes: 2.5,
             idle_minutes: 0.0,
             level: "我的 \"方案\"".into(),
+            sound_prompt: false,
+            sound: "file".into(),
+            sound_file: "C:\\Users\\me\\Music\\叮 \"ding\".mp3".into(),
+            phone_notify: true,
+            ntfy_server: "https://ntfy.example.com".into(),
+            ntfy_topic: "restguard-x7k2".into(),
             profiles: vec![
                 Profile {
                     name: "我的 \"方案\"".into(),
@@ -328,6 +395,38 @@ mod tests {
         assert_eq!(cfg.work_minutes, 60.0);
         assert_eq!(cfg.profiles[0].overlay_coverage, 1.0);
         assert_eq!(cfg.profiles[0].urgent_scale, 0.9);
+    }
+
+    #[test]
+    fn invalid_sounds_fall_back_to_default() {
+        let sound = |sound: &str, file: &str| {
+            Config {
+                sound: sound.into(),
+                sound_file: file.into(),
+                ..Config::default()
+            }
+            .sanitized()
+            .sound
+        };
+        assert_eq!(sound(" chime ", ""), "chime");
+        assert_eq!(sound("file", " a.mp3 "), "file");
+        assert_eq!(sound("file", "  "), "beep", "没有文件时用默认提示音");
+        assert_eq!(sound("trumpet", ""), "beep");
+    }
+
+    #[test]
+    fn ntfy_server_is_normalized() {
+        let server = |s: &str| {
+            Config {
+                ntfy_server: s.into(),
+                ..Config::default()
+            }
+            .sanitized()
+            .ntfy_server
+        };
+        assert_eq!(server("  "), "https://ntfy.sh");
+        assert_eq!(server("http://192.168.1.2:8080/"), "http://192.168.1.2:8080");
+        assert_eq!(server("ntfy.example.com"), "https://ntfy.example.com", "没写协议时按 https");
     }
 
     #[test]

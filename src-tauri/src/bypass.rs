@@ -7,6 +7,7 @@ struct App {
     /// Windows process names, case-insensitive
     exe: &'static [&'static str],
     /// Package family names of Microsoft Store (MSIX) versions, used to detect microphone use
+    #[cfg_attr(not(windows), allow(dead_code))]
     package: &'static [&'static str],
     /// macOS bundle identifier
     bundle_id: &'static [&'static str],
@@ -136,8 +137,24 @@ fn mic_app() -> Option<&'static App> {
     })
 }
 
+/// macOS: an exempt app currently using the microphone.
+/// macOS 14.2+ reports which process is recording; older versions only say the microphone is in use,
+/// so then any running exempt app is assumed to be the one using it
+#[cfg(target_os = "macos")]
+fn mic_app() -> Option<&'static App> {
+    match mac::mic_users() {
+        Some(users) => BUILTIN.iter().find(|app| {
+            users
+                .iter()
+                .any(|id| app.bundle_id.iter().any(|b| mac::same_app(b, id)))
+        }),
+        None if mac::mic_in_use() => running(),
+        None => None,
+    }
+}
+
 /// Detecting microphone use isn't supported on other platforms yet
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "macos")))]
 fn mic_app() -> Option<&'static App> {
     None
 }
@@ -152,10 +169,184 @@ pub fn running_app() -> Option<String> {
         .map(|app| app.name.to_string())
 }
 
+/// An exempt app that is running (not necessarily in a meeting)
+#[cfg(target_os = "macos")]
+pub fn running_app() -> Option<String> {
+    running().map(|app| app.name.to_string())
+}
+
+#[cfg(target_os = "macos")]
+fn running() -> Option<&'static App> {
+    BUILTIN
+        .iter()
+        .find(|app| app.bundle_id.iter().any(|id| mac::is_running(id)))
+}
+
 /// Detecting running processes isn't supported on other platforms yet
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "macos")))]
 pub fn running_app() -> Option<String> {
     None
+}
+
+#[cfg(target_os = "macos")]
+mod mac {
+    use objc2_app_kit::NSRunningApplication;
+    use objc2_core_foundation::{CFRetained, CFString};
+    use objc2_foundation::NSString;
+    use std::{ffi::c_void, ptr::NonNull};
+
+    type AudioObjectId = u32;
+
+    #[repr(C)]
+    struct PropertyAddress {
+        selector: u32,
+        scope: u32,
+        element: u32,
+    }
+
+    #[link(name = "CoreAudio", kind = "framework")]
+    extern "C" {
+        fn AudioObjectGetPropertyDataSize(
+            object: AudioObjectId,
+            address: *const PropertyAddress,
+            qualifier_size: u32,
+            qualifier: *const c_void,
+            size: *mut u32,
+        ) -> i32;
+        fn AudioObjectGetPropertyData(
+            object: AudioObjectId,
+            address: *const PropertyAddress,
+            qualifier_size: u32,
+            qualifier: *const c_void,
+            size: *mut u32,
+            data: *mut c_void,
+        ) -> i32;
+    }
+
+    const fn fourcc(code: &[u8; 4]) -> u32 {
+        u32::from_be_bytes(*code)
+    }
+
+    const SYSTEM_OBJECT: AudioObjectId = 1;
+    const SCOPE_GLOBAL: u32 = fourcc(b"glob");
+    /// kAudioHardwarePropertyProcessObjectList, macOS 14.2+
+    const PROCESS_OBJECT_LIST: u32 = fourcc(b"prs#");
+    /// kAudioProcessPropertyBundleID
+    const PROCESS_BUNDLE_ID: u32 = fourcc(b"pbid");
+    /// kAudioProcessPropertyIsRunningInput
+    const PROCESS_IS_RUNNING_INPUT: u32 = fourcc(b"piri");
+    /// kAudioHardwarePropertyDefaultInputDevice
+    const DEFAULT_INPUT_DEVICE: u32 = fourcc(b"dIn ");
+    /// kAudioDevicePropertyDeviceIsRunningSomewhere
+    const DEVICE_IS_RUNNING_SOMEWHERE: u32 = fourcc(b"gone");
+
+    fn address(selector: u32) -> PropertyAddress {
+        PropertyAddress {
+            selector,
+            scope: SCOPE_GLOBAL,
+            element: 0,
+        }
+    }
+
+    /// Reads a fixed-size property; None if the object doesn't have it
+    fn get<T: Default>(object: AudioObjectId, selector: u32) -> Option<T> {
+        let mut data = T::default();
+        let mut size = std::mem::size_of::<T>() as u32;
+        let status = unsafe {
+            AudioObjectGetPropertyData(
+                object,
+                &address(selector),
+                0,
+                std::ptr::null(),
+                &mut size,
+                &mut data as *mut T as *mut c_void,
+            )
+        };
+        (status == 0).then_some(data)
+    }
+
+    /// Bundle identifiers of the processes currently recording audio.
+    /// None if the system can't tell (before macOS 14.2)
+    pub fn mic_users() -> Option<Vec<String>> {
+        let list = address(PROCESS_OBJECT_LIST);
+        let mut size = 0u32;
+        let status = unsafe {
+            AudioObjectGetPropertyDataSize(SYSTEM_OBJECT, &list, 0, std::ptr::null(), &mut size)
+        };
+        if status != 0 {
+            return None;
+        }
+        let mut processes = vec![0 as AudioObjectId; size as usize / 4];
+        let status = unsafe {
+            AudioObjectGetPropertyData(
+                SYSTEM_OBJECT,
+                &list,
+                0,
+                std::ptr::null(),
+                &mut size,
+                processes.as_mut_ptr() as *mut c_void,
+            )
+        };
+        if status != 0 {
+            return None;
+        }
+        processes.truncate(size as usize / 4);
+        let users = processes
+            .into_iter()
+            .filter(|&p| get::<u32>(p, PROCESS_IS_RUNNING_INPUT).unwrap_or(0) != 0)
+            .filter_map(bundle_id)
+            .collect();
+        Some(users)
+    }
+
+    fn bundle_id(process: AudioObjectId) -> Option<String> {
+        // The returned CFString is owned by the caller
+        let raw = get::<usize>(process, PROCESS_BUNDLE_ID)?;
+        let string = NonNull::new(raw as *mut CFString)?;
+        let string = unsafe { CFRetained::from_raw(string) };
+        Some(string.to_string())
+    }
+
+    /// Whether some process is recording from the default microphone
+    pub fn mic_in_use() -> bool {
+        get::<AudioObjectId>(SYSTEM_OBJECT, DEFAULT_INPUT_DEVICE)
+            .filter(|&device| device != 0)
+            .and_then(|device| get::<u32>(device, DEVICE_IS_RUNNING_SOMEWHERE))
+            .is_some_and(|running| running != 0)
+    }
+
+    /// Recording is often done by a helper process whose bundle identifier extends the app's
+    pub fn same_app(app: &str, id: &str) -> bool {
+        id.eq_ignore_ascii_case(app)
+            || id.len() > app.len()
+                && id.as_bytes()[app.len()] == b'.'
+                && id[..app.len()].eq_ignore_ascii_case(app)
+    }
+
+    pub fn is_running(bundle_id: &str) -> bool {
+        let id = NSString::from_str(bundle_id);
+        !NSRunningApplication::runningApplicationsWithBundleIdentifier(&id).is_empty()
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn matches_helper_bundle_ids() {
+            assert!(same_app("us.zoom.xos", "us.zoom.xos"));
+            assert!(same_app("com.microsoft.teams2", "com.microsoft.teams2.helper"));
+            assert!(!same_app("com.microsoft.teams", "com.microsoft.teams2"));
+            assert!(!same_app("us.zoom.xos", "us.zoom"));
+        }
+
+        #[test]
+        fn reads_audio_processes() {
+            // Only needs to read without crashing; printed for manual checking during a meeting
+            println!("mic users: {:?}", mic_users());
+            println!("mic in use: {}", mic_in_use());
+        }
+    }
 }
 
 #[cfg(windows)]

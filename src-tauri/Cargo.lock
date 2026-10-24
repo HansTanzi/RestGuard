@@ -2854,7 +2854,7 @@ dependencies = [
 
 [[package]]
 name = "restguard"
-version = "0.1.13"
+version = "0.1.14"
 dependencies = [
  "objc2-app-kit",
  "objc2-core-foundation",

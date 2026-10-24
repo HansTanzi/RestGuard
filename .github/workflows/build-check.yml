@@ -1,0 +1,119 @@
+# Verifies at PR time that the app builds on Windows, macOS and Linux (including the .deb, .rpm and Arch packages),
+# surfacing platform-specific compile errors and system dependency issues early; uploads nothing.
+# Actual releases are handled by release.yml.
+name: Build check
+
+on:
+  pull_request:
+    branches: [dev, main, master]
+  workflow_dispatch:
+
+# Cancel older runs still in progress when a PR gets new pushes
+concurrency:
+  group: build-check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Changes only to docs or the release workflow don't affect the build. Instead of paths-ignore
+  # (which would leave a required check pending forever), the build job is skipped.
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      build: ${{ steps.filter.outputs.build }}
+    steps:
+      - uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'pull_request'
+        with:
+          predicate-quantifier: every
+          filters: |
+            build:
+              - "**"
+              - "!**.md"
+              - "!docs/**"
+              - "!LICENSE-*"
+              - "!.vscode/**"
+              - "!.github/workflows/release.yml"
+
+  build:
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.build == 'true'
+    name: build (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows
+            os: windows-latest
+            # Same as release.yml: portable exe, no installer
+            build_args: --no-bundle
+          - platform: macos
+            os: macos-latest
+            # Native arch only; release.yml builds universal, which compiles twice for little extra coverage
+            build_args: --bundles app
+          - platform: linux
+            os: ubuntu-22.04
+            build_args: --bundles deb rpm
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libgtk-3-dev \
+            libxdo-dev \
+            libssl-dev \
+            build-essential \
+            file \
+            wget
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm tauri build ${{ matrix.build_args }}
+
+      - if: runner.os == 'Linux'
+        run: bash scripts/arch-package.sh "$(jq -r .version src-tauri/tauri.conf.json)"
+
+  # The single required status check for branch rulesets. A skipped matrix job doesn't report its
+  # per-platform check names, so requiring those directly would leave docs-only PRs pending forever.
+  build-result:
+    needs: [changes, build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check build result
+        run: |
+          if [ "${{ needs.changes.result }}" != "success" ]; then
+            echo "::error::changes job ended with ${{ needs.changes.result }}"
+            exit 1
+          fi
+          case "${{ needs.build.result }}" in
+            success|skipped) ;;
+            *)
+              echo "::error::build ended with ${{ needs.build.result }}"
+              exit 1
+              ;;
+          esac

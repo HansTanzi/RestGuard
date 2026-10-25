@@ -27,6 +27,14 @@
     ],
     "macOS": {
       "signingIdentity": "-"
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libssl3 | libssl3t64"]
+      },
+      "rpm": {
+        "depends": ["libssl.so.3()(64bit)"]
+      }
     }
   }
 }

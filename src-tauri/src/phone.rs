@@ -3,6 +3,7 @@
 
 use crate::{config::Config, i18n};
 use std::{thread, time::Duration};
+use ureq::tls::{RootCerts, TlsConfig, TlsProvider};
 
 /// Maximum wait on a poor network, so the test button doesn't spin forever
 const TIMEOUT: Duration = Duration::from_secs(10);
@@ -38,7 +39,13 @@ fn send(cfg: &Config) -> Result<(), String> {
         "priority": 5,
         "tags": ["alarm_clock"],
     });
+    // Only the native-tls feature is enabled (see Cargo.toml); ureq defaults to rustls and bundled roots, so select both explicitly
+    let tls = TlsConfig::builder()
+        .provider(TlsProvider::NativeTls)
+        .root_certs(RootCerts::PlatformVerifier)
+        .build();
     let agent = ureq::Agent::config_builder()
+        .tls_config(tls)
         .timeout_global(Some(TIMEOUT))
         .build()
         .new_agent();

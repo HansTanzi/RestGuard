@@ -9,7 +9,8 @@ pkgdesc="Cross-platform break reminder that actually makes you rest"
 arch=('x86_64')
 url="https://github.com/HansTanzi/RestGuard"
 license=('MIT OR Apache-2.0')
-depends=('webkit2gtk-4.1' 'gtk3' 'libayatana-appindicator')
+# openssl: ureq uses the system TLS stack for ntfy phone notifications
+depends=('webkit2gtk-4.1' 'gtk3' 'libayatana-appindicator' 'openssl')
 # The binary is already stripped by cargo, so no further strip is needed and there are no debug symbols to split
 options=('!debug' '!strip')
 source=('restguard.deb' 'LICENSE-MIT' 'LICENSE-APACHE')

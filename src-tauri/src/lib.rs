@@ -211,7 +211,7 @@ fn get_about(app: AppHandle) -> about::AboutInfo {
     about::info(&app)
 }
 
-/// Links on the About page: link is "repo" or "issues".
+/// Links on the About page: link is "website", "repo", "issues" or "privacy".
 /// Opening a browser isn't allowed during a break, so it can't be used to dodge the break
 #[tauri::command]
 fn open_link(app: AppHandle, link: String) -> Result<(), String> {

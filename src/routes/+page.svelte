@@ -493,6 +493,7 @@
               <option value={NEW_PROFILE}>{s.newProfile}</option>
             </select>
           </label>
+          <h3>{s.overlaySection}</h3>
           <label>
             <span>{s.coverageNormal}</span>
             <span class="range">
@@ -573,6 +574,7 @@
             />
             <span>{s.movable}</span>
           </label>
+          <h3>{s.otherSection}</h3>
           <label class="check">
             <input
               type="checkbox"
@@ -693,6 +695,23 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted);
+  }
+
+  /* Subsection inside a group: the title is followed by a divider line on the same row */
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.75rem 0 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  h3::after {
+    content: "";
+    flex: 1;
+    border-top: 1px solid var(--line);
   }
 
   fieldset {

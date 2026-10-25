@@ -166,6 +166,15 @@ v0.1.14 之后的 Release 文件由 GitHub Actions 构建，并附带签名的[�
 gh attestation verify RestGuard_<版本号>_x64.exe --repo HansTanzi/RestGuard
 ```
 
+每个 Release 还附带 `SHA256SUMS.txt`，不装 GitHub CLI 也能校验。把下载的文件放到和 `SHA256SUMS.txt` 同一目录后运行：
+
+```sh
+sha256sum -c SHA256SUMS.txt --ignore-missing          # Linux
+shasum -a 256 -c SHA256SUMS.txt --ignore-missing      # macOS
+```
+
+Windows 上用 `Get-FileHash .\RestGuard_*_x64.exe`，将输出与 `SHA256SUMS.txt` 中对应的那一行比对（不区分大小写）。
+
 ### 从源码构建
 
 先安装[开发](#开发)一节列出的依赖，再构建某个已发布的版本：

@@ -249,6 +249,44 @@ jobs:
             fi
           done
 
+  # SHA256SUMS.txt for users verifying manual downloads (sha256sum -c), hashed from the files on the Release rather than the local build output.
+  # Waits for all platforms so the file covers every asset. If it already exists, check it still matches instead of overwriting
+  checksums:
+    needs: [prepare, build-windows, build-macos, build-linux]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-windows.result) && contains(fromJSON('["success", "skipped"]'), needs.build-macos.result) && contains(fromJSON('["success", "skipped"]'), needs.build-linux.result) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate and upload SHA256SUMS.txt
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          cd "$RUNNER_TEMP"
+          files=(
+            "RestGuard_${VERSION}_x64.exe"
+            "RestGuard_${VERSION}_universal.zip"
+            "RestGuard_${VERSION}_amd64.deb"
+            "RestGuard_${VERSION}_x86_64.rpm"
+            "RestGuard_${VERSION}_x86_64.pkg.tar.zst"
+          )
+          for name in "${files[@]}"; do
+            gh release download "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY" --pattern "$name"
+          done
+          sha256sum "${files[@]}" > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+          assets=$(gh release view "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')
+          if grep -qxF SHA256SUMS.txt <<< "$assets"; then
+            gh release download "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY" --pattern SHA256SUMS.txt --output published.txt
+            if ! cmp -s SHA256SUMS.txt published.txt; then
+              echo "::error::SHA256SUMS.txt on the Release doesn't match the current assets"
+              exit 1
+            fi
+            echo "::notice::SHA256SUMS.txt already exists and matches"
+          else
+            gh release upload "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY" SHA256SUMS.txt
+          fi
+
   # Update HansTanzi/scoop-bucket (the bucket users add) directly, so the release is available immediately without waiting for its scheduled Excavator.
   # Pushes to its default branch with that repo's deploy key (secret SCOOP_BUCKET_DEPLOY_KEY, write access required).
   # Doesn't commit if the manifest already has this version and hash (e.g. Excavator got there first).

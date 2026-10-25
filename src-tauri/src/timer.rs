@@ -33,6 +33,8 @@ pub struct Snapshot {
     pub total_secs: u64,
     pub can_postpone: bool,
     pub postpones_left: u32,
+    /// Counting down a postponed break; like a break, quitting and changing settings or profiles aren't allowed
+    pub postponed: bool,
     /// A break is due but held off because this exempt app is in the foreground
     pub held_by: Option<String>,
     /// Meeting software running when the break started; the overlay then offers "I'm in a meeting"
@@ -62,6 +64,8 @@ pub struct Timer {
     started: Instant,
     deadline: Instant,
     postpones_used: u32,
+    /// The work countdown is a postponed break
+    postponed: bool,
     /// This break was started by the user; voluntary breaks can't be postponed
     voluntary: bool,
     held_by: Option<String>,
@@ -82,6 +86,7 @@ impl Timer {
             started: now,
             deadline: now + cfg.work(),
             postpones_used: 0,
+            postponed: false,
             voluntary: false,
             held_by: None,
             meeting_app: None,
@@ -161,6 +166,7 @@ impl Timer {
         }
         self.postpones_used += 1;
         self.begin_work(now, self.postpone);
+        self.postponed = true;
         true
     }
 
@@ -241,6 +247,7 @@ impl Timer {
             total_secs: ceil_secs(self.deadline - self.started),
             can_postpone: self.can_postpone(),
             postpones_left: self.profile.max_postpones.saturating_sub(self.postpones_used),
+            postponed: self.phase == Phase::Working && self.postponed,
             held_by: self.held_by.clone(),
             meeting_app: self
                 .can_claim_meeting()
@@ -282,6 +289,7 @@ impl Timer {
 
     fn begin_work(&mut self, now: Instant, length: Duration) {
         self.phase = Phase::Working;
+        self.postponed = false;
         self.voluntary = false;
         self.held_by = None;
         self.meeting_app = None;
@@ -342,6 +350,26 @@ mod tests {
         now += 60 * MIN;
         t.tick(now);
         assert!(t.snapshot(now).can_postpone, "Postponements should reset after a full break");
+    }
+
+    #[test]
+    fn postponed_flag_lasts_until_next_break() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        assert!(!t.snapshot(t0).postponed);
+        let now = t0 + 60 * MIN;
+        t.tick(now);
+        assert!(!t.snapshot(now).postponed, "A break isn't a postponement");
+        assert!(t.postpone(now));
+        assert!(t.snapshot(now).postponed);
+        assert_eq!(t.tick(now + 5 * MIN), Some(TimerEvent::RestStarted));
+        assert!(!t.snapshot(now + 5 * MIN).postponed);
+
+        // A long absence during a postponement counts as a full break and ends it
+        assert!(t.postpone(now + 5 * MIN));
+        let now = now + 20 * MIN;
+        t.idle(now, 15 * MIN);
+        assert!(!t.snapshot(now).postponed);
     }
 
     #[test]

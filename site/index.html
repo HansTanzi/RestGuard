@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RestGuard: a break reminder that actually makes you rest</title>
+  <meta name="description" content="A cross-platform break reminder for Windows, macOS and Linux with three enforcement levels. Free and open source.">
+  <meta property="og:title" content="RestGuard">
+  <meta property="og:description" content="A cross-platform break reminder that actually makes you rest.">
+  <meta property="og:image" content="images/EN/MediumEnforcement.webp">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#top"><img src="icon.png" alt="" width="28" height="28"> RestGuard</a>
+      <nav class="topnav">
+        <a href="#levels" data-i18n="nav.levels">Levels</a>
+        <a href="#features" data-i18n="nav.features">Features</a>
+        <a href="#install" data-i18n="nav.install">Install</a>
+        <a href="https://github.com/HansTanzi/RestGuard">GitHub</a>
+        <select id="lang" aria-label="Language">
+          <option value="en">English</option>
+          <option value="zh">简体中文</option>
+          <option value="de">Deutsch</option>
+        </select>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero wrap">
+      <img class="hero-icon" src="icon.png" alt="" width="96" height="96">
+      <h1>RestGuard</h1>
+      <p class="tagline" data-i18n="hero.tagline">A break reminder that actually makes you rest.</p>
+      <p class="lead" data-i18n="hero.lead">Three built-in enforcement levels: it can remind you to take a break, or make you take one.</p>
+
+      <div class="cta">
+        <a id="primary-download" class="btn btn-primary" href="https://github.com/HansTanzi/RestGuard/releases/latest">
+          <span id="primary-label" data-i18n="hero.download">Download</span>
+          <small id="primary-meta"></small>
+        </a>
+        <a class="btn" href="#install" data-i18n="hero.other">Other platforms &amp; package managers</a>
+      </div>
+      <p class="release-line"><span id="version-line"></span><span data-i18n="hero.free">Free and open source · MIT / Apache-2.0</span></p>
+
+      <figure class="hero-shot">
+        <img id="hero-img" data-shot="LowEnforcement" src="images/EN/LowEnforcement.webp" alt="The break overlay" loading="eager">
+      </figure>
+    </section>
+
+    <section id="levels" class="band">
+      <div class="wrap">
+        <h2 data-i18n="levels.title">Three levels of enforcement</h2>
+        <p class="section-lead" data-i18n="levels.lead">Pick how firm it should be. Enforcement is what sets RestGuard apart from other break reminders.</p>
+
+        <div class="levels" role="tablist">
+          <button class="level" role="tab" data-level="High">
+            <strong data-i18n="levels.high">High</strong>
+            <span data-i18n="levels.highDesc">Does everything it can to make you take the break.</span>
+          </button>
+          <button class="level" role="tab" data-level="Medium">
+            <strong data-i18n="levels.medium">Medium (default)</strong>
+            <span data-i18n="levels.mediumDesc">You can still work, but it's uncomfortable enough to nudge you into resting.</span>
+          </button>
+          <button class="level" role="tab" data-level="Low">
+            <strong data-i18n="levels.low">Low</strong>
+            <span data-i18n="levels.lowDesc">Like other break reminders, it mainly reminds you.</span>
+          </button>
+        </div>
+
+        <figure class="level-shot">
+          <img id="level-img" src="images/EN/MediumEnforcement.webp" alt="" loading="lazy">
+        </figure>
+
+        <div class="table-scroll">
+          <table class="compare">
+            <thead>
+              <tr><th></th><th data-i18n="levels.high">High</th><th data-i18n="levels.medium">Medium (default)</th><th data-i18n="levels.low">Low</th></tr>
+            </thead>
+            <tbody>
+              <tr><td data-i18n="table.postpones">Postpones</td><td>1</td><td>3</td><td>3</td></tr>
+              <tr><td data-i18n="table.urgent">Urgent mode (shrink overlay)</td><td class="no">✗</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+              <tr><td data-i18n="table.meeting">Meeting-app detection</td><td class="no">✗</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+              <tr><td data-i18n="table.skip">Close / skip this break</td><td class="no">✗</td><td class="no">✗</td><td class="yes">✓</td></tr>
+              <tr><td data-i18n="table.coverage">Screen coverage</td><td>100%</td><td>100%</td><td>80%</td></tr>
+              <tr><td data-i18n="table.drag">Draggable overlay</td><td class="no">✗</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="wrap">
+      <h2 data-i18n="features.title">Built to make breaks happen</h2>
+      <div class="features">
+        <article>
+          <h3 data-i18n="f.force.t">Breaks that actually happen</h3>
+          <p data-i18n="f.force.d">A 10-minute break after every 60 minutes of work, on every monitor. Alt+F4 does nothing, and you can't quit from the tray mid-break.</p>
+        </article>
+        <article>
+          <h3 data-i18n="f.custom.t">Highly customizable</h3>
+          <p data-i18n="f.custom.d">Start a custom profile from any level and tune postpones, skipping, urgent mode, coverage and dragging. Keep as many as you like.</p>
+        </article>
+        <article>
+          <h3 data-i18n="f.meeting.t">Stays out of the way</h3>
+          <p data-i18n="f.meeting.d">Waits while Zoom, Teams, Webex or Tencent Meeting is in use, and pauses the countdown when you're away from the keyboard.</p>
+        </article>
+        <article>
+          <h3 data-i18n="f.notify.t">Never miss the end of a break</h3>
+          <p data-i18n="f.notify.d">A sound plays when the break is over, and ntfy can push it to your phone and smartwatch, so you know when to come back.</p>
+        </article>
+        <article>
+          <h3 data-i18n="f.small.t">Small and fast</h3>
+          <p data-i18n="f.small.d">Rust + Tauri 2 on the system WebView. Downloads are just 2.5 ~ 4.6 MB and it barely uses any resources in the background.</p>
+        </article>
+        <article>
+          <h3 data-i18n="f.lang.t">Speaks your language</h3>
+          <p data-i18n="f.lang.d">13 UI languages, following the system by default. Switch any time from the tray menu.</p>
+        </article>
+      </div>
+
+      <div class="duo">
+        <figure>
+          <img id="back-img" data-shot="Back2Work" src="images/EN/Back2Work.webp" alt="" loading="lazy">
+          <figcaption data-i18n="shot.back">When the break is over, click "Back to work"</figcaption>
+        </figure>
+        <figure>
+          <img id="tray-img" data-shot="TrayMenu" src="images/EN/TrayMenu.webp" alt="" loading="lazy">
+          <figcaption data-i18n="shot.tray">The tray menu</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="install" class="band">
+      <div class="wrap">
+        <h2 data-i18n="install.title">Install</h2>
+        <p class="section-lead" data-i18n="install.lead">Package managers keep RestGuard up to date. Direct downloads are portable and don't update on their own.</p>
+
+        <div class="os-tabs" role="tablist">
+          <button role="tab" data-os="windows">Windows</button>
+          <button role="tab" data-os="macos">macOS</button>
+          <button role="tab" data-os="linux">Linux</button>
+        </div>
+
+        <div class="os-panel" data-os="windows">
+          <h3>WinGet</h3>
+          <pre><code>winget install HansTanzi.RestGuard</code></pre>
+          <h3>Scoop</h3>
+          <pre><code>scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
+scoop install hanstanzi/restguard</code></pre>
+          <h3 data-i18n="install.direct">Direct download</h3>
+          <div class="assets" data-assets="windows"></div>
+          <p class="note" data-i18n="install.winNote">A portable single exe with no installer: put it anywhere and delete it to uninstall. Requires the WebView2 runtime (preinstalled on Windows 11).</p>
+        </div>
+
+        <div class="os-panel" data-os="macos">
+          <h3>Homebrew</h3>
+          <pre><code>brew install --cask hanstanzi/tap/restguard</code></pre>
+          <h3 data-i18n="install.direct">Direct download</h3>
+          <div class="assets" data-assets="macos"></div>
+          <p class="note" data-i18n="install.macNote">Universal build for Apple Silicon and Intel. Unzip and move RestGuard.app to /Applications. The app isn't notarized, so clear the quarantine flag before first launch:</p>
+          <pre><code>xattr -dr com.apple.quarantine /Applications/RestGuard.app</code></pre>
+        </div>
+
+        <div class="os-panel" data-os="linux">
+          <h3 data-i18n="install.apt">Debian / Ubuntu (APT repository)</h3>
+          <pre><code>sudo install -d /etc/apt/keyrings
+curl -fsSL https://hanstanzi.github.io/apt/hanstanzi.gpg | sudo tee /etc/apt/keyrings/hanstanzi.gpg > /dev/null
+echo "deb [signed-by=/etc/apt/keyrings/hanstanzi.gpg] https://hanstanzi.github.io/apt stable main" | sudo tee /etc/apt/sources.list.d/hanstanzi.list
+sudo apt update && sudo apt install rest-guard</code></pre>
+          <h3 data-i18n="install.direct">Direct download</h3>
+          <div class="assets" data-assets="linux"></div>
+          <pre><code>sudo dnf install ./RestGuard_*_x86_64.rpm            # Fedora
+sudo zypper install ./RestGuard_*_x86_64.rpm         # openSUSE
+sudo pacman -U ./RestGuard_*_x86_64.pkg.tar.zst      # Arch</code></pre>
+          <p class="note" data-i18n="install.linuxNote">x86_64 only. The overlay needs X11. Homebrew on Linux is supported too, see the README.</p>
+        </div>
+
+        <details class="verify">
+          <summary data-i18n="verify.title">Verify your download</summary>
+          <p data-i18n="verify.attest">Release files are built by GitHub Actions with a signed build provenance attestation. Check one with the GitHub CLI:</p>
+          <pre><code>gh attestation verify RestGuard_&lt;version&gt;_x64.exe --repo HansTanzi/RestGuard</code></pre>
+          <p data-i18n="verify.sums">Or compare against SHA256SUMS.txt from the Release:</p>
+          <pre><code>sha256sum -c SHA256SUMS.txt --ignore-missing          # Linux
+shasum -a 256 -c SHA256SUMS.txt --ignore-missing      # macOS
+Get-FileHash .\RestGuard_*_x64.exe                    # Windows</code></pre>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap footer">
+    <p>
+      <a href="https://github.com/HansTanzi/RestGuard">GitHub</a> ·
+      <a href="https://github.com/HansTanzi/RestGuard/releases" data-i18n="footer.releases">All releases</a> ·
+      <a href="https://github.com/HansTanzi/RestGuard/issues" data-i18n="footer.issues">Report an issue</a>
+    </p>
+    <p class="muted" data-i18n="footer.license">Dual-licensed under MIT / Apache-2.0.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

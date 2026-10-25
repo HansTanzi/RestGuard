@@ -81,7 +81,7 @@ fn get_config(app: AppHandle) -> Config {
 }
 
 /// Settings panel save: writes the config file and applies it immediately, returning the sanitized config in effect.
-/// Not allowed during a break, so the break can't be dodged by shortening it
+/// Not allowed during or while postponing a break, so the break can't be dodged by shortening it
 #[tauri::command]
 fn save_config(app: AppHandle, config: Config) -> Result<Config, String> {
     apply_config(&app, config)
@@ -99,12 +99,10 @@ pub(crate) fn set_level(app: &AppHandle, level: &str) {
 }
 
 /// "Open config file" in the settings panel: opens it with the system default program for manual editing.
-/// Not allowed during a break, like save_config
+/// Not allowed during or while postponing a break, like save_config
 #[tauri::command]
 fn open_config_file(app: AppHandle) -> Result<(), String> {
-    if get_state(app.clone()).phase != Phase::Working {
-        return Err(i18n::t(&i18n::text::SETTINGS_LOCKED).into());
-    }
+    settings_unlocked(&get_state(app.clone()))?;
     let state = app.state::<AppState>();
     // If the file was deleted, write the current config back first so the editor doesn't open an empty file
     if !state.config_path.exists() {
@@ -134,15 +132,13 @@ fn apply_config(app: &AppHandle, config: Config) -> Result<Config, String> {
     commit_config(app, config.sanitized(), true)
 }
 
-/// Applies an already sanitized config; `save` controls whether it's written to the config file. Refuses changes during a break
+/// Applies an already sanitized config; `save` controls whether it's written to the config file. Refuses changes during or postponing a break
 fn commit_config(app: &AppHandle, config: Config, save: bool) -> Result<Config, String> {
     let state = app.state::<AppState>();
     let snap = {
         let mut timer = state.timer.lock().unwrap();
         let now = Instant::now();
-        if timer.snapshot(now).phase != Phase::Working {
-            return Err(i18n::t(&i18n::text::SETTINGS_LOCKED).into());
-        }
+        settings_unlocked(&timer.snapshot(now))?;
         if save {
             config
                 .save(&state.config_path)
@@ -156,6 +152,17 @@ fn commit_config(app: &AppHandle, config: Config, save: bool) -> Result<Config, 
     let _ = app.emit(CONFIG_EVENT, &config);
     broadcast(app, &snap);
     Ok(config)
+}
+
+/// Settings (including the enforcement profile) can't change during a break, nor while one is postponed
+fn settings_unlocked(snap: &Snapshot) -> Result<(), String> {
+    if snap.phase != Phase::Working {
+        return Err(i18n::t(&i18n::text::SETTINGS_LOCKED).into());
+    }
+    if snap.postponed {
+        return Err(i18n::t(&i18n::text::SETTINGS_LOCKED_POSTPONED).into());
+    }
+    Ok(())
 }
 
 /// "Preview" in the settings panel: plays the sound using the form's unsaved settings, returning a message to the frontend if it can't play.

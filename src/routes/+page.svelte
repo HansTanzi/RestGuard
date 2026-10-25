@@ -31,6 +31,7 @@
   let lang = $state<LangId>("auto");
   let autostart = $state(false);
   let phase = $state<Snapshot["phase"]>("working");
+  let postponed = $state(false);
 
   // saved is the config currently in effect in the backend; draft holds the values being edited in the form
   let saved = $state<Config | null>(null);
@@ -47,7 +48,8 @@
   let message = $state<{ text: string; error: boolean } | null>(null);
   let messageTimer: ReturnType<typeof setTimeout> | undefined;
 
-  const locked = $derived(phase !== "working");
+  // Settings are locked during a break and while one is postponed (see settings_unlocked in lib.rs)
+  const locked = $derived(phase !== "working" || postponed);
   const customIndex = $derived(selected.startsWith("custom:") ? Number(selected.slice(7)) : -1);
   const profile = $derived<Profile>(
     customIndex >= 0
@@ -130,6 +132,11 @@
     if (customIndex < 0) return;
     draft.profiles.splice(customIndex, 1);
     selected = DEFAULT_CONFIG.level;
+  }
+
+  function applyState(snap: Snapshot) {
+    phase = snap.phase;
+    postponed = snap.postponed;
   }
 
   function applyLang(v: UiLang) {
@@ -235,13 +242,13 @@
       .catch((e) => flash(String(e), true))
       .finally(() => invoke<Config>("get_config").then(load));
     invoke<boolean>("get_autostart").then((v) => (autostart = v));
-    invoke<Snapshot>("get_state").then((v) => (phase = v.phase));
+    invoke<Snapshot>("get_state").then(applyState);
     const unlistens = [
       listen<UiLang>(LANG_EVENT, (e) => applyLang(e.payload)),
       listen<boolean>(AUTOSTART_EVENT, (e) => (autostart = e.payload)),
       // With unsaved changes, don't overwrite the form; only update saved, and the form wins on save
       listen<Config>(CONFIG_EVENT, (e) => (dirty ? (saved = e.payload) : load(e.payload))),
-      listen<Snapshot>(STATE_EVENT, (e) => (phase = e.payload.phase)),
+      listen<Snapshot>(STATE_EVENT, (e) => applyState(e.payload)),
     ];
     window.addEventListener("focus", reloadConfig);
     return () => {
@@ -265,7 +272,11 @@
       <header>
         <h1>{s.title}</h1>
         <p class="message" class:error={message?.error || locked} aria-live="polite">
-          {locked ? s.lockedDuringBreak : (message?.text ?? "")}
+          {locked
+            ? postponed
+              ? s.lockedWhilePostponed
+              : s.lockedDuringBreak
+            : (message?.text ?? "")}
         </p>
         <div class="actions">
           <!-- Show a description below the button on hover (or keyboard focus) -->
@@ -482,6 +493,7 @@
               <option value={NEW_PROFILE}>{s.newProfile}</option>
             </select>
           </label>
+          <h3>{s.overlaySection}</h3>
           <label>
             <span>{s.coverageNormal}</span>
             <span class="range">
@@ -562,6 +574,7 @@
             />
             <span>{s.movable}</span>
           </label>
+          <h3>{s.otherSection}</h3>
           <label class="check">
             <input
               type="checkbox"
@@ -682,6 +695,23 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted);
+  }
+
+  /* Subsection inside a group: the title is followed by a divider line on the same row */
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.75rem 0 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  h3::after {
+    content: "";
+    flex: 1;
+    border-top: 1px solid var(--line);
   }
 
   fieldset {

@@ -7,6 +7,8 @@ export interface Snapshot {
   totalSecs: number;
   canPostpone: boolean;
   postponesLeft: number;
+  /** Counting down a postponed break; like a break, quitting and changing settings or profiles aren't allowed */
+  postponed: boolean;
   /** A break is due but held off because this exempt app is in the foreground */
   heldBy: string | null;
   /** Meeting software running when the break started; the overlay then offers "I'm in a meeting" */

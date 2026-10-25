@@ -1,6 +1,6 @@
 [package]
 name = "restguard"
-version = "0.1.15"
+version = "0.1.16"
 description = "Cross-platform break reminder that actually makes you rest"
 authors = ["Tanzi"]
 license = "MIT OR Apache-2.0"
@@ -27,8 +27,9 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "0.9"
 sys-locale = "0.3"
-# Push to the phone via ntfy when a break ends
-ureq = "3"
+# Push to the phone via ntfy when a break ends. Uses the OS TLS stack and root certificates (SChannel, Security.framework, OpenSSL)
+# instead of the default rustls + ring + bundled roots, which added about 1.4 MB to the binary
+ureq = { version = "3", default-features = false, features = ["native-tls-no-default"] }
 
 # Same version as tauri uses; raises the overlay above the menu bar and full-screen apps, and detects the frontmost app, running apps and microphone use
 [target.'cfg(target_os = "macos")'.dependencies]

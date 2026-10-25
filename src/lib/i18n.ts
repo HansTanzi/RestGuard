@@ -238,6 +238,7 @@ export interface SettingsStrings {
   resetDefaults: string;
   invalid: string;
   lockedDuringBreak: string;
+  lockedWhilePostponed: string;
   enforcement: string;
   level: string;
   levels: Record<BuiltinLevel, string>;
@@ -299,6 +300,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "恢复默认值",
     invalid: "请检查标红的输入项",
     lockedDuringBreak: "休息期间不能修改设置",
+    lockedWhilePostponed: "推迟休息期间不能修改设置",
     enforcement: "强制方案",
     level: "方案名称",
     levels: { high: "高等强制", medium: "中等强制", low: "低等强制" },
@@ -358,6 +360,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "Restore defaults",
     invalid: "Please fix the highlighted fields",
     lockedDuringBreak: "Settings can't be changed during a break",
+    lockedWhilePostponed: "Settings can't be changed while a break is postponed",
     enforcement: "Enforcement profile",
     level: "Profile",
     levels: { high: "High enforcement", medium: "Medium enforcement", low: "Low enforcement" },
@@ -417,6 +420,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "डिफ़ॉल्ट पर लौटें",
     invalid: "कृपया लाल रंग वाले फ़ील्ड ठीक करें",
     lockedDuringBreak: "ब्रेक के दौरान सेटिंग्स नहीं बदली जा सकतीं",
+    lockedWhilePostponed: "ब्रेक टाले जाने के दौरान सेटिंग्स नहीं बदली जा सकतीं",
     enforcement: "सख़्ती योजना",
     level: "योजना",
     levels: { high: "उच्च सख़्ती", medium: "मध्यम सख़्ती", low: "निम्न सख़्ती" },
@@ -476,6 +480,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "Restaurar valores predeterminados",
     invalid: "Corrige los campos resaltados",
     lockedDuringBreak: "No se pueden cambiar los ajustes durante un descanso",
+    lockedWhilePostponed: "No se pueden cambiar los ajustes mientras un descanso está pospuesto",
     enforcement: "Perfil de rigor",
     level: "Perfil",
     levels: { high: "Rigor alto", medium: "Rigor medio", low: "Rigor bajo" },
@@ -535,6 +540,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "استعادة الافتراضيات",
     invalid: "يرجى تصحيح الحقول المميّزة",
     lockedDuringBreak: "لا يمكن تغيير الإعدادات أثناء الاستراحة",
+    lockedWhilePostponed: "لا يمكن تغيير الإعدادات أثناء تأجيل الاستراحة",
     enforcement: "نمط الإلزام",
     level: "النمط",
     levels: { high: "إلزام مرتفع", medium: "إلزام متوسط", low: "إلزام منخفض" },
@@ -594,6 +600,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "Valeurs par défaut",
     invalid: "Corrigez les champs en rouge",
     lockedDuringBreak: "Impossible de modifier les paramètres pendant une pause",
+    lockedWhilePostponed: "Impossible de modifier les paramètres pendant qu'une pause est reportée",
     enforcement: "Profil de contrainte",
     level: "Profil",
     levels: { high: "Contrainte élevée", medium: "Contrainte moyenne", low: "Contrainte faible" },
@@ -653,6 +660,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "ডিফল্টে ফিরুন",
     invalid: "লাল চিহ্নিত ঘরগুলো ঠিক করুন",
     lockedDuringBreak: "বিরতির সময় সেটিংস পরিবর্তন করা যাবে না",
+    lockedWhilePostponed: "বিরতি পিছিয়ে থাকার সময় সেটিংস পরিবর্তন করা যাবে না",
     enforcement: "কড়াকড়ির প্রোফাইল",
     level: "প্রোফাইল",
     levels: { high: "উচ্চ কড়াকড়ি", medium: "মাঝারি কড়াকড়ি", low: "নিম্ন কড়াকড়ি" },
@@ -712,6 +720,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "Restaurar padrões",
     invalid: "Corrija os campos destacados",
     lockedDuringBreak: "Não é possível alterar as configurações durante uma pausa",
+    lockedWhilePostponed: "Não é possível alterar as configurações enquanto uma pausa está adiada",
     enforcement: "Perfil de rigor",
     level: "Perfil",
     levels: { high: "Rigor alto", medium: "Rigor médio", low: "Rigor baixo" },
@@ -771,6 +780,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "Standardwerte",
     invalid: "Bitte die markierten Felder korrigieren",
     lockedDuringBreak: "Während einer Pause können die Einstellungen nicht geändert werden",
+    lockedWhilePostponed:
+      "Während eine Pause aufgeschoben ist, können die Einstellungen nicht geändert werden",
     enforcement: "Strengeprofil",
     level: "Profil",
     levels: { high: "Hohe Strenge", medium: "Mittlere Strenge", low: "Niedrige Strenge" },
@@ -830,6 +841,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "デフォルトに戻す",
     invalid: "赤く表示された項目を確認してください",
     lockedDuringBreak: "休憩中は設定を変更できません",
+    lockedWhilePostponed: "休憩を延期している間は設定を変更できません",
     enforcement: "強制プラン",
     level: "プラン",
     levels: { high: "強制：高", medium: "強制：中", low: "強制：低" },
@@ -889,6 +901,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "Ripristina predefiniti",
     invalid: "Correggi i campi evidenziati",
     lockedDuringBreak: "Non puoi modificare le impostazioni durante una pausa",
+    lockedWhilePostponed: "Non puoi modificare le impostazioni mentre una pausa è rimandata",
     enforcement: "Profilo di rigore",
     level: "Profilo",
     levels: { high: "Rigore alto", medium: "Rigore medio", low: "Rigore basso" },
@@ -948,6 +961,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "기본값 복원",
     invalid: "빨간색으로 표시된 항목을 확인하세요",
     lockedDuringBreak: "휴식 중에는 설정을 변경할 수 없습니다",
+    lockedWhilePostponed: "휴식을 미룬 동안에는 설정을 변경할 수 없습니다",
     enforcement: "강제 프로필",
     level: "프로필",
     levels: { high: "강제 높음", medium: "강제 보통", low: "강제 낮음" },
@@ -1007,6 +1021,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     resetDefaults: "Kembalikan default",
     invalid: "Periksa kolom yang ditandai merah",
     lockedDuringBreak: "Pengaturan tidak bisa diubah saat istirahat",
+    lockedWhilePostponed: "Pengaturan tidak bisa diubah saat istirahat ditunda",
     enforcement: "Profil ketegasan",
     level: "Profil",
     levels: { high: "Ketegasan tinggi", medium: "Ketegasan sedang", low: "Ketegasan rendah" },

@@ -296,9 +296,11 @@ pub fn update(app: &AppHandle, snap: &Snapshot) {
         // During a break, quitting from the tray isn't allowed, nor is opening settings or switching profiles to shorten the break;
         // the About page can open a browser, so it's disabled too
         let _ = items.settings.set_enabled(working);
-        let _ = items.level_menu.set_enabled(working);
+        // A postponed break is still owed, so switching profiles or quitting stays off until it's taken
+        let unlocked = working && !snap.postponed;
+        let _ = items.level_menu.set_enabled(unlocked);
         let _ = items.about.set_enabled(working);
-        let _ = items.quit.set_enabled(working);
+        let _ = items.quit.set_enabled(unlocked);
 
         // Re-evaluated on every refresh so the icon follows taskbar light/dark changes
         let key = icon_key(snap.phase);

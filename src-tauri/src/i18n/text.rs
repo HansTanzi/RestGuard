@@ -353,6 +353,22 @@ pub const SETTINGS_LOCKED: Tr = Tr {
     id: "Pengaturan tidak bisa diubah saat istirahat",
 };
 
+pub const SETTINGS_LOCKED_POSTPONED: Tr = Tr {
+    zh: "推迟休息期间不能修改设置",
+    en: "Settings can't be changed while a break is postponed",
+    hi: "ब्रेक टाले जाने के दौरान सेटिंग्स नहीं बदली जा सकतीं",
+    es: "No se pueden cambiar los ajustes mientras un descanso está pospuesto",
+    ar: "لا يمكن تغيير الإعدادات أثناء تأجيل الاستراحة",
+    fr: "Impossible de modifier les paramètres pendant qu'une pause est reportée",
+    bn: "বিরতি পিছিয়ে থাকার সময় সেটিংস পরিবর্তন করা যাবে না",
+    pt: "Não é possível alterar as configurações enquanto uma pausa está adiada",
+    de: "Während eine Pause aufgeschoben ist, können die Einstellungen nicht geändert werden",
+    ja: "休憩を延期している間は設定を変更できません",
+    it: "Non puoi modificare le impostazioni mentre una pausa è rimandata",
+    ko: "휴식을 미룬 동안에는 설정을 변경할 수 없습니다",
+    id: "Pengaturan tidak bisa diubah saat istirahat ditunda",
+};
+
 /// `{e}` is the error detail
 pub const SAVE_FAILED: Tr = Tr {
     zh: "无法保存配置文件：{e}",

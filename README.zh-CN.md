@@ -284,6 +284,10 @@ cd src-tauri && cargo test
 
 调试时可以把 `work_minutes` 设为 `0.1`（6 秒），快速触发休息。
 
+## 隐私
+
+RestGuard 不收集任何数据，没有账户、统计分析或遥测。只有在开启 ntfy 手机通知时才会联网发送通知。详见[隐私政策](https://hanstanzi.github.io/RestGuard/privacy.html)（英文）。
+
 ## 许可证
 
 可任选 [MIT](LICENSE-MIT) 或 [Apache-2.0](LICENSE-APACHE) 许可证。

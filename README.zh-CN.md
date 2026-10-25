@@ -103,6 +103,8 @@ scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
 scoop install hanstanzi/restguard
 ```
 
+也可以从 [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) 下载 `RestGuard_<版本>_x64.exe` 直接运行。它是免安装的单个 exe：放在任意位置即可，删除即卸载。不会自动更新，更新时下载新版本替换即可。
+
 依赖 WebView2 运行时（Windows 11 自带）。
 
 ### macOS
@@ -115,7 +117,9 @@ brew install --cask hanstanzi/tap/restguard
 
 如果之前 tap 过本仓库（`brew tap hanstanzi/restguard https://github.com/HansTanzi/RestGuard`），需要换到新的 tap 才能继续收到更新：`brew untap hanstanzi/restguard && brew install --cask hanstanzi/tap/restguard`。
 
-RestGuard 只显示在菜单栏，不占 Dock。应用未经 Apple 公证，cask 安装时会自动去掉隔离属性；如果手动从 Release 下载，首次打开前需运行 `xattr -dr com.apple.quarantine /Applications/RestGuard.app`。
+也可以从 [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) 下载 `RestGuard_<版本>_universal.zip`，解压后把 `RestGuard.app` 移到 `/Applications`。不会自动更新，更新时下载新版本替换即可。
+
+RestGuard 只显示在菜单栏，不占 Dock。应用未经 Apple 公证，cask 安装时会自动去掉隔离属性；如果是手动下载的 zip，首次打开前需运行 `xattr -dr com.apple.quarantine /Applications/RestGuard.app`，否则 macOS 会拒绝打开。
 
 ### Linux
 
@@ -157,6 +161,37 @@ brew install --cask hanstanzi/tap/restguard
 这种方式只安装 `restguard` 可执行文件，不会在应用菜单中添加图标：运行一次 `restguard`，再在托盘菜单中打开「开机自启」即可。之后用 `brew upgrade` 更新。
 
 遮罩需要 X11（见[平台限制](#平台限制)）。
+
+### 校验下载文件
+
+v0.1.14 之后的 Release 文件由 GitHub Actions 构建，并附带签名的[构建来源证明](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)，把每个文件和构建它的 workflow 运行及 commit 对应起来。用 [GitHub CLI](https://cli.github.com) 校验下载的文件：
+
+```sh
+gh attestation verify RestGuard_<版本号>_x64.exe --repo HansTanzi/RestGuard
+```
+
+每个 Release 还附带 `SHA256SUMS.txt`，不装 GitHub CLI 也能校验。把下载的文件放到和 `SHA256SUMS.txt` 同一目录后运行：
+
+```sh
+sha256sum -c SHA256SUMS.txt --ignore-missing          # Linux
+shasum -a 256 -c SHA256SUMS.txt --ignore-missing      # macOS
+```
+
+Windows 上用 `Get-FileHash .\RestGuard_*_x64.exe`，将输出与 `SHA256SUMS.txt` 中对应的那一行比对（不区分大小写）。
+
+### 从源码构建
+
+先安装[开发](#开发)一节列出的依赖，再构建某个已发布的版本：
+
+```sh
+git clone https://github.com/HansTanzi/RestGuard
+cd RestGuard
+git checkout v<版本号>
+pnpm install --frozen-lockfile
+pnpm tauri build --no-bundle
+```
+
+可执行文件是 `src-tauri/target/release/restguard`（Windows 上是 `restguard.exe`）。请用 `pnpm tauri build` 构建，不要直接 `cargo build`：单独用 Cargo 构建出的是开发版，会从 `localhost:1420` 加载界面，窗口一片空白。
 
 ## 配置
 

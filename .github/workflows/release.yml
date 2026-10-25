@@ -22,7 +22,7 @@ jobs:
       macos_exists: ${{ steps.check.outputs.macos_exists }}
       linux_exists: ${{ steps.check.outputs.linux_exists }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check version and existing assets
         id: check
@@ -60,14 +60,19 @@ jobs:
     needs: prepare
     if: needs.prepare.outputs.windows_exists == 'false'
     runs-on: windows-latest
+    # id-token and attestations are for the build provenance attestation
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
           cache: pnpm
@@ -83,6 +88,15 @@ jobs:
       # Scoop installs the portable exe, no installer needed
       - run: pnpm tauri build --no-bundle
 
+      - name: Rename asset
+        shell: pwsh
+        run: Copy-Item src-tauri/target/release/restguard.exe "RestGuard_${{ needs.prepare.outputs.version }}_x64.exe"
+
+      # Signed provenance tying the file's hash to this workflow run and commit; users verify with gh attestation verify
+      - uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: RestGuard_${{ needs.prepare.outputs.version }}_x64.exe
+
       # No --clobber: upload fails if the file exists, never overwriting published files
       - name: Upload asset
         shell: pwsh
@@ -90,7 +104,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $name = "RestGuard_${{ needs.prepare.outputs.version }}_x64.exe"
-          Copy-Item src-tauri/target/release/restguard.exe $name
           gh release upload "${{ github.ref_name }}" $name
           if ($LASTEXITCODE -ne 0) { throw "Failed to upload $name" }
 
@@ -98,14 +111,18 @@ jobs:
     needs: prepare
     if: needs.prepare.outputs.macos_exists == 'false'
     runs-on: macos-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
           cache: pnpm
@@ -123,21 +140,29 @@ jobs:
       # Universal .app for both Apple Silicon and Intel
       - run: pnpm tauri build --target universal-apple-darwin --bundles app
 
+      - name: Zip app
+        run: ditto -c -k --keepParent src-tauri/target/universal-apple-darwin/release/bundle/macos/RestGuard.app "RestGuard_${{ needs.prepare.outputs.version }}_universal.zip"
+
+      - uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: RestGuard_${{ needs.prepare.outputs.version }}_universal.zip
+
       # No --clobber: upload fails if the file exists, never overwriting published files
       - name: Upload asset
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          name="RestGuard_${{ needs.prepare.outputs.version }}_universal.zip"
-          ditto -c -k --keepParent src-tauri/target/universal-apple-darwin/release/bundle/macos/RestGuard.app "$name"
-          gh release upload "$GITHUB_REF_NAME" "$name"
+        run: gh release upload "$GITHUB_REF_NAME" "RestGuard_${{ needs.prepare.outputs.version }}_universal.zip"
 
   build-linux:
     needs: prepare
     if: needs.prepare.outputs.linux_exists == 'false'
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Linux build dependencies for Tauri v2: webkit2gtk, appindicator for the tray, etc.
       - name: Install system dependencies
@@ -154,11 +179,11 @@ jobs:
             file \
             wget
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: lts/*
           cache: pnpm
@@ -186,13 +211,11 @@ jobs:
       # Arch .pkg.tar.zst, repackaged from the .deb
       - run: bash scripts/arch-package.sh "${{ needs.prepare.outputs.version }}"
 
-      # Upload only files not yet on the Release (e.g. only one succeeded last time); no --clobber, never overwrite
-      - name: Upload assets
+      # Tauri names the rpm RestGuard-<version>-1.x86_64.rpm; rename it to match the other platforms
+      - name: Rename rpm
         env:
-          GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
-          # Tauri names the rpm RestGuard-<version>-1.x86_64.rpm; rename it to match the other platforms
           rpms=(src-tauri/target/release/bundle/rpm/*.rpm)
           if [ "${#rpms[@]}" != 1 ]; then
             echo "::error::Expected exactly one rpm, found: ${rpms[*]}"
@@ -200,6 +223,20 @@ jobs:
           fi
           cp "${rpms[0]}" "RestGuard_${VERSION}_x86_64.rpm"
 
+      # Attests all three; a file already on the Release isn't uploaded below, so its attestation here just goes unused
+      - uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: |
+            src-tauri/target/release/bundle/deb/RestGuard_${{ needs.prepare.outputs.version }}_amd64.deb
+            RestGuard_${{ needs.prepare.outputs.version }}_x86_64.rpm
+            RestGuard_${{ needs.prepare.outputs.version }}_x86_64.pkg.tar.zst
+
+      # Upload only files not yet on the Release (e.g. only one succeeded last time); no --clobber, never overwrite
+      - name: Upload assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
           assets=$(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name')
           for file in \
             "src-tauri/target/release/bundle/deb/RestGuard_${VERSION}_amd64.deb" \
@@ -212,6 +249,44 @@ jobs:
             fi
           done
 
+  # SHA256SUMS.txt for users verifying manual downloads (sha256sum -c), hashed from the files on the Release rather than the local build output.
+  # Waits for all platforms so the file covers every asset. If it already exists, check it still matches instead of overwriting
+  checksums:
+    needs: [prepare, build-windows, build-macos, build-linux]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-windows.result) && contains(fromJSON('["success", "skipped"]'), needs.build-macos.result) && contains(fromJSON('["success", "skipped"]'), needs.build-linux.result) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate and upload SHA256SUMS.txt
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          cd "$RUNNER_TEMP"
+          files=(
+            "RestGuard_${VERSION}_x64.exe"
+            "RestGuard_${VERSION}_universal.zip"
+            "RestGuard_${VERSION}_amd64.deb"
+            "RestGuard_${VERSION}_x86_64.rpm"
+            "RestGuard_${VERSION}_x86_64.pkg.tar.zst"
+          )
+          for name in "${files[@]}"; do
+            gh release download "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY" --pattern "$name"
+          done
+          sha256sum "${files[@]}" > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+          assets=$(gh release view "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')
+          if grep -qxF SHA256SUMS.txt <<< "$assets"; then
+            gh release download "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY" --pattern SHA256SUMS.txt --output published.txt
+            if ! cmp -s SHA256SUMS.txt published.txt; then
+              echo "::error::SHA256SUMS.txt on the Release doesn't match the current assets"
+              exit 1
+            fi
+            echo "::notice::SHA256SUMS.txt already exists and matches"
+          else
+            gh release upload "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY" SHA256SUMS.txt
+          fi
+
   # Update HansTanzi/scoop-bucket (the bucket users add) directly, so the release is available immediately without waiting for its scheduled Excavator.
   # Pushes to its default branch with that repo's deploy key (secret SCOOP_BUCKET_DEPLOY_KEY, write access required).
   # Doesn't commit if the manifest already has this version and hash (e.g. Excavator got there first).
@@ -223,7 +298,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # ssh waits for input forever if the private key has a passphrase or a bad format; a timeout makes it fail fast
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         timeout-minutes: 5
         with:
           repository: HansTanzi/scoop-bucket
@@ -279,7 +354,7 @@ jobs:
     if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-macos.result) && contains(fromJSON('["success", "skipped"]'), needs.build-linux.result) }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         timeout-minutes: 5
         with:
           repository: HansTanzi/homebrew-tap
@@ -390,7 +465,7 @@ jobs:
     if: ${{ !cancelled() && needs.prepare.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.build-windows.result) && !contains(github.ref_name, '-') }}
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Put it in the build output location, where msix.ps1 -SkipBuild picks up the exe
       - name: Download asset
@@ -408,7 +483,7 @@ jobs:
         shell: pwsh
         run: ./scripts/msix.ps1 -SkipBuild
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: msix
           path: src-tauri/target/msix/*.msix

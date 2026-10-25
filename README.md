@@ -97,6 +97,8 @@ scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
 scoop install hanstanzi/restguard
 ```
 
+Or download `RestGuard_<version>_x64.exe` from [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) and run it. It's a portable single exe with no installer: put it anywhere you like and delete it to uninstall. It won't update on its own; download the new version to update.
+
 Requires the WebView2 runtime (preinstalled on Windows 11).
 
 ### macOS
@@ -109,7 +111,9 @@ brew install --cask hanstanzi/tap/restguard
 
 If you tapped this repository before (`brew tap hanstanzi/restguard https://github.com/HansTanzi/RestGuard`), switch to the new tap to keep getting updates: `brew untap hanstanzi/restguard && brew install --cask hanstanzi/tap/restguard`.
 
-RestGuard lives in the menu bar and has no Dock icon. The app isn't notarized by Apple; the cask removes the quarantine flag on install. If you download the zip from Releases by hand, run `xattr -dr com.apple.quarantine /Applications/RestGuard.app` before first launch.
+Or download `RestGuard_<version>_universal.zip` from [Releases](https://github.com/HansTanzi/RestGuard/releases/latest), unzip it and move `RestGuard.app` to `/Applications`. It won't update on its own; download the new version to update.
+
+RestGuard lives in the menu bar and has no Dock icon. The app isn't notarized by Apple; the cask removes the quarantine flag on install. If you downloaded the zip by hand, run `xattr -dr com.apple.quarantine /Applications/RestGuard.app` before first launch, otherwise macOS won't open it.
 
 ### Linux
 
@@ -151,6 +155,37 @@ brew install --cask hanstanzi/tap/restguard
 This installs only the `restguard` executable, with no app menu entry: run `restguard` once, then turn on "Start at login" from the tray menu. Later versions arrive with `brew upgrade`.
 
 The overlay needs X11 (see [Platform limitations](#platform-limitations)).
+
+### Verify downloads
+
+Release files after v0.1.14 are built by GitHub Actions and carry a signed [build provenance attestation](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) linking each file to the workflow run and commit that built it. To check a downloaded file with the [GitHub CLI](https://cli.github.com):
+
+```sh
+gh attestation verify RestGuard_<version>_x64.exe --repo HansTanzi/RestGuard
+```
+
+Each Release also includes `SHA256SUMS.txt`, for checking a download without the GitHub CLI. Put the downloaded file in the same directory as `SHA256SUMS.txt` and run:
+
+```sh
+sha256sum -c SHA256SUMS.txt --ignore-missing          # Linux
+shasum -a 256 -c SHA256SUMS.txt --ignore-missing      # macOS
+```
+
+On Windows, compare the output of `Get-FileHash .\RestGuard_*_x64.exe` with the matching line in `SHA256SUMS.txt` (case doesn't matter).
+
+### Build from source
+
+Install the prerequisites listed under [Development](#development), then build a tagged version:
+
+```sh
+git clone https://github.com/HansTanzi/RestGuard
+cd RestGuard
+git checkout v<version>
+pnpm install --frozen-lockfile
+pnpm tauri build --no-bundle
+```
+
+The executable is `src-tauri/target/release/restguard` (`restguard.exe` on Windows). Build with `pnpm tauri build`, not `cargo build`: a plain Cargo build is a dev build that loads the UI from `localhost:1420` and shows blank windows.
 
 ## Configuration
 

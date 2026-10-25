@@ -97,6 +97,8 @@ scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
 scoop install hanstanzi/restguard
 ```
 
+Oder lade `RestGuard_<Version>_x64.exe` von den [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) herunter und starte sie. Es ist eine portable Einzeldatei ohne Installer: Lege sie an einen beliebigen Ort und lösche sie zum Deinstallieren. Sie aktualisiert sich nicht selbst; lade für ein Update die neue Version herunter.
+
 Benötigt die WebView2-Laufzeit (unter Windows 11 vorinstalliert).
 
 ### macOS
@@ -109,7 +111,9 @@ brew install --cask hanstanzi/tap/restguard
 
 Falls du dieses Repository früher als Tap hinzugefügt hast (`brew tap hanstanzi/restguard https://github.com/HansTanzi/RestGuard`), wechsle zum neuen Tap, um weiterhin Updates zu erhalten: `brew untap hanstanzi/restguard && brew install --cask hanstanzi/tap/restguard`.
 
-RestGuard sitzt in der Menüleiste und hat kein Dock-Symbol. Die App ist nicht von Apple notarisiert; der Cask entfernt bei der Installation das Quarantäne-Attribut. Wenn du das Zip manuell von den Releases herunterlädst, führe vor dem ersten Start `xattr -dr com.apple.quarantine /Applications/RestGuard.app` aus.
+Oder lade `RestGuard_<Version>_universal.zip` von den [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) herunter, entpacke es und verschiebe `RestGuard.app` nach `/Applications`. Die App aktualisiert sich nicht selbst; lade für ein Update die neue Version herunter.
+
+RestGuard sitzt in der Menüleiste und hat kein Dock-Symbol. Die App ist nicht von Apple notarisiert; der Cask entfernt bei der Installation das Quarantäne-Attribut. Wenn du das Zip manuell heruntergeladen hast, führe vor dem ersten Start `xattr -dr com.apple.quarantine /Applications/RestGuard.app` aus, sonst lässt macOS die App nicht starten.
 
 ### Linux
 
@@ -151,6 +155,37 @@ brew install --cask hanstanzi/tap/restguard
 Dabei wird nur die ausführbare Datei `restguard` installiert, ohne Eintrag im Anwendungsmenü: Starte `restguard` einmal und aktiviere dann „Beim Anmelden starten“ im Tray-Menü. Neuere Versionen kommen mit `brew upgrade`.
 
 Das Overlay benötigt X11 (siehe [Plattformeinschränkungen](#plattformeinschränkungen)).
+
+### Downloads überprüfen
+
+Release-Dateien nach v0.1.14 werden von GitHub Actions gebaut und tragen eine signierte [Build-Provenance-Attestierung](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations), die jede Datei mit dem Workflow-Lauf und dem Commit verknüpft, aus dem sie entstanden ist. So prüfst du eine heruntergeladene Datei mit der [GitHub CLI](https://cli.github.com):
+
+```sh
+gh attestation verify RestGuard_<Version>_x64.exe --repo HansTanzi/RestGuard
+```
+
+Jedes Release enthält außerdem `SHA256SUMS.txt`, damit du Downloads auch ohne GitHub CLI prüfen kannst. Lege die heruntergeladene Datei in dasselbe Verzeichnis wie `SHA256SUMS.txt` und führe aus:
+
+```sh
+sha256sum -c SHA256SUMS.txt --ignore-missing          # Linux
+shasum -a 256 -c SHA256SUMS.txt --ignore-missing      # macOS
+```
+
+Unter Windows vergleiche die Ausgabe von `Get-FileHash .\RestGuard_*_x64.exe` mit der passenden Zeile in `SHA256SUMS.txt` (Groß-/Kleinschreibung spielt keine Rolle).
+
+### Aus dem Quellcode bauen
+
+Installiere die unter [Entwicklung](#entwicklung) genannten Voraussetzungen und baue dann eine getaggte Version:
+
+```sh
+git clone https://github.com/HansTanzi/RestGuard
+cd RestGuard
+git checkout v<Version>
+pnpm install --frozen-lockfile
+pnpm tauri build --no-bundle
+```
+
+Die ausführbare Datei liegt unter `src-tauri/target/release/restguard` (`restguard.exe` unter Windows). Baue mit `pnpm tauri build`, nicht mit `cargo build`: Ein reiner Cargo-Build ist ein Entwicklungs-Build, der die Oberfläche von `localhost:1420` lädt und leere Fenster zeigt.
 
 ## Konfiguration
 

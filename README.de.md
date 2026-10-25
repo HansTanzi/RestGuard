@@ -97,6 +97,8 @@ scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
 scoop install hanstanzi/restguard
 ```
 
+Oder lade `RestGuard_<Version>_x64.exe` von den [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) herunter und starte sie. Es ist eine portable Einzeldatei ohne Installer: Lege sie an einen beliebigen Ort und lösche sie zum Deinstallieren. Sie aktualisiert sich nicht selbst; lade für ein Update die neue Version herunter.
+
 Benötigt die WebView2-Laufzeit (unter Windows 11 vorinstalliert).
 
 ### macOS
@@ -109,7 +111,9 @@ brew install --cask hanstanzi/tap/restguard
 
 Falls du dieses Repository früher als Tap hinzugefügt hast (`brew tap hanstanzi/restguard https://github.com/HansTanzi/RestGuard`), wechsle zum neuen Tap, um weiterhin Updates zu erhalten: `brew untap hanstanzi/restguard && brew install --cask hanstanzi/tap/restguard`.
 
-RestGuard sitzt in der Menüleiste und hat kein Dock-Symbol. Die App ist nicht von Apple notarisiert; der Cask entfernt bei der Installation das Quarantäne-Attribut. Wenn du das Zip manuell von den Releases herunterlädst, führe vor dem ersten Start `xattr -dr com.apple.quarantine /Applications/RestGuard.app` aus.
+Oder lade `RestGuard_<Version>_universal.zip` von den [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) herunter, entpacke es und verschiebe `RestGuard.app` nach `/Applications`. Die App aktualisiert sich nicht selbst; lade für ein Update die neue Version herunter.
+
+RestGuard sitzt in der Menüleiste und hat kein Dock-Symbol. Die App ist nicht von Apple notarisiert; der Cask entfernt bei der Installation das Quarantäne-Attribut. Wenn du das Zip manuell heruntergeladen hast, führe vor dem ersten Start `xattr -dr com.apple.quarantine /Applications/RestGuard.app` aus, sonst lässt macOS die App nicht starten.
 
 ### Linux
 

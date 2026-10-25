@@ -97,6 +97,8 @@ scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
 scoop install hanstanzi/restguard
 ```
 
+Or download `RestGuard_<version>_x64.exe` from [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) and run it. It's a portable single exe with no installer: put it anywhere you like and delete it to uninstall. It won't update on its own; download the new version to update.
+
 Requires the WebView2 runtime (preinstalled on Windows 11).
 
 ### macOS
@@ -109,7 +111,9 @@ brew install --cask hanstanzi/tap/restguard
 
 If you tapped this repository before (`brew tap hanstanzi/restguard https://github.com/HansTanzi/RestGuard`), switch to the new tap to keep getting updates: `brew untap hanstanzi/restguard && brew install --cask hanstanzi/tap/restguard`.
 
-RestGuard lives in the menu bar and has no Dock icon. The app isn't notarized by Apple; the cask removes the quarantine flag on install. If you download the zip from Releases by hand, run `xattr -dr com.apple.quarantine /Applications/RestGuard.app` before first launch.
+Or download `RestGuard_<version>_universal.zip` from [Releases](https://github.com/HansTanzi/RestGuard/releases/latest), unzip it and move `RestGuard.app` to `/Applications`. It won't update on its own; download the new version to update.
+
+RestGuard lives in the menu bar and has no Dock icon. The app isn't notarized by Apple; the cask removes the quarantine flag on install. If you downloaded the zip by hand, run `xattr -dr com.apple.quarantine /Applications/RestGuard.app` before first launch, otherwise macOS won't open it.
 
 ### Linux
 

@@ -103,6 +103,8 @@ scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
 scoop install hanstanzi/restguard
 ```
 
+也可以从 [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) 下载 `RestGuard_<版本>_x64.exe` 直接运行。它是免安装的单个 exe：放在任意位置即可，删除即卸载。不会自动更新，更新时下载新版本替换即可。
+
 依赖 WebView2 运行时（Windows 11 自带）。
 
 ### macOS
@@ -115,7 +117,9 @@ brew install --cask hanstanzi/tap/restguard
 
 如果之前 tap 过本仓库（`brew tap hanstanzi/restguard https://github.com/HansTanzi/RestGuard`），需要换到新的 tap 才能继续收到更新：`brew untap hanstanzi/restguard && brew install --cask hanstanzi/tap/restguard`。
 
-RestGuard 只显示在菜单栏，不占 Dock。应用未经 Apple 公证，cask 安装时会自动去掉隔离属性；如果手动从 Release 下载，首次打开前需运行 `xattr -dr com.apple.quarantine /Applications/RestGuard.app`。
+也可以从 [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) 下载 `RestGuard_<版本>_universal.zip`，解压后把 `RestGuard.app` 移到 `/Applications`。不会自动更新，更新时下载新版本替换即可。
+
+RestGuard 只显示在菜单栏，不占 Dock。应用未经 Apple 公证，cask 安装时会自动去掉隔离属性；如果是手动下载的 zip，首次打开前需运行 `xattr -dr com.apple.quarantine /Applications/RestGuard.app`，否则 macOS 会拒绝打开。
 
 ### Linux
 

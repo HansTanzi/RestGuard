@@ -60,6 +60,11 @@ jobs:
     needs: prepare
     if: needs.prepare.outputs.windows_exists == 'false'
     runs-on: windows-latest
+    # id-token and attestations are for the build provenance attestation
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@v4
 
@@ -83,6 +88,15 @@ jobs:
       # Scoop installs the portable exe, no installer needed
       - run: pnpm tauri build --no-bundle
 
+      - name: Rename asset
+        shell: pwsh
+        run: Copy-Item src-tauri/target/release/restguard.exe "RestGuard_${{ needs.prepare.outputs.version }}_x64.exe"
+
+      # Signed provenance tying the file's hash to this workflow run and commit; users verify with gh attestation verify
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: RestGuard_${{ needs.prepare.outputs.version }}_x64.exe
+
       # No --clobber: upload fails if the file exists, never overwriting published files
       - name: Upload asset
         shell: pwsh
@@ -90,7 +104,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $name = "RestGuard_${{ needs.prepare.outputs.version }}_x64.exe"
-          Copy-Item src-tauri/target/release/restguard.exe $name
           gh release upload "${{ github.ref_name }}" $name
           if ($LASTEXITCODE -ne 0) { throw "Failed to upload $name" }
 
@@ -98,6 +111,10 @@ jobs:
     needs: prepare
     if: needs.prepare.outputs.macos_exists == 'false'
     runs-on: macos-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@v4
 
@@ -123,19 +140,27 @@ jobs:
       # Universal .app for both Apple Silicon and Intel
       - run: pnpm tauri build --target universal-apple-darwin --bundles app
 
+      - name: Zip app
+        run: ditto -c -k --keepParent src-tauri/target/universal-apple-darwin/release/bundle/macos/RestGuard.app "RestGuard_${{ needs.prepare.outputs.version }}_universal.zip"
+
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: RestGuard_${{ needs.prepare.outputs.version }}_universal.zip
+
       # No --clobber: upload fails if the file exists, never overwriting published files
       - name: Upload asset
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          name="RestGuard_${{ needs.prepare.outputs.version }}_universal.zip"
-          ditto -c -k --keepParent src-tauri/target/universal-apple-darwin/release/bundle/macos/RestGuard.app "$name"
-          gh release upload "$GITHUB_REF_NAME" "$name"
+        run: gh release upload "$GITHUB_REF_NAME" "RestGuard_${{ needs.prepare.outputs.version }}_universal.zip"
 
   build-linux:
     needs: prepare
     if: needs.prepare.outputs.linux_exists == 'false'
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@v4
 
@@ -186,13 +211,11 @@ jobs:
       # Arch .pkg.tar.zst, repackaged from the .deb
       - run: bash scripts/arch-package.sh "${{ needs.prepare.outputs.version }}"
 
-      # Upload only files not yet on the Release (e.g. only one succeeded last time); no --clobber, never overwrite
-      - name: Upload assets
+      # Tauri names the rpm RestGuard-<version>-1.x86_64.rpm; rename it to match the other platforms
+      - name: Rename rpm
         env:
-          GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
-          # Tauri names the rpm RestGuard-<version>-1.x86_64.rpm; rename it to match the other platforms
           rpms=(src-tauri/target/release/bundle/rpm/*.rpm)
           if [ "${#rpms[@]}" != 1 ]; then
             echo "::error::Expected exactly one rpm, found: ${rpms[*]}"
@@ -200,6 +223,20 @@ jobs:
           fi
           cp "${rpms[0]}" "RestGuard_${VERSION}_x86_64.rpm"
 
+      # Attests all three; a file already on the Release isn't uploaded below, so its attestation here just goes unused
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            src-tauri/target/release/bundle/deb/RestGuard_${{ needs.prepare.outputs.version }}_amd64.deb
+            RestGuard_${{ needs.prepare.outputs.version }}_x86_64.rpm
+            RestGuard_${{ needs.prepare.outputs.version }}_x86_64.pkg.tar.zst
+
+      # Upload only files not yet on the Release (e.g. only one succeeded last time); no --clobber, never overwrite
+      - name: Upload assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
           assets=$(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name')
           for file in \
             "src-tauri/target/release/bundle/deb/RestGuard_${VERSION}_amd64.deb" \

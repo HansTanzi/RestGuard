@@ -152,6 +152,28 @@ This installs only the `restguard` executable, with no app menu entry: run `rest
 
 The overlay needs X11 (see [Platform limitations](#platform-limitations)).
 
+### Verify downloads
+
+Release files after v0.1.14 are built by GitHub Actions and carry a signed [build provenance attestation](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) linking each file to the workflow run and commit that built it. To check a downloaded file with the [GitHub CLI](https://cli.github.com):
+
+```sh
+gh attestation verify RestGuard_<version>_x64.exe --repo HansTanzi/RestGuard
+```
+
+### Build from source
+
+Install the prerequisites listed under [Development](#development), then build a tagged version:
+
+```sh
+git clone https://github.com/HansTanzi/RestGuard
+cd RestGuard
+git checkout v<version>
+pnpm install --frozen-lockfile
+pnpm tauri build --no-bundle
+```
+
+The executable is `src-tauri/target/release/restguard` (`restguard.exe` on Windows). Build with `pnpm tauri build`, not `cargo build`: a plain Cargo build is a dev build that loads the UI from `localhost:1420` and shows blank windows.
+
 ## Configuration
 
 Open **Settings…** from the tray menu to change durations, the enforcement level, overlay coverage, language and start-at-login. Changes apply immediately (settings are locked during a break). Changing the work duration restarts the current work countdown.

@@ -152,6 +152,28 @@ Dabei wird nur die ausführbare Datei `restguard` installiert, ohne Eintrag im A
 
 Das Overlay benötigt X11 (siehe [Plattformeinschränkungen](#plattformeinschränkungen)).
 
+### Downloads überprüfen
+
+Release-Dateien nach v0.1.14 werden von GitHub Actions gebaut und tragen eine signierte [Build-Provenance-Attestierung](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations), die jede Datei mit dem Workflow-Lauf und dem Commit verknüpft, aus dem sie entstanden ist. So prüfst du eine heruntergeladene Datei mit der [GitHub CLI](https://cli.github.com):
+
+```sh
+gh attestation verify RestGuard_<Version>_x64.exe --repo HansTanzi/RestGuard
+```
+
+### Aus dem Quellcode bauen
+
+Installiere die unter [Entwicklung](#entwicklung) genannten Voraussetzungen und baue dann eine getaggte Version:
+
+```sh
+git clone https://github.com/HansTanzi/RestGuard
+cd RestGuard
+git checkout v<Version>
+pnpm install --frozen-lockfile
+pnpm tauri build --no-bundle
+```
+
+Die ausführbare Datei liegt unter `src-tauri/target/release/restguard` (`restguard.exe` unter Windows). Baue mit `pnpm tauri build`, nicht mit `cargo build`: Ein reiner Cargo-Build ist ein Entwicklungs-Build, der die Oberfläche von `localhost:1420` lädt und leere Fenster zeigt.
+
 ## Konfiguration
 
 Öffne **Einstellungen…** im Tray-Menü, um Zeiten, Strenge-Stufe, Overlay-Abdeckung, Sprache und den Start beim Anmelden zu ändern. Änderungen gelten sofort (während einer Pause sind die Einstellungen gesperrt). Wenn du die Arbeitszeit änderst, startet der aktuelle Arbeits-Countdown neu.

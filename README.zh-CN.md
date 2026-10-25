@@ -158,6 +158,28 @@ brew install --cask hanstanzi/tap/restguard
 
 遮罩需要 X11（见[平台限制](#平台限制)）。
 
+### 校验下载文件
+
+v0.1.14 之后的 Release 文件由 GitHub Actions 构建，并附带签名的[构建来源证明](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)，把每个文件和构建它的 workflow 运行及 commit 对应起来。用 [GitHub CLI](https://cli.github.com) 校验下载的文件：
+
+```sh
+gh attestation verify RestGuard_<版本号>_x64.exe --repo HansTanzi/RestGuard
+```
+
+### 从源码构建
+
+先安装[开发](#开发)一节列出的依赖，再构建某个已发布的版本：
+
+```sh
+git clone https://github.com/HansTanzi/RestGuard
+cd RestGuard
+git checkout v<版本号>
+pnpm install --frozen-lockfile
+pnpm tauri build --no-bundle
+```
+
+可执行文件是 `src-tauri/target/release/restguard`（Windows 上是 `restguard.exe`）。请用 `pnpm tauri build` 构建，不要直接 `cargo build`：单独用 Cargo 构建出的是开发版，会从 `localhost:1420` 加载界面，窗口一片空白。
+
 ## 配置
 
 在托盘菜单中打开「设置…」，可以修改工作/休息时长、强制等级、遮罩覆盖比例、语言和开机自启，保存后立即生效（休息期间不能修改）。修改工作时长会让当前的工作倒计时按新时长重新开始。

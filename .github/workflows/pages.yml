@@ -1,0 +1,50 @@
+# Deploy the landing page in site/ to GitHub Pages. The page is static: download links and the version
+# come from the latest Release at view time, so a new release needs no redeploy.
+# One-time setup: Settings > Pages > Build and deployment > Source: GitHub Actions
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "docs/images/**"
+      - "src-tauri/icons/128x128@2x.png"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never cancel a deployment in progress, but skip queued ones superseded by a newer push
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+
+      # Screenshots and the icon are shared with the README and the app, so copy them in rather than duplicating them
+      - name: Assemble site
+        run: |
+          mkdir _site
+          cp -r site/. _site/
+          cp -r docs/images _site/images
+          cp src-tauri/icons/128x128@2x.png _site/icon.png
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v5

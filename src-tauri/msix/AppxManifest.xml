@@ -13,8 +13,8 @@
   IgnorableNamespaces="uap uap5 desktop rescap">
 
   <Identity
-    Name="RestGuard"
-    Publisher="CN=HansTanzi"
+    Name="HansTanzi.RestGuard"
+    Publisher="CN=B1B7C6E2-AD18-42F3-A50F-89B582EFD909"
     Version="$VERSION$"
     ProcessorArchitecture="x64" />
 

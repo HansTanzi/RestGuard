@@ -278,6 +278,10 @@ Inside the package, start-at-login uses the manifest's `StartupTask` instead of 
 
 For debugging, set `work_minutes` to `0.1` (6 seconds) to trigger a break quickly.
 
+## Privacy
+
+RestGuard collects no data: no accounts, analytics or telemetry. It only goes online to send the optional ntfy phone notification. See the [privacy policy](https://hanstanzi.github.io/RestGuard/privacy.html).
+
 ## License
 
 Licensed under either of [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at your option.

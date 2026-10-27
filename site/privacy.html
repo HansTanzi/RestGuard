@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy · RestGuard</title>
+  <meta name="description" content="RestGuard privacy policy: no accounts, no analytics, no telemetry. Everything stays on your device unless you turn on phone notifications.">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .policy { max-width: 760px; padding-top: 40px; padding-bottom: 24px; }
+    .policy h1 { font-size: 36px; margin: 0 0 4px; letter-spacing: -0.02em; }
+    .policy h2 { font-size: 22px; margin: 36px 0 8px; }
+    .policy ul { padding-left: 22px; }
+    .policy li { margin: 6px 0; }
+    .policy code { font-size: 14px; }
+    .summary { background: var(--accent-soft); border-radius: 12px; padding: 16px 20px; margin-top: 24px; }
+    .summary p { margin: 0; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="./"><img src="icon.png" alt="" width="28" height="28"> RestGuard</a>
+      <nav class="topnav">
+        <a href="https://github.com/HansTanzi/RestGuard">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Linked from the Microsoft Store listing (required because the MSIX package declares runFullTrust).
+       Keep it in sync with what the app actually does, especially src-tauri/src/phone.rs and bypass.rs -->
+  <main class="wrap policy">
+    <h1>Privacy Policy</h1>
+    <p class="muted">Effective date: October 27, 2026</p>
+
+    <div class="summary">
+      <p><strong>In short:</strong> RestGuard has no accounts, analytics, telemetry, ads or crash reporting. It does not collect, sell or share any personal data. Everything it needs stays on your device. The only time it connects to the internet is when you turn on phone notifications, and then it sends only a "break is over" message to the ntfy server you choose.</p>
+    </div>
+
+    <p>This policy covers the RestGuard desktop app on every platform and every distribution channel, including the Microsoft Store, and this website. RestGuard is free, open-source software developed by HansTanzi. You can verify everything described here in the <a href="https://github.com/HansTanzi/RestGuard">source code</a>.</p>
+
+    <h2>Data stored on your device</h2>
+    <p>RestGuard saves your settings in a configuration file (<code>config.toml</code>) and your chosen UI language in a small <code>language</code> file, both in the app's configuration folder on your computer. The settings include break timings, the enforcement level and profiles, sound preferences (including the path of a custom sound file if you pick one) and, if you set them up, the ntfy server address and topic. These files never leave your device, and uninstalling the app or deleting the folder removes them.</p>
+
+    <h2>Information used on the device and never stored or sent</h2>
+    <p>To decide when to start and hold off a break, RestGuard checks a few things on your computer while it runs. The results are used right away and are not saved, logged or transmitted.</p>
+    <ul>
+      <li><strong>Idle time.</strong> RestGuard asks the operating system how long it has been since the last keyboard or mouse input, so time away from the computer isn't counted as work. It never sees which keys you press or where you move the mouse.</li>
+      <li><strong>Meeting app detection.</strong> When a break is due, RestGuard checks whether a supported meeting app (Zoom, Microsoft Teams, Webex or Tencent Meeting) is in the foreground, running, or using the microphone, so it doesn't interrupt a meeting. To do this it reads the name of the foreground app, the names of running processes and the operating system's record of which apps are currently using the microphone, and compares them against that built-in list. RestGuard never accesses the microphone itself and never records audio, the screen or window contents.</li>
+    </ul>
+
+    <h2>Phone notifications (optional, off by default)</h2>
+    <p>If you turn on phone notifications and enter an ntfy topic, RestGuard sends a notification to the ntfy server when a break ends, or when you press "Send test". The request contains only the topic name, a fixed title and message ("break is over") in your UI language, a priority and a tag. Like any internet request, it also reveals your IP address to that server.</p>
+    <p>The server is <a href="https://ntfy.sh">ntfy.sh</a> by default, or a self-hosted server whose address you enter. That server is run by a third party (or by you), not by RestGuard, and its own privacy policy applies; see the <a href="https://ntfy.sh/docs/privacy/">ntfy.sh privacy policy</a>. Anyone who knows a topic name on a public server can read its messages, so choose a topic that is hard to guess. Turn the option off, or clear the topic, to stop all network access.</p>
+
+    <h2>Other network access</h2>
+    <p>Apart from phone notifications, the app makes no network requests. It does not check for updates on its own; updates come through the Microsoft Store or the package manager you installed it with. Links in the About window open in your web browser only when you click them.</p>
+
+    <h2>System permissions</h2>
+    <ul>
+      <li><strong>Full trust (Microsoft Store).</strong> RestGuard is a desktop app, so its Store package declares the <code>runFullTrust</code> capability. It is needed to show the break overlay above other windows on every monitor and to perform the on-device checks above. It is not used to collect data.</li>
+      <li><strong>Start at login.</strong> If you enable it, RestGuard registers itself to start when you sign in. You can turn this off in the app or in your system's startup settings.</li>
+    </ul>
+
+    <h2>This website</h2>
+    <p>This website is hosted on GitHub Pages and uses no cookies, analytics or trackers. To show the latest version and download links, your browser requests release information directly from the GitHub API. GitHub may log those requests and page visits as described in the <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub Privacy Statement</a>. If you report an issue on GitHub, what you post is public and handled by GitHub.</p>
+
+    <h2>Children</h2>
+    <p>RestGuard does not knowingly collect any information from anyone, including children under 13.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>If RestGuard's data practices change, this page will be updated and the effective date above changed. The full history of this page is public in the <a href="https://github.com/HansTanzi/RestGuard/commits/dev/site/privacy.html">repository</a>.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about this policy? Open an issue at <a href="https://github.com/HansTanzi/RestGuard/issues">github.com/HansTanzi/RestGuard/issues</a>.</p>
+  </main>
+
+  <footer class="wrap footer">
+    <p>
+      <a href="./">RestGuard</a> ·
+      <a href="https://github.com/HansTanzi/RestGuard">GitHub</a>
+    </p>
+  </footer>
+</body>
+</html>

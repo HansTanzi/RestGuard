@@ -278,6 +278,10 @@ Innerhalb des Pakets nutzt der Start beim Anmelden den `StartupTask` aus dem Man
 
 Zum Debuggen setze `work_minutes` auf `0.1` (6 Sekunden), um schnell eine Pause auszulösen.
 
+## Datenschutz
+
+RestGuard erhebt keine Daten: keine Konten, keine Analyse, keine Telemetrie. Online geht es nur, um die optionale ntfy-Benachrichtigung ans Handy zu senden. Details in der [Datenschutzerklärung](https://hanstanzi.github.io/RestGuard/privacy.html) (auf Englisch).
+
 ## Lizenz
 
 Lizenziert nach Wahl unter [MIT](LICENSE-MIT) oder [Apache-2.0](LICENSE-APACHE).

@@ -17,9 +17,15 @@
   // Keep in sync with AboutInfo in src-tauri/src/about.rs
   interface AboutInfo {
     version: string;
+    license: string;
+    website_url: string;
     repo_url: string;
     issues_url: string;
+    privacy_url: string;
   }
+
+  // Keys accepted by open_link in src-tauri/src/about.rs
+  type Link = "website" | "repo" | "issues" | "privacy";
 
   let s = $state<AboutStrings | null>(null);
   let info = $state<AboutInfo | null>(null);
@@ -34,15 +40,25 @@
   }
 
   // Links are opened by the backend in the system browser, not navigated in the WebView
-  function open(e: MouseEvent, link: "repo" | "issues") {
+  function open(e: MouseEvent, link: Link) {
     e.preventDefault();
     if (locked) return;
     error = "";
     invoke("open_link", { link }).catch((err) => (error = String(err)));
   }
 
-  // Strip the scheme for a more compact display
-  const short = (url: string) => url.replace(/^https?:\/\//, "");
+  // Strip the scheme and trailing slash for a more compact display
+  const short = (url: string) => url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+
+  const rows = $derived<{ link: Link; label: string; url: string }[]>(
+    s && info
+      ? [
+          { link: "website", label: s.website, url: info.website_url },
+          { link: "repo", label: s.github, url: info.repo_url },
+          { link: "issues", label: s.feedback, url: info.issues_url },
+        ]
+      : [],
+  );
 
   onMount(() => {
     invoke<UiLang>("ui_lang").then(applyLang);
@@ -62,19 +78,23 @@
     <h1>RestGuard</h1>
     <p class="tagline">{s.tagline}</p>
     <p class="version">{s.version} {info.version}</p>
+    <!-- "MIT OR Apache-2.0" (SPDX) is shown as "MIT / Apache-2.0" -->
+    <p class="license">{s.openSource} · {info.license.replaceAll(" OR ", " / ")}</p>
 
     <ul class:locked>
-      <li>
-        <span>{s.github}</span>
-        <a href={info.repo_url} onclick={(e) => open(e, "repo")}>{short(info.repo_url)}</a>
-      </li>
-      <li>
-        <span>{s.feedback}</span>
-        <a href={info.issues_url} onclick={(e) => open(e, "issues")}>{short(info.issues_url)}</a>
-      </li>
+      {#each rows as row (row.link)}
+        <li>
+          <span>{row.label}</span>
+          <a href={row.url} title={row.url} onclick={(e) => open(e, row.link)}>{short(row.url)}</a>
+        </li>
+      {/each}
     </ul>
 
     <p class="message" aria-live="polite">{locked ? s.lockedDuringBreak : error}</p>
+
+    <footer class:locked>
+      <a href={info.privacy_url} onclick={(e) => open(e, "privacy")}>{s.privacy}</a>
+    </footer>
   </main>
 {/if}
 
@@ -131,10 +151,16 @@
   }
 
   .version {
-    margin: 0.5rem 0 1rem;
+    margin: 0.5rem 0 0.2rem;
     font-size: 0.85rem;
     font-variant-numeric: tabular-nums;
     user-select: text;
+  }
+
+  .license {
+    margin: 0 0 1rem;
+    font-size: 0.8rem;
+    color: var(--muted);
   }
 
   ul {
@@ -148,11 +174,11 @@
     background: var(--bg-2);
   }
 
-  ul.locked {
+  .locked {
     opacity: 0.5;
   }
 
-  ul.locked a {
+  .locked a {
     pointer-events: none;
   }
 
@@ -160,7 +186,11 @@
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.35rem 0;
+    padding: 0.4rem 0;
+  }
+
+  li + li {
+    border-top: 1px solid var(--line);
   }
 
   li span {
@@ -185,5 +215,18 @@
     margin: 0.75rem 0 0;
     font-size: 0.8rem;
     color: var(--warn);
+  }
+
+  footer {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  footer a {
+    color: var(--muted);
+  }
+
+  footer a:hover {
+    color: var(--accent);
   }
 </style>

@@ -28,9 +28,21 @@
     <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
   </Dependencies>
 
+  <!-- Matches Lang in src-tauri/src/i18n.rs; the first entry is the default language -->
   <Resources>
     <Resource Language="en-US" />
     <Resource Language="zh-CN" />
+    <Resource Language="hi" />
+    <Resource Language="es" />
+    <Resource Language="ar" />
+    <Resource Language="fr" />
+    <Resource Language="bn" />
+    <Resource Language="pt-BR" />
+    <Resource Language="de" />
+    <Resource Language="ja" />
+    <Resource Language="it" />
+    <Resource Language="ko" />
+    <Resource Language="id" />
   </Resources>
 
   <Applications>

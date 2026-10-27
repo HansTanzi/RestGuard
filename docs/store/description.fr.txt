@@ -1,0 +1,36 @@
+RestGuard est un rappel de pause qui vous oblige vraiment à faire une pause.
+
+Contrairement aux rappels de pause habituels, RestGuard propose trois niveaux de contrainte. Il peut vous le rappeler en douceur, ou vous arrêter net quand vous voulez continuer « encore cinq minutes ».
+
+■ Des pauses vraiment respectées
+• Toutes les 60 minutes de travail, une pause obligatoire de 10 minutes (les deux durées sont réglables)
+• Plusieurs écrans : chaque écran est recouvert
+• Pendant la pause, impossible de fermer le voile (Alt+F4 ne fonctionne pas) ou de quitter depuis la zone de notification
+• Report de 5 minutes, jusqu'à 3 fois ; le compteur est remis à zéro après une pause complète
+• Mode urgence : en cas d'imprévu, réduisez temporairement le voile pour enregistrer votre travail pendant que le compte à rebours continue
+
+■ Trois niveaux de contrainte selon la situation
+• Contrainte élevée : pour celles et ceux qui sont exigeants avec eux-mêmes mais veulent toujours « encore cinq minutes ». Le voile couvre tout l'écran et ne peut pas être déplacé, un seul report est possible et il n'y a pas de mode urgence
+• Contrainte moyenne (par défaut) : pour le travail au quotidien. Jusqu'à 3 reports, avec mode urgence et détection des réunions. Vous pouvez continuer à travailler, mais c'est nettement moins confortable, de quoi vous inciter à faire votre pause
+• Contrainte faible : pour celles et ceux qui veulent simplement un rappel en douceur. Le voile couvre 80 % de l'écran et vous pouvez passer la pause
+
+■ Entièrement personnalisable
+Créez des profils personnalisés à partir de n'importe quel niveau intégré et réglez chaque option : nombre de reports, possibilité de quitter ou de passer une pause, mode urgence, couverture du voile (10 % à 100 %), voile déplaçable ou non, détection des applis de réunion. Enregistrez plusieurs profils et passez de l'un à l'autre à tout moment.
+
+■ Ne vous dérange pas quand c'est important
+• Détection des réunions : quand Zoom, Microsoft Teams, Webex ou Tencent Meeting est au premier plan, ou que votre micro est utilisé, la pause attend la fin de la réunion. Pendant une pause, vous pouvez aussi cliquer sur « Je suis en réunion » pour être rappelé dans 15 minutes
+• Détection d'inactivité : 5 minutes sans clavier ni souris valent absence, et le compte à rebours de travail se met en pause ; si vous vous absentez aussi longtemps qu'une pause, elle est considérée comme faite
+
+■ Ne manquez pas la fin de la pause, même loin de votre bureau
+• Un son est joué à la fin de la pause : choisissez un son intégré ou votre propre fichier audio
+• Notifications sur téléphone : recevez une alerte sur Android ou iOS via ntfy pour savoir quand revenir, même loin de l'ordinateur ; sur Android, elle peut sonner comme un réveil jusqu'à ce que vous la fermiez
+• Montres connectées : les notifications du téléphone s'affichent aussi sur Apple Watch, Wear OS, Galaxy Watch et les montres et bracelets Xiaomi, Huawei, Garmin et autres
+
+■ Léger et rapide
+Conçu avec Rust + Tauri, RestGuard utilise le WebView intégré au système et ne consomme presque aucune ressource en arrière-plan.
+
+■ Et aussi
+• Menu de la zone de notification : temps restant, pause anticipée, paramètres, lancement au démarrage, changement de profil de contrainte
+• 13 langues : français, anglais, chinois simplifié, hindi, espagnol, arabe, bengali, portugais, allemand, japonais, italien, coréen et indonésien
+• Gratuit et open source, sous double licence MIT / Apache-2.0
+• Respect de la vie privée : aucune collecte de données, aucun compte, aucune analyse ni télémétrie ; il ne se connecte à Internet que si vous activez les notifications sur téléphone

@@ -1,0 +1,36 @@
+RestGuard adalah pengingat istirahat yang benar-benar membuat Anda beristirahat.
+
+Berbeda dari pengingat istirahat biasa, RestGuard memiliki tiga tingkat ketegasan. Ia bisa mengingatkan dengan lembut, atau langsung menghentikan Anda saat tergoda untuk bekerja "lima menit lagi saja".
+
+■ Istirahat yang benar-benar ditegakkan
+• Setiap 60 menit bekerja, istirahat wajib selama 10 menit (kedua durasi bisa diatur)
+• Mendukung banyak monitor: setiap layar akan tertutup
+• Selama istirahat, lapisan tidak bisa ditutup (Alt+F4 tidak berfungsi) dan aplikasi tidak bisa ditutup dari baki sistem
+• Tunda 5 menit, hingga 3 kali; hitungan direset setelah satu istirahat penuh
+• Mode darurat: jika ada hal mendesak, perkecil lapisan untuk sementara agar bisa menyimpan pekerjaan, sementara hitung mundur tetap berjalan
+
+■ Tiga tingkat ketegasan untuk situasi berbeda
+• Ketegasan tinggi: untuk Anda yang ingin disiplin tetapi selalu minta "lima menit lagi". Lapisan memenuhi layar dan tidak bisa digeser, hanya bisa ditunda sekali, dan tidak ada mode darurat
+• Ketegasan sedang (bawaan): untuk kerja sehari-hari. Bisa ditunda hingga 3 kali, dengan mode darurat dan deteksi rapat. Anda masih bisa bekerja, tetapi jadi jauh kurang nyaman, sehingga terdorong untuk beristirahat
+• Ketegasan rendah: untuk Anda yang hanya ingin pengingat lembut. Lapisan menutupi 80% layar, dan istirahat bisa dilewati
+
+■ Sangat bisa disesuaikan
+Buat profil kustom dari tingkat bawaan mana pun dan atur setiap opsi: jumlah penundaan, boleh keluar atau melewati istirahat, mode darurat, cakupan lapisan (10%–100%), lapisan bisa digeser atau tidak, dan deteksi aplikasi rapat. Simpan beberapa profil dan beralih kapan saja.
+
+■ Tidak mengganggu pekerjaan penting
+• Deteksi rapat: saat Zoom, Microsoft Teams, Webex, atau Tencent Meeting berada di latar depan, atau mikrofon sedang digunakan, istirahat menunggu sampai rapat selesai. Saat istirahat, Anda juga bisa mengeklik "Saya sedang rapat" untuk diingatkan lagi 15 menit kemudian
+• Deteksi tidak aktif: 5 menit tanpa aktivitas keyboard atau mouse dianggap meninggalkan komputer, dan hitung mundur kerja dijeda; jika Anda pergi selama durasi satu istirahat, itu dihitung sebagai istirahat
+
+■ Tidak ketinggalan meski jauh dari meja
+• Suara diputar saat istirahat berakhir: pilih suara bawaan atau file audio Anda sendiri
+• Notifikasi ponsel: kirim notifikasi ke Android atau iOS melalui ntfy agar Anda tahu kapan harus kembali meski jauh dari komputer; di Android bisa terus berbunyi seperti alarm sampai Anda menutupnya
+• Jam tangan pintar: notifikasi ponsel ikut muncul di Apple Watch, Wear OS, Galaxy Watch, serta jam tangan dan gelang Xiaomi, Huawei, Garmin, dan lainnya
+
+■ Kecil dan ringan
+Dibuat dengan Rust + Tauri, RestGuard memakai WebView bawaan sistem dan hampir tidak memakan sumber daya saat berjalan di latar belakang.
+
+■ Lainnya
+• Menu baki: lihat sisa waktu, istirahat lebih awal, buka pengaturan, jalankan saat startup, ganti profil ketegasan
+• 13 bahasa: Indonesia, Inggris, Tionghoa Sederhana, Hindi, Spanyol, Arab, Prancis, Bengali, Portugis, Jerman, Jepang, Italia, dan Korea
+• Gratis dan sumber terbuka, berlisensi ganda MIT / Apache-2.0
+• Mengutamakan privasi: tidak mengumpulkan data apa pun, tanpa akun, analitik, atau telemetri; hanya terhubung ke internet jika notifikasi ponsel diaktifkan

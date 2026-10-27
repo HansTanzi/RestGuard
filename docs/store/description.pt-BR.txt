@@ -1,0 +1,36 @@
+RestGuard é um lembrete de pausas que faz você descansar de verdade.
+
+Diferente dos lembretes de pausa comuns, o RestGuard tem três níveis de rigor. Ele pode lembrar você com gentileza ou simplesmente fazer você parar quando bate a vontade de trabalhar "só mais cinco minutos".
+
+■ Pausas que são cumpridas de verdade
+• A cada 60 minutos de trabalho, uma pausa obrigatória de 10 minutos (as duas durações são ajustáveis)
+• Vários monitores: todas as telas são cobertas
+• Durante a pausa não dá para fechar a sobreposição (Alt+F4 não funciona) nem sair pela bandeja do sistema
+• Adie por 5 minutos, até 3 vezes; a contagem é zerada após uma pausa completa
+• Modo urgente: quando algo não pode esperar, reduza temporariamente a sobreposição para salvar seu trabalho enquanto a contagem regressiva continua
+
+■ Três níveis de rigor para diferentes situações
+• Rigor alto: para quem é exigente consigo mesmo, mas sempre quer "mais cinco minutos". A sobreposição ocupa a tela inteira e não pode ser movida, só é possível adiar uma vez e não há modo urgente
+• Rigor médio (padrão): para o trabalho do dia a dia. Até 3 adiamentos, com modo urgente e detecção de reuniões. Você ainda consegue trabalhar, mas fica bem menos confortável, um incentivo para fazer a pausa
+• Rigor baixo: para quem só quer um lembrete gentil. A sobreposição cobre 80% da tela e você pode pular a pausa
+
+■ Altamente personalizável
+Crie perfis personalizados com base em qualquer nível integrado e ajuste cada opção: número de adiamentos, se é permitido sair ou pular pausas, modo urgente, cobertura da sobreposição (10%–100%), se ela pode ser movida e detecção de apps de reunião. Salve vários perfis e alterne entre eles quando quiser.
+
+■ Não atrapalha o que importa
+• Detecção de reuniões: quando Zoom, Microsoft Teams, Webex ou Tencent Meeting estão em primeiro plano, ou o microfone está em uso, a pausa espera a reunião terminar. Durante uma pausa, você também pode clicar em "Estou em uma reunião" para ser lembrado de novo em 15 minutos
+• Detecção de inatividade: 5 minutos sem usar teclado ou mouse contam como ausência, e a contagem do trabalho é pausada; se você ficar ausente pelo tempo de uma pausa, isso conta como pausa
+
+■ Não perca o fim da pausa, mesmo longe da mesa
+• Um som toca quando a pausa termina: escolha um som integrado ou seu próprio arquivo de áudio
+• Notificações no celular: receba avisos no Android ou iOS via ntfy para saber quando voltar, mesmo longe do computador; no Android, pode continuar tocando como um alarme até você dispensar
+• Smartwatches: as notificações do celular chegam ao Apple Watch, Wear OS, Galaxy Watch e a relógios e pulseiras da Xiaomi, Huawei, Garmin e outras marcas
+
+■ Pequeno e leve
+Feito com Rust + Tauri, usa o WebView integrado ao sistema e quase não consome recursos em segundo plano.
+
+■ E mais
+• Menu da bandeja: veja o tempo restante, faça a pausa antes, abra as configurações, inicie com o sistema e troque o perfil de rigor
+• 13 idiomas: português, inglês, chinês simplificado, hindi, espanhol, árabe, francês, bengali, alemão, japonês, italiano, coreano e indonésio
+• Gratuito e de código aberto, com licença dupla MIT / Apache-2.0
+• Privacidade em primeiro lugar: não coleta dados, sem contas, análises ou telemetria; só se conecta à internet se você ativar as notificações no celular

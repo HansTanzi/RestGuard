@@ -19,6 +19,7 @@
     BUILTIN_LEVELS,
     BUILTIN_PROFILES,
     DEFAULT_CONFIG,
+    MAX_WORK_END_SKIP_MINUTES,
     NTFY_TOPIC_PATTERN,
     SOUNDS,
     isBuiltinLevel,
@@ -80,6 +81,11 @@
     rest_minutes: !positive(draft.rest_minutes),
     postpone_minutes: !positive(draft.postpone_minutes),
     idle_minutes: !(positive(draft.idle_minutes) || draft.idle_minutes === 0),
+    // Not checked when off; the time input gives "" when cleared
+    work_end: draft.work_end_enabled && !/^\d{2}:\d{2}$/.test(draft.work_end),
+    work_end_skip_minutes:
+      draft.work_end_enabled &&
+      !(positive(draft.work_end_skip_minutes) && draft.work_end_skip_minutes <= MAX_WORK_END_SKIP_MINUTES),
     max_postpones: !count(profile.max_postpones),
     // Not checked when the sound is off; the backend replaces file with no path by the default sound
     sound_file: draft.sound_prompt && draft.sound === "file" && !draft.sound_file.trim(),
@@ -466,6 +472,32 @@
           </label>
           <p class="hint">{s.minutesHint}</p>
           <p class="hint">{s.idleHint}</p>
+          <label class="check">
+            <input type="checkbox" bind:checked={draft.work_end_enabled} />
+            <span>{s.workEndEnabled}</span>
+          </label>
+          <label class="sub">
+            <span>{s.workEnd}</span>
+            <input
+              type="time"
+              class:invalid={errors.work_end}
+              disabled={!draft.work_end_enabled}
+              bind:value={draft.work_end}
+            />
+          </label>
+          <label class="sub">
+            <span>{s.workEndSkipMinutes}</span>
+            <input
+              type="number"
+              min="0"
+              max={MAX_WORK_END_SKIP_MINUTES}
+              step="any"
+              class:invalid={errors.work_end_skip_minutes}
+              disabled={!draft.work_end_enabled}
+              bind:value={draft.work_end_skip_minutes}
+            />
+          </label>
+          <p class="hint sub">{s.workEndHint}</p>
           {#if saved && draft.work_minutes !== saved.work_minutes}
             <p class="hint accent">{s.workRestartHint}</p>
           {/if}
@@ -798,6 +830,7 @@
 
   input[type="number"],
   input[type="text"],
+  input[type="time"],
   select {
     width: 7.5rem;
     box-sizing: border-box;
@@ -811,6 +844,7 @@
 
   input[type="number"]:focus,
   input[type="text"]:focus,
+  input[type="time"]:focus,
   select:focus {
     outline: 2px solid var(--accent);
     outline-offset: -1px;

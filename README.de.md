@@ -204,6 +204,9 @@ work_minutes = 60.0      # wie lange gearbeitet wird, bevor eine Pause erzwungen
 rest_minutes = 10.0      # wie lange jede Pause dauert
 postpone_minutes = 5.0   # wie lange jeder Aufschub dauert
 idle_minutes = 5.0       # so lange ohne Eingabe gilt als abwesend, 0 = aus
+work_end_enabled = false # Pausen kurz vor Feierabend aufschieben
+work_end = "18:00"       # Feierabend, 24-Stunden-Format HH:MM in Ortszeit
+work_end_skip_minutes = 30.0  # Pausen, die so lange vor work_end fällig werden, warten bis work_end
 level = "medium"         # "high", "medium", "low" oder der Name eines eigenen Profils
 sound_prompt = true      # am Ende einer Pause einen Ton abspielen
 sound = "beep"           # "beep", "chime", "rise" oder "file" (spielt sound_file ab)

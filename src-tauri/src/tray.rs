@@ -279,6 +279,10 @@ pub fn refresh_language(app: &AppHandle) {
 
 pub fn update(app: &AppHandle, snap: &Snapshot) {
     let text = match snap.phase {
+        Phase::Working if snap.deferred_until.is_some() => {
+            let time = snap.deferred_until.as_deref().unwrap_or_default();
+            t(&text::BREAK_DEFERRED).replace("{time}", time)
+        }
         Phase::Working if snap.held_by.is_some() => {
             let app = snap.held_by.as_deref().unwrap_or_default();
             t(&text::BREAK_HELD).replace("{app}", app)

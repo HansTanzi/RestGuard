@@ -183,6 +183,23 @@ pub const BREAK_HELD: Tr = Tr {
     id: "Istirahat ditunda: {app} sedang digunakan",
 };
 
+/// Tray status line: a break due shortly before the end of the working day waits for it; `{time}` is the end time (HH:MM)
+pub const BREAK_DEFERRED: Tr = Tr {
+    zh: "临近下班，休息推迟到 {time}",
+    en: "Almost done for the day: break held until {time}",
+    hi: "दिन खत्म होने वाला है: ब्रेक {time} तक रुका है",
+    es: "Casi fin de la jornada: descanso aplazado hasta las {time}",
+    ar: "اقترب نهاية الدوام: الاستراحة مؤجلة حتى {time}",
+    fr: "Fin de journée proche : pause reportée à {time}",
+    bn: "দিন প্রায় শেষ: বিরতি {time} পর্যন্ত স্থগিত",
+    pt: "Quase fim do expediente: pausa adiada até {time}",
+    de: "Feierabend naht: Pause aufgeschoben bis {time}",
+    ja: "終業間近のため休憩を {time} まで延期",
+    it: "Fine giornata vicina: pausa rinviata alle {time}",
+    ko: "퇴근 직전, 휴식을 {time}까지 미룸",
+    id: "Hampir pulang: istirahat ditunda hingga {time}",
+};
+
 /// Tray status line, followed by the countdown
 pub const BREAK_IN: Tr = Tr {
     zh: "距离休息",
@@ -536,6 +553,54 @@ pub mod config {
         id: "Lama tanpa aktivitas hingga Anda dianggap pergi; waktu pergi tidak dihitung kerja, dan pergi selama satu istirahat penuh dihitung istirahat. 0 = mati",
     };
 
+    pub const WORK_END_ENABLED: Tr = Tr {
+        zh: "临近下班时不再打扰：在下班前一段时间内到点的休息推迟到下班时间",
+        en: "Don't interrupt just before the end of the working day: a break due shortly before work_end waits until then",
+        hi: "दिन खत्म होने से ठीक पहले न टोकें: work_end से कुछ पहले होने वाला ब्रेक तब तक रुकता है",
+        es: "No interrumpir justo antes del fin de la jornada: un descanso que toque poco antes de work_end espera hasta entonces",
+        ar: "عدم المقاطعة قبيل نهاية الدوام: الاستراحة المستحقة قبل work_end بقليل تنتظر حتى ذلك الوقت",
+        fr: "Ne pas interrompre juste avant la fin de la journée : une pause prévue peu avant work_end attend jusque-là",
+        bn: "দিন শেষের ঠিক আগে বিরক্ত করবে না: work_end-এর একটু আগে পড়া বিরতি তখন পর্যন্ত অপেক্ষা করে",
+        pt: "Não interromper pouco antes do fim do expediente: uma pausa prevista pouco antes de work_end espera até lá",
+        de: "Kurz vor Feierabend nicht stören: Eine Pause, die kurz vor work_end fällig wird, wartet bis dahin",
+        ja: "終業直前は邪魔しない：work_end の少し前に来る休憩は終業時刻まで延期します",
+        it: "Non interrompere poco prima della fine della giornata: una pausa prevista poco prima di work_end aspetta fino ad allora",
+        ko: "퇴근 직전에는 방해하지 않기: work_end 조금 전에 돌아오는 휴식은 퇴근 시간까지 미룹니다",
+        id: "Jangan ganggu menjelang akhir jam kerja: istirahat yang jatuh tak lama sebelum work_end menunggu sampai saat itu",
+    };
+
+    pub const WORK_END: Tr = Tr {
+        zh: "下班时间，24 小时制 HH:MM（本地时间）",
+        en: "End of the working day, 24-hour HH:MM in local time",
+        hi: "कार्यदिवस का अंत, 24-घंटे HH:MM स्थानीय समय में",
+        es: "Fin de la jornada, HH:MM en formato de 24 horas, hora local",
+        ar: "نهاية الدوام، بصيغة 24 ساعة HH:MM بالتوقيت المحلي",
+        fr: "Fin de la journée de travail, HH:MM sur 24 heures, heure locale",
+        bn: "কর্মদিবসের শেষ, 24-ঘণ্টা HH:MM স্থানীয় সময়ে",
+        pt: "Fim do expediente, HH:MM em 24 horas, horário local",
+        de: "Feierabend, 24-Stunden-Format HH:MM in Ortszeit",
+        ja: "終業時刻。24 時間制の HH:MM（現地時刻）",
+        it: "Fine della giornata lavorativa, HH:MM nel formato 24 ore, ora locale",
+        ko: "퇴근 시간, 24시간제 HH:MM(현지 시간)",
+        id: "Akhir jam kerja, format 24 jam HH:MM waktu lokal",
+    };
+
+    pub const WORK_END_SKIP: Tr = Tr {
+        zh: "下班前多久内到点的休息推迟到下班时间",
+        en: "Breaks due within this long before work_end wait until work_end",
+        hi: "work_end से इतनी देर पहले के भीतर होने वाले ब्रेक work_end तक रुकते हैं",
+        es: "Los descansos que toquen dentro de este tiempo antes de work_end esperan hasta work_end",
+        ar: "الاستراحات المستحقة خلال هذه المدة قبل work_end تنتظر حتى work_end",
+        fr: "Les pauses prévues dans ce délai avant work_end attendent work_end",
+        bn: "work_end-এর এতক্ষণ আগের মধ্যে পড়া বিরতি work_end পর্যন্ত অপেক্ষা করে",
+        pt: "Pausas previstas dentro deste tempo antes de work_end esperam até work_end",
+        de: "Pausen, die so lange vor work_end fällig werden, warten bis work_end",
+        ja: "work_end の何分前以降に来る休憩を work_end まで延期するか",
+        it: "Le pause previste entro questo tempo prima di work_end aspettano fino a work_end",
+        ko: "work_end 전 이 시간 안에 돌아오는 휴식은 work_end까지 미룹니다",
+        id: "Istirahat yang jatuh dalam rentang ini sebelum work_end menunggu hingga work_end",
+    };
+
     pub const LEVEL: Tr = Tr {
         zh: "强制等级：high（高）、medium（中）、low（低），或下面某个自定义方案的名字",
         en: "Enforcement level: high, medium, low, or the name of a custom profile below",
@@ -666,13 +731,16 @@ pub mod config {
 
     /// For tests: all comments
     #[cfg(test)]
-    pub const ALL: [&Tr; 14] = [
+    pub const ALL: [&Tr; 17] = [
         &HEADER,
         &UNITS,
         &WORK,
         &REST,
         &POSTPONE,
         &IDLE,
+        &WORK_END_ENABLED,
+        &WORK_END,
+        &WORK_END_SKIP,
         &LEVEL,
         &SOUND_PROMPT,
         &SOUND,

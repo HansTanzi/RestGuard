@@ -11,6 +11,8 @@ export interface Snapshot {
   postponed: boolean;
   /** A break is due but held off because this exempt app is in the foreground */
   heldBy: string | null;
+  /** A break is due but held off until this end of the working day (HH:MM) */
+  deferredUntil: string | null;
   /** Meeting software running when the break started; the overlay then offers "I'm in a meeting" */
   meetingApp: string | null;
   /** Forced break; when false the overlay can be closed */

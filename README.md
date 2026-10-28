@@ -204,6 +204,9 @@ work_minutes = 60.0      # how long to work before a forced break
 rest_minutes = 10.0      # how long each break lasts
 postpone_minutes = 5.0   # how long each postpone lasts
 idle_minutes = 5.0       # no input for this long counts as away, 0 = off
+work_end_enabled = false # hold off breaks that fall due just before the end of the working day
+work_end = "18:00"       # end of the working day, 24-hour HH:MM in local time
+work_end_skip_minutes = 30.0  # breaks due this long before work_end wait until work_end
 level = "medium"         # "high", "medium", "low", or the name of a custom profile
 sound_prompt = true      # play a sound when a break ends
 sound = "beep"           # "beep", "chime", "rise" or "file" (plays sound_file)

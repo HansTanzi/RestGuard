@@ -2945,6 +2945,7 @@ dependencies = [
 name = "restguard"
 version = "0.1.17"
 dependencies = [
+ "chrono",
  "objc2-app-kit",
  "objc2-core-foundation",
  "objc2-foundation",

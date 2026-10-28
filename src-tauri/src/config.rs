@@ -1,4 +1,5 @@
 use crate::i18n::{self, text::config as comment, Lang};
+use chrono::{NaiveTime, Timelike};
 use serde::{Deserialize, Serialize};
 use std::{fs, io, path::Path, time::Duration};
 
@@ -11,6 +12,10 @@ pub const SOUNDS: [&str; 4] = ["beep", "chime", "rise", "file"];
 const DEFAULT_SOUND: &str = "beep";
 /// ntfy server for phone notifications; matches DEFAULT_CONFIG in src/lib/config.ts
 const DEFAULT_NTFY_SERVER: &str = "https://ntfy.sh";
+/// End of the working day, as HH:MM; matches DEFAULT_CONFIG in src/lib/config.ts
+const DEFAULT_WORK_END: &str = "18:00";
+/// Longest quiet window before the end of the working day; matches the settings panel's input limit
+const MAX_WORK_END_SKIP_MINUTES: f64 = 12.0 * 60.0;
 
 /// The settings profile for an enforcement level. Three are built in (high, medium, low), and users can define more.
 /// Keep in sync with Profile in src/lib/config.ts
@@ -90,6 +95,12 @@ pub struct Config {
     pub postpone_minutes: f64,
     /// No input for this long counts as being away from the computer; 0 disables idle detection
     pub idle_minutes: f64,
+    /// Hold off breaks that fall due shortly before the end of the working day until it ends
+    pub work_end_enabled: bool,
+    /// End of the working day, as HH:MM in local time
+    pub work_end: String,
+    /// A break due this long before work_end waits until work_end
+    pub work_end_skip_minutes: f64,
     /// Current enforcement level: a built-in level (see Profile::builtin) or the name of a custom profile
     pub level: String,
     /// Play a sound when a break ends
@@ -115,6 +126,9 @@ impl Default for Config {
             rest_minutes: 10.0,
             postpone_minutes: 5.0,
             idle_minutes: 5.0,
+            work_end_enabled: false,
+            work_end: DEFAULT_WORK_END.to_string(),
+            work_end_skip_minutes: 30.0,
             level: DEFAULT_LEVEL.to_string(),
             sound_prompt: true,
             sound: DEFAULT_SOUND.to_string(),
@@ -184,6 +198,9 @@ impl Config {
              # {}\nrest_minutes = {:?}\n\n\
              # {}\npostpone_minutes = {:?}\n\n\
              # {}\nidle_minutes = {:?}\n\n\
+             # {}\nwork_end_enabled = {}\n\n\
+             # {}\nwork_end = {}\n\n\
+             # {}\nwork_end_skip_minutes = {:?}\n\n\
              # {}\nlevel = {}\n\n\
              # {}\nsound_prompt = {}\n\n\
              # {}\nsound = {}\n\n\
@@ -202,6 +219,12 @@ impl Config {
             self.postpone_minutes,
             c(&comment::IDLE),
             self.idle_minutes,
+            c(&comment::WORK_END_ENABLED),
+            self.work_end_enabled,
+            c(&comment::WORK_END),
+            quote(&self.work_end),
+            c(&comment::WORK_END_SKIP),
+            self.work_end_skip_minutes,
             c(&comment::LEVEL),
             quote(&self.level),
             c(&comment::SOUND_PROMPT),
@@ -285,6 +308,15 @@ impl Config {
             } else {
                 d.idle_minutes
             },
+            work_end_enabled: self.work_end_enabled,
+            // Normalize to zero-padded HH:MM, as the settings panel's time input expects
+            work_end: parse_clock(&self.work_end)
+                .map_or(d.work_end, |t| t.format("%H:%M").to_string()),
+            work_end_skip_minutes: if self.work_end_skip_minutes.is_finite() && self.work_end_skip_minutes > 0.0 {
+                self.work_end_skip_minutes.min(MAX_WORK_END_SKIP_MINUTES)
+            } else {
+                d.work_end_skip_minutes
+            },
             level,
             sound_prompt: self.sound_prompt,
             sound,
@@ -319,6 +351,40 @@ impl Config {
     pub fn idle(&self) -> Option<Duration> {
         (self.idle_minutes > 0.0).then(|| minutes(self.idle_minutes))
     }
+
+    /// End of the working day and the quiet window before it; None means disabled
+    pub fn work_end(&self) -> Option<WorkEnd> {
+        if !self.work_end_enabled {
+            return None;
+        }
+        Some(WorkEnd {
+            at: parse_clock(&self.work_end)?,
+            window: minutes(self.work_end_skip_minutes),
+        })
+    }
+}
+
+/// End of the working day: a break falling due within `window` before `at` waits until `at`
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct WorkEnd {
+    pub at: NaiveTime,
+    pub window: Duration,
+}
+
+impl WorkEnd {
+    /// Time left until the end of the working day if `now` falls in the quiet window before it, otherwise None.
+    /// The window may cross midnight
+    pub fn wait(&self, now: NaiveTime) -> Option<Duration> {
+        const DAY: i64 = 24 * 60 * 60;
+        let ms = |t: NaiveTime| i64::from(t.num_seconds_from_midnight()) * 1000 + i64::from(t.nanosecond() / 1_000_000);
+        let left = Duration::from_millis((ms(self.at) - ms(now)).rem_euclid(DAY * 1000) as u64);
+        (!left.is_zero() && left <= self.window).then_some(left)
+    }
+}
+
+/// Parses a time of day such as "18:00" or "9:30"
+fn parse_clock(s: &str) -> Option<NaiveTime> {
+    NaiveTime::parse_from_str(s.trim(), "%H:%M").ok()
 }
 
 fn minutes(m: f64) -> Duration {
@@ -336,6 +402,9 @@ mod tests {
             rest_minutes: 0.5,
             postpone_minutes: 2.5,
             idle_minutes: 0.0,
+            work_end_enabled: true,
+            work_end: "17:30".into(),
+            work_end_skip_minutes: 45.0,
             level: "我的 \"方案\"".into(),
             sound_prompt: false,
             sound: "file".into(),
@@ -427,6 +496,45 @@ mod tests {
         assert_eq!(server("  "), "https://ntfy.sh");
         assert_eq!(server("http://192.168.1.2:8080/"), "http://192.168.1.2:8080");
         assert_eq!(server("ntfy.example.com"), "https://ntfy.example.com", "Assume https when no scheme is given");
+    }
+
+    #[test]
+    fn work_end_is_normalized() {
+        let cfg = |end: &str, skip: f64| {
+            Config {
+                work_end_enabled: true,
+                work_end: end.into(),
+                work_end_skip_minutes: skip,
+                ..Config::default()
+            }
+            .sanitized()
+        };
+        assert_eq!(cfg(" 9:05 ", 30.0).work_end, "09:05");
+        assert_eq!(cfg("25:00", 30.0).work_end, "18:00");
+        assert_eq!(cfg("soon", 30.0).work_end, "18:00");
+        assert_eq!(cfg("18:00", 0.0).work_end_skip_minutes, 30.0);
+        assert_eq!(cfg("18:00", 5000.0).work_end_skip_minutes, 720.0);
+        assert_eq!(Config::default().work_end(), None, "Off by default");
+    }
+
+    #[test]
+    fn work_end_window() {
+        let at = |h, m| NaiveTime::from_hms_opt(h, m, 0).unwrap();
+        let end = WorkEnd {
+            at: at(18, 0),
+            window: Duration::from_secs(30 * 60),
+        };
+        assert_eq!(end.wait(at(17, 29)), None);
+        assert_eq!(end.wait(at(17, 30)), Some(Duration::from_secs(30 * 60)));
+        assert_eq!(end.wait(at(17, 45)), Some(Duration::from_secs(15 * 60)));
+        assert_eq!(end.wait(at(18, 0)), None, "The break goes ahead once work ends");
+        assert_eq!(end.wait(at(18, 10)), None);
+
+        // The window may cross midnight
+        let end = WorkEnd { at: at(0, 15), ..end };
+        assert_eq!(end.wait(at(23, 50)), Some(Duration::from_secs(25 * 60)));
+        assert_eq!(end.wait(at(0, 10)), Some(Duration::from_secs(5 * 60)));
+        assert_eq!(end.wait(at(0, 20)), None);
     }
 
     #[test]

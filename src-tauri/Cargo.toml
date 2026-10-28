@@ -28,6 +28,8 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "0.9"
 sys-locale = "0.3"
+# Local time of day, for holding off breaks just before the end of the working day
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
 # Push to the phone via ntfy when a break ends. Uses the OS TLS stack and root certificates (SChannel, Security.framework, OpenSSL)
 # instead of the default rustls + ring + bundled roots, which added about 1.4 MB to the binary
 ureq = { version = "3", default-features = false, features = ["native-tls-no-default"] }

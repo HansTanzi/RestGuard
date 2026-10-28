@@ -75,6 +75,12 @@ export interface Config {
   rest_minutes: number;
   postpone_minutes: number;
   idle_minutes: number;
+  // Hold off breaks that fall due shortly before the end of the working day until it ends
+  work_end_enabled: boolean;
+  // End of the working day, as HH:MM in local time
+  work_end: string;
+  // A break due this long before work_end waits until work_end
+  work_end_skip_minutes: number;
   // A built-in level or the name of a custom profile
   level: string;
   // Play a sound when a break ends
@@ -90,6 +96,9 @@ export interface Config {
   profiles: Profile[];
 }
 
+// Longest quiet window before the end of the working day; matches MAX_WORK_END_SKIP_MINUTES in src-tauri/src/config.rs
+export const MAX_WORK_END_SKIP_MINUTES = 12 * 60;
+
 // Characters allowed in an ntfy topic
 export const NTFY_TOPIC_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 
@@ -99,6 +108,9 @@ export const DEFAULT_CONFIG: Config = {
   rest_minutes: 10,
   postpone_minutes: 5,
   idle_minutes: 5,
+  work_end_enabled: false,
+  work_end: "18:00",
+  work_end_skip_minutes: 30,
   level: "medium",
   sound_prompt: true,
   sound: "beep",

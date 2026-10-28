@@ -360,6 +360,7 @@ fn spawn_ticker(app: AppHandle) {
             if let Some(idle) = idle {
                 timer.idle(now, idle);
             }
+            timer.defer(now, chrono::Local::now().time());
             // Only check the foreground app once a break is due; the enforcement level can disable meeting detection
             let detect = timer.profile().meeting_detection;
             let held = if detect && timer.rest_due(now) {

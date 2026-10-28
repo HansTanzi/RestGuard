@@ -1,6 +1,7 @@
 //! Work/break state machine. Independent of Tauri; every method takes the current time explicitly, for testability.
 
-use crate::config::{Config, Profile};
+use crate::config::{Config, Profile, WorkEnd};
+use chrono::NaiveTime;
 use serde::Serialize;
 use std::time::{Duration, Instant};
 
@@ -37,6 +38,8 @@ pub struct Snapshot {
     pub postponed: bool,
     /// A break is due but held off because this exempt app is in the foreground
     pub held_by: Option<String>,
+    /// A break is due but held off until this end of the working day (HH:MM)
+    pub deferred_until: Option<String>,
     /// Meeting software running when the break started; the overlay then offers "I'm in a meeting"
     pub meeting_app: Option<String>,
     /// Forced break; when false the overlay can be closed
@@ -59,6 +62,8 @@ pub struct Timer {
     profile: Profile,
     /// No input for this long counts as away; None disables idle detection
     idle_threshold: Option<Duration>,
+    /// Breaks falling due just before the end of the working day wait for it; None disables
+    work_end: Option<WorkEnd>,
 
     phase: Phase,
     started: Instant,
@@ -69,6 +74,8 @@ pub struct Timer {
     /// This break was started by the user; voluntary breaks can't be postponed
     voluntary: bool,
     held_by: Option<String>,
+    /// The due break waits for the end of the working day
+    deferred: bool,
     meeting_app: Option<String>,
     /// Remaining work time frozen while the user is away
     away_remaining: Option<Duration>,
@@ -82,6 +89,7 @@ impl Timer {
             postpone: cfg.postpone(),
             profile: cfg.profile(),
             idle_threshold: cfg.idle(),
+            work_end: cfg.work_end(),
             phase: Phase::Working,
             started: now,
             deadline: now + cfg.work(),
@@ -89,6 +97,7 @@ impl Timer {
             postponed: false,
             voluntary: false,
             held_by: None,
+            deferred: false,
             meeting_app: None,
             away_remaining: None,
         }
@@ -132,12 +141,18 @@ impl Timer {
         self.held_by = app;
     }
 
+    /// Reports the local time of day; holds off a due break while it falls in the quiet window before the end of the working day.
+    /// Must be called before tick
+    pub fn defer(&mut self, now: Instant, clock: NaiveTime) {
+        self.deferred = self.rest_due(now) && self.work_end.is_some_and(|end| end.wait(clock).is_some());
+    }
+
     pub fn tick(&mut self, now: Instant) -> Option<TimerEvent> {
         if now < self.deadline {
             return None;
         }
         match self.phase {
-            Phase::Working if self.held_by.is_some() => None,
+            Phase::Working if self.held_by.is_some() || self.deferred => None,
             Phase::Working => {
                 self.begin_rest(now, false);
                 Some(TimerEvent::RestStarted)
@@ -233,6 +248,7 @@ impl Timer {
         self.postpone = cfg.postpone();
         self.profile = cfg.profile();
         self.idle_threshold = cfg.idle();
+        self.work_end = cfg.work_end();
         // Before postponements are reset, postpones_used > 0 means we're in a post-postponement countdown
         if self.phase == Phase::Working && self.postpones_used == 0 && work_changed {
             self.begin_work(now, self.work);
@@ -249,6 +265,10 @@ impl Timer {
             postpones_left: self.profile.max_postpones.saturating_sub(self.postpones_used),
             postponed: self.phase == Phase::Working && self.postponed,
             held_by: self.held_by.clone(),
+            deferred_until: self
+                .work_end
+                .filter(|_| self.deferred)
+                .map(|end| end.at.format("%H:%M").to_string()),
             meeting_app: self
                 .can_claim_meeting()
                 .then(|| self.meeting_app.clone())
@@ -281,6 +301,7 @@ impl Timer {
         self.phase = Phase::Resting;
         self.voluntary = voluntary;
         self.held_by = None;
+        self.deferred = false;
         self.meeting_app = None;
         self.away_remaining = None;
         self.started = now;
@@ -292,6 +313,7 @@ impl Timer {
         self.postponed = false;
         self.voluntary = false;
         self.held_by = None;
+        self.deferred = false;
         self.meeting_app = None;
         self.away_remaining = None;
         self.started = now;
@@ -399,6 +421,61 @@ mod tests {
         t.hold(None);
         assert_eq!(t.tick(now + 20 * MIN), Some(TimerEvent::RestStarted));
         assert_eq!(t.snapshot(now + 20 * MIN).held_by, None);
+    }
+
+    #[test]
+    fn rest_waits_for_work_end() {
+        let at = |h, m| NaiveTime::from_hms_opt(h, m, 0).unwrap();
+        let t0 = Instant::now();
+        let cfg = Config {
+            work_end_enabled: true,
+            ..Config::default()
+        };
+        let mut t = Timer::new(&cfg, t0);
+
+        // Not due yet: nothing is deferred even inside the window
+        t.defer(t0 + 50 * MIN, at(17, 40));
+        assert_eq!(t.snapshot(t0 + 50 * MIN).deferred_until, None);
+
+        // Due at 17:40, within 30 minutes of 18:00: waits
+        let now = t0 + 60 * MIN;
+        t.defer(now, at(17, 40));
+        assert_eq!(t.tick(now), None);
+        let snap = t.snapshot(now);
+        assert_eq!(snap.phase, Phase::Working);
+        assert_eq!(snap.deferred_until.as_deref(), Some("18:00"));
+
+        // 18:00: the break goes ahead
+        let now = now + 20 * MIN;
+        t.defer(now, at(18, 0));
+        assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
+        assert_eq!(t.snapshot(now).deferred_until, None);
+
+        // Voluntary breaks aren't affected
+        assert_eq!(t.tick(now + 10 * MIN), Some(TimerEvent::RestFinished));
+        assert!(t.start_work(now + 10 * MIN));
+        t.defer(now + 11 * MIN, at(17, 50));
+        assert!(t.rest_now(now + 11 * MIN));
+    }
+
+    #[test]
+    fn rest_before_quiet_window_is_not_deferred() {
+        let at = |h, m| NaiveTime::from_hms_opt(h, m, 0).unwrap();
+        let t0 = Instant::now();
+        let cfg = Config {
+            work_end_enabled: true,
+            work_end_skip_minutes: 15.0,
+            ..Config::default()
+        };
+        let mut t = Timer::new(&cfg, t0);
+        let now = t0 + 60 * MIN;
+        t.defer(now, at(17, 40));
+        assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
+
+        // Disabled: never deferred
+        let mut t = timer(t0);
+        t.defer(now, at(17, 55));
+        assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
     }
 
     #[test]

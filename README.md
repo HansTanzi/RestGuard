@@ -204,9 +204,6 @@ work_minutes = 60.0      # how long to work before a forced break
 rest_minutes = 10.0      # how long each break lasts
 postpone_minutes = 5.0   # how long each postpone lasts
 idle_minutes = 5.0       # no input for this long counts as away, 0 = off
-work_end_enabled = false # hold off breaks that fall due just before the end of the working day
-work_end = "18:00"       # end of the working day, 24-hour HH:MM in local time
-work_end_skip_minutes = 30.0  # breaks due this long before work_end wait until work_end
 level = "medium"         # "high", "medium", "low", or the name of a custom profile
 sound_prompt = true      # play a sound when a break ends
 sound = "beep"           # "beep", "chime", "rise" or "file" (plays sound_file)
@@ -214,6 +211,18 @@ sound_file = ""          # full path of your own audio file, used when sound = "
 phone_notify = false     # push a notification to your phone via ntfy when a break ends
 ntfy_server = "https://ntfy.sh"  # ntfy server, the public one or your own
 ntfy_topic = ""          # topic to subscribe to in the ntfy app; keep it hard to guess
+
+[[fixed_breaks]]         # a fixed break; "work_end" (end of the working day) and "lunch" are built in
+name = "work_end"
+enabled = false          # hold off breaks that fall due just before it
+time = "18:00"           # 24-hour HH:MM in local time
+quiet_minutes = 30.0     # breaks due this long before time wait until time
+
+[[fixed_breaks]]         # add your own, e.g. a tea break, with one [[fixed_breaks]] each
+name = "Tea break"
+enabled = true
+time = "15:00"
+quiet_minutes = 15.0
 
 [[profiles]]             # a custom profile; add one [[profiles]] per profile
 name = "Focus"

@@ -65,6 +65,34 @@ export function isBuiltinLevel(level: string): level is BuiltinLevel {
   return (BUILTIN_LEVELS as readonly string[]).includes(level);
 }
 
+// A fixed time of day when the user stops anyway; a break falling due shortly before it waits until then.
+// Keep in sync with FixedBreak in src-tauri/src/config.rs
+export interface FixedBreak {
+  // A built-in fixed break (see BUILTIN_FIXED_BREAKS), shown translated, or the user's own name
+  name: string;
+  enabled: boolean;
+  // Time of day, as HH:MM in local time
+  time: string;
+  // A break due this long before time waits until time
+  quiet_minutes: number;
+}
+
+// Matches BUILTIN_FIXED_BREAKS in src-tauri/src/config.rs
+export const BUILTIN_FIXED_BREAKS = ["work_end", "lunch"] as const;
+export type BuiltinFixedBreak = (typeof BUILTIN_FIXED_BREAKS)[number];
+
+export function isBuiltinFixedBreak(name: string): name is BuiltinFixedBreak {
+  return (BUILTIN_FIXED_BREAKS as readonly string[]).includes(name);
+}
+
+// A new custom fixed break; matches FixedBreak::default in src-tauri/src/config.rs
+export function newFixedBreak(name: string): FixedBreak {
+  return { name, enabled: true, time: "15:00", quiet_minutes: 30 };
+}
+
+// Longest quiet window before a fixed break; matches MAX_QUIET_MINUTES in src-tauri/src/config.rs
+export const MAX_QUIET_MINUTES = 12 * 60;
+
 // Sound played when a break ends: a built-in sound or a user-chosen audio file. Matches SOUNDS in src-tauri/src/config.rs
 export const SOUNDS = ["beep", "chime", "rise", "file"] as const;
 export type SoundId = (typeof SOUNDS)[number];
@@ -75,12 +103,8 @@ export interface Config {
   rest_minutes: number;
   postpone_minutes: number;
   idle_minutes: number;
-  // Hold off breaks that fall due shortly before the end of the working day until it ends
-  work_end_enabled: boolean;
-  // End of the working day, as HH:MM in local time
-  work_end: string;
-  // A break due this long before work_end waits until work_end
-  work_end_skip_minutes: number;
+  // Fixed times such as the end of the working day or lunch; the built-in ones come first, followed by the user's own
+  fixed_breaks: FixedBreak[];
   // A built-in level or the name of a custom profile
   level: string;
   // Play a sound when a break ends
@@ -96,9 +120,6 @@ export interface Config {
   profiles: Profile[];
 }
 
-// Longest quiet window before the end of the working day; matches MAX_WORK_END_SKIP_MINUTES in src-tauri/src/config.rs
-export const MAX_WORK_END_SKIP_MINUTES = 12 * 60;
-
 // Characters allowed in an ntfy topic
 export const NTFY_TOPIC_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 
@@ -108,9 +129,10 @@ export const DEFAULT_CONFIG: Config = {
   rest_minutes: 10,
   postpone_minutes: 5,
   idle_minutes: 5,
-  work_end_enabled: false,
-  work_end: "18:00",
-  work_end_skip_minutes: 30,
+  fixed_breaks: [
+    { name: "work_end", enabled: false, time: "18:00", quiet_minutes: 30 },
+    { name: "lunch", enabled: false, time: "12:00", quiet_minutes: 30 },
+  ],
   level: "medium",
   sound_prompt: true,
   sound: "beep",

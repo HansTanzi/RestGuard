@@ -210,9 +210,6 @@ work_minutes = 60.0      # 连续工作多久后强制休息
 rest_minutes = 10.0      # 每次休息多久
 postpone_minutes = 5.0   # 每次推迟多久
 idle_minutes = 5.0       # 无操作超过这么久算离开电脑，0 表示关闭
-work_end_enabled = false # 临近下班时不再提醒休息
-work_end = "18:00"       # 下班时间，24 小时制 HH:MM（本地时间）
-work_end_skip_minutes = 30.0  # 下班前这么久内到点的休息推迟到下班时间
 level = "medium"         # 强制等级："high"、"medium"、"low"，或某个自定义方案的名字
 sound_prompt = true      # 休息结束时播放提示音
 sound = "beep"           # "beep"（滴滴）、"chime"（叮咚）、"rise"（上扬三音）或 "file"（播放 sound_file）
@@ -220,6 +217,26 @@ sound_file = ""          # 自选音频文件的完整路径，sound = "file" �
 phone_notify = false     # 休息结束时通过 ntfy 推送到手机
 ntfy_server = "https://ntfy.sh"  # ntfy 服务器，公共服务器或自建的
 ntfy_topic = ""          # 在 ntfy 应用里订阅的主题，请取一个不易猜到的名字
+
+[[fixed_breaks]]         # 固定休息；"work_end"（下班）和 "lunch"（午休）是内置的
+name = "work_end"
+enabled = false          # 临近这个时间时不再提醒休息
+time = "18:00"           # 24 小时制 HH:MM（本地时间）
+quiet_minutes = 30.0     # 这个时间之前这么久内到点的休息推迟到这个时间
+
+[[fixed_breaks]]         # 午休：到 time 时开始一次 rest_minutes 长的休息
+name = "lunch"
+enabled = true
+time = "12:00"
+quiet_minutes = 30.0
+rest_minutes = 30.0      # 休息多长（午休和自己添加的固定休息才有）
+
+[[fixed_breaks]]         # 也可以自己添加，比如茶歇，每个一个 [[fixed_breaks]]
+name = "茶歇"
+enabled = true
+time = "15:00"
+quiet_minutes = 15.0
+rest_minutes = 15.0
 
 [[profiles]]             # 自定义方案，每个方案一个 [[profiles]]
 name = "专注"

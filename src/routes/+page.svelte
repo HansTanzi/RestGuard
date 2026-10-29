@@ -19,10 +19,13 @@
     BUILTIN_LEVELS,
     BUILTIN_PROFILES,
     DEFAULT_CONFIG,
-    MAX_WORK_END_SKIP_MINUTES,
+    MAX_FIXED_MINUTES,
     NTFY_TOPIC_PATTERN,
     SOUNDS,
+    fixedBreakHasRest,
+    isBuiltinFixedBreak,
     isBuiltinLevel,
+    newFixedBreak,
     type Config,
     type LangId,
     type Profile,
@@ -76,16 +79,29 @@
     );
   };
   const badName = (i: number) => nameInvalid(draft.profiles[i].name, i);
+  // Names tell fixed breaks apart (consistent with sanitized in config.rs); the other fields aren't checked when off,
+  // and the time input gives "" when cleared
+  const span = (v: number | null) => positive(v) && v! <= MAX_FIXED_MINUTES;
+  const fixedErrors = $derived(
+    draft.fixed_breaks.map((b, i) => {
+      const name = b.name.trim();
+      return {
+        name:
+          !isBuiltinFixedBreak(b.name) &&
+          (!name ||
+            isBuiltinFixedBreak(name) ||
+            draft.fixed_breaks.some((c, j) => j !== i && c.name.trim() === name)),
+        time: b.enabled && !/^\d{2}:\d{2}$/.test(b.time),
+        quiet_minutes: b.enabled && !span(b.quiet_minutes),
+        rest_minutes: b.enabled && fixedBreakHasRest(b) && !span(b.rest_minutes),
+      };
+    }),
+  );
   const errors = $derived({
     work_minutes: !positive(draft.work_minutes),
     rest_minutes: !positive(draft.rest_minutes),
     postpone_minutes: !positive(draft.postpone_minutes),
     idle_minutes: !(positive(draft.idle_minutes) || draft.idle_minutes === 0),
-    // Not checked when off; the time input gives "" when cleared
-    work_end: draft.work_end_enabled && !/^\d{2}:\d{2}$/.test(draft.work_end),
-    work_end_skip_minutes:
-      draft.work_end_enabled &&
-      !(positive(draft.work_end_skip_minutes) && draft.work_end_skip_minutes <= MAX_WORK_END_SKIP_MINUTES),
     max_postpones: !count(profile.max_postpones),
     // Not checked when the sound is off; the backend replaces file with no path by the default sound
     sound_file: draft.sound_prompt && draft.sound === "file" && !draft.sound_file.trim(),
@@ -95,6 +111,7 @@
   // Profiles edited earlier must stay valid after switching to another one
   const valid = $derived(
     !Object.values(errors).some(Boolean) &&
+      fixedErrors.every((e) => !Object.values(e).some(Boolean)) &&
       draft.profiles.every((p, i) => !badName(i) && count(p.max_postpones)),
   );
   // Field order always comes from the backend response (new profiles are built in the same order), so JSON can be compared directly
@@ -120,6 +137,14 @@
     while (names.has(s.defaultProfileName(n))) n++;
     draft.profiles.push({ ...$state.snapshot(profile), name: s.defaultProfileName(n) });
     selected = `custom:${draft.profiles.length - 1}`;
+  }
+
+  function addFixedBreak() {
+    if (!s) return;
+    const names = new Set(draft.fixed_breaks.map((b) => b.name.trim()));
+    let n = 1;
+    while (names.has(s.defaultFixedBreakName(n))) n++;
+    draft.fixed_breaks.push(newFixedBreak(s.defaultFixedBreakName(n)));
   }
 
   function openRename() {
@@ -303,8 +328,16 @@
             class="ghost"
             disabled={locked}
             onclick={() => {
-              // Custom profiles are user-created, so they're kept when restoring defaults
-              draft = { ...structuredClone(DEFAULT_CONFIG), profiles: $state.snapshot(draft.profiles) };
+              // Custom profiles and fixed breaks are user-created, so they're kept when restoring defaults
+              const defaults = structuredClone(DEFAULT_CONFIG);
+              draft = {
+                ...defaults,
+                fixed_breaks: [
+                  ...defaults.fixed_breaks,
+                  ...$state.snapshot(draft.fixed_breaks).filter((b) => !isBuiltinFixedBreak(b.name)),
+                ],
+                profiles: $state.snapshot(draft.profiles),
+              };
               selected = DEFAULT_CONFIG.level;
             }}
           >
@@ -472,35 +505,86 @@
           </label>
           <p class="hint">{s.minutesHint}</p>
           <p class="hint">{s.idleHint}</p>
-          <label class="check">
-            <input type="checkbox" bind:checked={draft.work_end_enabled} />
-            <span>{s.workEndEnabled}</span>
-          </label>
-          <label class="sub">
-            <span>{s.workEnd}</span>
-            <input
-              type="time"
-              class:invalid={errors.work_end}
-              disabled={!draft.work_end_enabled}
-              bind:value={draft.work_end}
-            />
-          </label>
-          <label class="sub">
-            <span>{s.workEndSkipMinutes}</span>
-            <input
-              type="number"
-              min="0"
-              max={MAX_WORK_END_SKIP_MINUTES}
-              step="any"
-              class:invalid={errors.work_end_skip_minutes}
-              disabled={!draft.work_end_enabled}
-              bind:value={draft.work_end_skip_minutes}
-            />
-          </label>
-          <p class="hint sub">{s.workEndHint}</p>
           {#if saved && draft.work_minutes !== saved.work_minutes}
             <p class="hint accent">{s.workRestartHint}</p>
           {/if}
+        </section>
+      </fieldset>
+
+      <!-- Built-in fixed breaks (end of day, lunch) can only be turned off; the user's own can be renamed and removed.
+           The end of the day has no break length -->
+      <fieldset disabled={locked}>
+        <section>
+          <h2>{s.fixedBreaks}</h2>
+          {#each draft.fixed_breaks as b, i (i)}
+            <div class="fixed">
+              <div class="row">
+                {#if isBuiltinFixedBreak(b.name)}
+                  <label class="check">
+                    <input type="checkbox" bind:checked={b.enabled} />
+                    <span>{s.fixedBreakNames[b.name]}</span>
+                  </label>
+                {:else}
+                  <span class="inline">
+                    <input type="checkbox" aria-label={b.name} bind:checked={b.enabled} />
+                    <input
+                      type="text"
+                      aria-label={s.fixedBreakName}
+                      class:invalid={fixedErrors[i]?.name}
+                      bind:value={b.name}
+                    />
+                  </span>
+                {/if}
+                <input
+                  type="time"
+                  class:invalid={fixedErrors[i]?.time}
+                  disabled={!b.enabled}
+                  bind:value={b.time}
+                />
+              </div>
+              <label class="sub">
+                <span>{s.quietMinutes}</span>
+                <input
+                  type="number"
+                  min="0"
+                  max={MAX_FIXED_MINUTES}
+                  step="any"
+                  class:invalid={fixedErrors[i]?.quiet_minutes}
+                  disabled={!b.enabled}
+                  bind:value={b.quiet_minutes}
+                />
+              </label>
+              {#if fixedBreakHasRest(b)}
+                <label class="sub">
+                  <span>{s.restMinutes}</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max={MAX_FIXED_MINUTES}
+                    step="any"
+                    class:invalid={fixedErrors[i]?.rest_minutes}
+                    disabled={!b.enabled}
+                    bind:value={b.rest_minutes}
+                  />
+                </label>
+              {/if}
+              {#if !isBuiltinFixedBreak(b.name)}
+                <div class="actions">
+                  <button
+                    type="button"
+                    class="ghost small"
+                    onclick={() => draft.fixed_breaks.splice(i, 1)}
+                  >
+                    {s.removeFixedBreak}
+                  </button>
+                </div>
+              {/if}
+            </div>
+          {/each}
+          <p class="hint">{s.fixedBreaksHint}</p>
+          <div class="actions profile-actions">
+            <button type="button" class="ghost" onclick={addFixedBreak}>{s.addFixedBreak}</button>
+          </div>
         </section>
       </fieldset>
 
@@ -803,6 +887,23 @@
     justify-content: space-between;
     gap: 1rem;
     padding: 0.35rem 0;
+  }
+
+  /* Each fixed break is separated from the previous one by a line */
+  .fixed + .fixed {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .row label.check {
+    padding: 0;
+  }
+
+  .inline {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
   }
 
   .file {

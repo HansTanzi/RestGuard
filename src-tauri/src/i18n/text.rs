@@ -184,7 +184,7 @@ pub const BREAK_HELD: Tr = Tr {
 };
 
 /// Tray status line: a break due shortly before the end of the working day waits for it; `{time}` is the end time (HH:MM)
-pub const BREAK_DEFERRED: Tr = Tr {
+pub const BREAK_DEFERRED_WORK_END: Tr = Tr {
     zh: "临近下班，休息推迟到 {time}",
     en: "Almost done for the day: break held until {time}",
     hi: "दिन खत्म होने वाला है: ब्रेक {time} तक रुका है",
@@ -198,6 +198,41 @@ pub const BREAK_DEFERRED: Tr = Tr {
     it: "Fine giornata vicina: pausa rinviata alle {time}",
     ko: "퇴근 직전, 휴식을 {time}까지 미룸",
     id: "Hampir pulang: istirahat ditunda hingga {time}",
+};
+
+/// Tray status line: a break due shortly before lunch waits for it; `{time}` is the lunch time (HH:MM)
+pub const BREAK_DEFERRED_LUNCH: Tr = Tr {
+    zh: "临近午休，休息推迟到 {time}",
+    en: "Lunch is coming up: break held until {time}",
+    hi: "लंच का समय होने वाला है: ब्रेक {time} तक रुका है",
+    es: "Se acerca la comida: descanso aplazado hasta las {time}",
+    ar: "اقترب وقت الغداء: الاستراحة مؤجلة حتى {time}",
+    fr: "Déjeuner proche : pause reportée à {time}",
+    bn: "দুপুরের খাবারের সময় প্রায়: বিরতি {time} পর্যন্ত স্থগিত",
+    pt: "Quase hora do almoço: pausa adiada até {time}",
+    de: "Mittagspause naht: Pause aufgeschoben bis {time}",
+    ja: "昼休み間近のため休憩を {time} まで延期",
+    it: "Pranzo vicino: pausa rinviata alle {time}",
+    ko: "점심시간 직전, 휴식을 {time}까지 미룸",
+    id: "Hampir makan siang: istirahat ditunda hingga {time}",
+};
+
+/// Tray status line: a break due shortly before one of the user's own fixed breaks waits for it;
+/// `{name}` is its name and `{time}` its time (HH:MM)
+pub const BREAK_DEFERRED: Tr = Tr {
+    zh: "临近{name}，休息推迟到 {time}",
+    en: "{name} is coming up: break held until {time}",
+    hi: "{name} होने वाला है: ब्रेक {time} तक रुका है",
+    es: "Se acerca {name}: descanso aplazado hasta las {time}",
+    ar: "اقترب موعد {name}: الاستراحة مؤجلة حتى {time}",
+    fr: "{name} approche : pause reportée à {time}",
+    bn: "{name} প্রায় এসে গেছে: বিরতি {time} পর্যন্ত স্থগিত",
+    pt: "{name} está chegando: pausa adiada até {time}",
+    de: "{name} naht: Pause aufgeschoben bis {time}",
+    ja: "{name}が近いため休憩を {time} まで延期",
+    it: "{name} in arrivo: pausa rinviata alle {time}",
+    ko: "{name} 직전, 휴식을 {time}까지 미룸",
+    id: "{name} sebentar lagi: istirahat ditunda hingga {time}",
 };
 
 /// Tray status line, followed by the countdown
@@ -553,52 +588,20 @@ pub mod config {
         id: "Lama tanpa aktivitas hingga Anda dianggap pergi; waktu pergi tidak dihitung kerja, dan pergi selama satu istirahat penuh dihitung istirahat. 0 = mati",
     };
 
-    pub const WORK_END_ENABLED: Tr = Tr {
-        zh: "临近下班时不再打扰：在下班前一段时间内到点的休息推迟到下班时间",
-        en: "Don't interrupt just before the end of the working day: a break due shortly before work_end waits until then",
-        hi: "दिन खत्म होने से ठीक पहले न टोकें: work_end से कुछ पहले होने वाला ब्रेक तब तक रुकता है",
-        es: "No interrumpir justo antes del fin de la jornada: un descanso que toque poco antes de work_end espera hasta entonces",
-        ar: "عدم المقاطعة قبيل نهاية الدوام: الاستراحة المستحقة قبل work_end بقليل تنتظر حتى ذلك الوقت",
-        fr: "Ne pas interrompre juste avant la fin de la journée : une pause prévue peu avant work_end attend jusque-là",
-        bn: "দিন শেষের ঠিক আগে বিরক্ত করবে না: work_end-এর একটু আগে পড়া বিরতি তখন পর্যন্ত অপেক্ষা করে",
-        pt: "Não interromper pouco antes do fim do expediente: uma pausa prevista pouco antes de work_end espera até lá",
-        de: "Kurz vor Feierabend nicht stören: Eine Pause, die kurz vor work_end fällig wird, wartet bis dahin",
-        ja: "終業直前は邪魔しない：work_end の少し前に来る休憩は終業時刻まで延期します",
-        it: "Non interrompere poco prima della fine della giornata: una pausa prevista poco prima di work_end aspetta fino ad allora",
-        ko: "퇴근 직전에는 방해하지 않기: work_end 조금 전에 돌아오는 휴식은 퇴근 시간까지 미룹니다",
-        id: "Jangan ganggu menjelang akhir jam kerja: istirahat yang jatuh tak lama sebelum work_end menunggu sampai saat itu",
-    };
-
-    pub const WORK_END: Tr = Tr {
-        zh: "下班时间，24 小时制 HH:MM（本地时间）",
-        en: "End of the working day, 24-hour HH:MM in local time",
-        hi: "कार्यदिवस का अंत, 24-घंटे HH:MM स्थानीय समय में",
-        es: "Fin de la jornada, HH:MM en formato de 24 horas, hora local",
-        ar: "نهاية الدوام، بصيغة 24 ساعة HH:MM بالتوقيت المحلي",
-        fr: "Fin de la journée de travail, HH:MM sur 24 heures, heure locale",
-        bn: "কর্মদিবসের শেষ, 24-ঘণ্টা HH:MM স্থানীয় সময়ে",
-        pt: "Fim do expediente, HH:MM em 24 horas, horário local",
-        de: "Feierabend, 24-Stunden-Format HH:MM in Ortszeit",
-        ja: "終業時刻。24 時間制の HH:MM（現地時刻）",
-        it: "Fine della giornata lavorativa, HH:MM nel formato 24 ore, ora locale",
-        ko: "퇴근 시간, 24시간제 HH:MM(현지 시간)",
-        id: "Akhir jam kerja, format 24 jam HH:MM waktu lokal",
-    };
-
-    pub const WORK_END_SKIP: Tr = Tr {
-        zh: "下班前多久内到点的休息推迟到下班时间",
-        en: "Breaks due within this long before work_end wait until work_end",
-        hi: "work_end से इतनी देर पहले के भीतर होने वाले ब्रेक work_end तक रुकते हैं",
-        es: "Los descansos que toquen dentro de este tiempo antes de work_end esperan hasta work_end",
-        ar: "الاستراحات المستحقة خلال هذه المدة قبل work_end تنتظر حتى work_end",
-        fr: "Les pauses prévues dans ce délai avant work_end attendent work_end",
-        bn: "work_end-এর এতক্ষণ আগের মধ্যে পড়া বিরতি work_end পর্যন্ত অপেক্ষা করে",
-        pt: "Pausas previstas dentro deste tempo antes de work_end esperam até work_end",
-        de: "Pausen, die so lange vor work_end fällig werden, warten bis work_end",
-        ja: "work_end の何分前以降に来る休憩を work_end まで延期するか",
-        it: "Le pause previste entro questo tempo prima di work_end aspettano fino a work_end",
-        ko: "work_end 전 이 시간 안에 돌아오는 휴식은 work_end까지 미룹니다",
-        id: "Istirahat yang jatuh dalam rentang ini sebelum work_end menunggu hingga work_end",
+    pub const FIXED_BREAKS: Tr = Tr {
+        zh: "固定休息，每个 [[fixed_breaks]] 一个。work_end（下班）和 lunch（午休）是内置的，其他名字是自己添加的（如茶歇）。enabled 是否启用；time 时间，24 小时制 HH:MM（本地时间）；quiet_minutes 在这个时间之前多久内到点的休息推迟到这个时间；rest_minutes 到这个时间时开始的休息有多长（work_end 没有）",
+        en: "Fixed breaks, one [[fixed_breaks]] each. work_end (end of the working day) and lunch are built in; other names are your own (e.g. a tea break). enabled: turn it on; time: 24-hour HH:MM in local time; quiet_minutes: a break due within this long before time waits until time; rest_minutes: how long the break that starts at time lasts (not for work_end)",
+        hi: "तय ब्रेक, हर एक के लिए एक [[fixed_breaks]]। work_end (दिन का अंत) और lunch (लंच) पहले से मौजूद हैं; बाकी नाम आपके अपने हैं (जैसे चाय ब्रेक)। enabled: चालू करें; time: 24-घंटे HH:MM स्थानीय समय में; quiet_minutes: time से इतनी देर पहले के भीतर होने वाला ब्रेक time तक रुकता है; rest_minutes: time पर शुरू होने वाला ब्रेक कितनी देर चले (work_end के लिए नहीं)",
+        es: "Pausas fijas, un [[fixed_breaks]] cada una. work_end (fin de la jornada) y lunch (comida) vienen incluidas; los demás nombres son tuyos (p. ej. una pausa para el café). enabled: activarla; time: HH:MM en formato de 24 horas, hora local; quiet_minutes: un descanso que toque dentro de este tiempo antes de time espera hasta time; rest_minutes: cuánto dura el descanso que empieza a la hora time (no en work_end)",
+        ar: "الاستراحات الثابتة، لكلٍّ منها [[fixed_breaks]]. ‏work_end (نهاية الدوام) وlunch (الغداء) مدمجتان؛ والأسماء الأخرى من اختيارك (مثل استراحة الشاي). enabled: تفعيلها؛ time: بصيغة 24 ساعة HH:MM بالتوقيت المحلي؛ quiet_minutes: الاستراحة المستحقة خلال هذه المدة قبل time تنتظر حتى time؛ rest_minutes: مدة الاستراحة التي تبدأ عند time (لا تنطبق على work_end)",
+        fr: "Pauses fixes, un [[fixed_breaks]] chacune. work_end (fin de journée) et lunch (déjeuner) sont intégrées ; les autres noms sont les vôtres (p. ex. une pause thé). enabled : l'activer ; time : HH:MM sur 24 heures, heure locale ; quiet_minutes : une pause prévue dans ce délai avant time attend time ; rest_minutes : durée de la pause qui commence à time (pas pour work_end)",
+        bn: "নির্দিষ্ট বিরতি, প্রতিটির জন্য একটি [[fixed_breaks]]। work_end (দিনের শেষ) আর lunch (দুপুরের খাবার) আগে থেকেই আছে; অন্য নাম আপনার নিজের (যেমন চা-বিরতি)। enabled: চালু করা; time: 24-ঘণ্টা HH:MM স্থানীয় সময়ে; quiet_minutes: time-এর এতক্ষণ আগের মধ্যে পড়া বিরতি time পর্যন্ত অপেক্ষা করে; rest_minutes: time-এ শুরু হওয়া বিরতি কতক্ষণ চলবে (work_end-এর জন্য নয়)",
+        pt: "Pausas fixas, um [[fixed_breaks]] cada. work_end (fim do expediente) e lunch (almoço) já vêm incluídas; os outros nomes são seus (ex.: uma pausa para o café). enabled: ativá-la; time: HH:MM em 24 horas, horário local; quiet_minutes: uma pausa prevista dentro deste tempo antes de time espera até time; rest_minutes: quanto dura a pausa que começa em time (não vale para work_end)",
+        de: "Feste Pausen, je ein [[fixed_breaks]]. work_end (Feierabend) und lunch (Mittagspause) sind eingebaut; andere Namen sind eigene (z. B. eine Kaffeepause). enabled: einschalten; time: 24-Stunden-Format HH:MM in Ortszeit; quiet_minutes: Eine Pause, die so lange vor time fällig wird, wartet bis time; rest_minutes: wie lange die Pause dauert, die um time beginnt (nicht bei work_end)",
+        ja: "固定の休憩。1 つにつき [[fixed_breaks]] を 1 つ。work_end（終業）と lunch（昼休み）は組み込み、それ以外の名前は自分で追加したもの（お茶休憩など）。enabled は有効にするか、time は 24 時間制の HH:MM（現地時刻）、quiet_minutes は time の何分前以降に来る休憩を time まで延期するか、rest_minutes は time に始まる休憩の長さ（work_end にはなし）",
+        it: "Pause fisse, un [[fixed_breaks]] ciascuna. work_end (fine giornata) e lunch (pranzo) sono integrate; gli altri nomi sono tuoi (ad es. una pausa caffè). enabled: attivala; time: HH:MM nel formato 24 ore, ora locale; quiet_minutes: una pausa prevista entro questo tempo prima di time aspetta fino a time; rest_minutes: quanto dura la pausa che inizia a time (non per work_end)",
+        ko: "고정 휴식, 하나당 [[fixed_breaks]] 하나. work_end(퇴근)와 lunch(점심)는 기본 제공이고, 다른 이름은 직접 추가한 것(예: 티타임). enabled: 켜기, time: 24시간제 HH:MM(현지 시간), quiet_minutes: time 전 이 시간 안에 돌아오는 휴식은 time까지 미룸, rest_minutes: time에 시작하는 휴식의 길이(work_end에는 없음)",
+        id: "Istirahat tetap, satu [[fixed_breaks]] untuk masing-masing. work_end (akhir jam kerja) dan lunch (makan siang) sudah bawaan; nama lain milik Anda sendiri (mis. rehat kopi). enabled: aktifkan; time: format 24 jam HH:MM waktu lokal; quiet_minutes: istirahat yang jatuh dalam rentang ini sebelum time menunggu hingga time; rest_minutes: lama istirahat yang dimulai pada time (tidak untuk work_end)",
     };
 
     pub const LEVEL: Tr = Tr {
@@ -731,16 +734,14 @@ pub mod config {
 
     /// For tests: all comments
     #[cfg(test)]
-    pub const ALL: [&Tr; 17] = [
+    pub const ALL: [&Tr; 15] = [
         &HEADER,
         &UNITS,
         &WORK,
         &REST,
         &POSTPONE,
         &IDLE,
-        &WORK_END_ENABLED,
-        &WORK_END,
-        &WORK_END_SKIP,
+        &FIXED_BREAKS,
         &LEVEL,
         &SOUND_PROMPT,
         &SOUND,

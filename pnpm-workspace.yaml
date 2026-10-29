@@ -1,0 +1,14 @@
+# Supply-chain hardening for pnpm. Takes effect when resolving versions (pnpm add / update / install without a lockfile);
+# CI installs with --frozen-lockfile, so it only ever gets the exact versions already reviewed in pnpm-lock.yaml.
+
+# Don't pick up a version until it has been on the registry for 3 days. Hijacked releases are usually caught and
+# unpublished within hours, so this keeps them out of the lockfile
+minimumReleaseAge: 4320
+
+# Refuse a version that was published with weaker trust evidence (no trusted publisher / provenance) than an earlier
+# version of the same package, the typical sign of a stolen npm token
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  # Published by the maintainer by hand without provenance (4.0.1 had it); a long-standing release with no
+  # malware report. Pulled in by svelte-check
+  - chokidar@4.0.3

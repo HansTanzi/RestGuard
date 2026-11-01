@@ -30,9 +30,11 @@
     type LangId,
     type Profile,
   } from "$lib/config";
+  import { THEMES, getTheme, setTheme, type Theme } from "$lib/theme";
 
   let s = $state<SettingsStrings | null>(null);
   let lang = $state<LangId>("auto");
+  let theme = $state<Theme>(getTheme());
   let autostart = $state(false);
   let phase = $state<Snapshot["phase"]>("working");
   let postponed = $state(false);
@@ -356,7 +358,7 @@
         </div>
       </header>
 
-      <!-- Language and autostart apply immediately without saving; kept outside the fieldset so they can be changed during a break -->
+      <!-- Language, theme and autostart apply immediately without saving; kept outside the fieldset so they can be changed during a break -->
       <section>
         <h2>{s.general}</h2>
         <label>
@@ -366,6 +368,14 @@
             <!-- Language names are always shown in their own language, as in the tray menu -->
             {#each UI_LANGS as id (id)}
               <option value={id}>{LANG_NAMES[id]}</option>
+            {/each}
+          </select>
+        </label>
+        <label>
+          <span>{s.theme}</span>
+          <select bind:value={theme} onchange={() => setTheme(theme)}>
+            {#each THEMES as id (id)}
+              <option value={id}>{s.themes[id]}</option>
             {/each}
           </select>
         </label>
@@ -782,18 +792,10 @@
   :global(html, body) {
     margin: 0;
     min-height: 100%;
-    background: #0f172a;
+    background: var(--bg-1);
   }
 
   main {
-    --bg-1: #0f172a;
-    --bg-2: #1e293b;
-    --fg: #e2e8f0;
-    --muted: #94a3b8;
-    --accent: #38bdf8;
-    --warn: #f87171;
-    --line: rgb(255 255 255 / 0.12);
-
     box-sizing: border-box;
     /* The window is maximized by default; up to three columns on wide screens (see .flow) */
     max-width: 1200px;
@@ -808,7 +810,6 @@
       "Microsoft YaHei",
       sans-serif;
     font-size: 0.95rem;
-    color-scheme: dark;
   }
 
   /* Title and save bar: stick to the top when scrolling */
@@ -1048,7 +1049,7 @@
     background: var(--bg-2);
     border: 1px solid var(--line);
     border-radius: 6px;
-    box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);
+    box-shadow: 0 4px 12px var(--shadow);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -1112,7 +1113,7 @@
   }
 
   .primary:hover:not(:disabled) {
-    background: #7dd3fc;
+    background: var(--accent-hover);
   }
 
   .ghost {
@@ -1122,7 +1123,7 @@
   }
 
   .ghost:hover:not(:disabled) {
-    background: rgb(255 255 255 / 0.06);
+    background: var(--hover);
   }
 
   /* Sits between the title and buttons, filling the remaining width; wraps to the next line when too narrow */

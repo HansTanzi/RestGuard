@@ -1,6 +1,7 @@
 // The UI language is decided by the backend (src-tauri/src/i18n.rs), consistent with the tray
 
 import type { BuiltinFixedBreak, BuiltinLevel, SoundId } from "./config";
+import type { Theme } from "./theme";
 
 // Broadcast when the tray or a page switches language; payload is the language actually displayed (UiLang)
 export const LANG_EVENT = "lang:changed";
@@ -238,6 +239,8 @@ export interface SettingsStrings {
   general: string;
   language: string;
   followSystem: string;
+  theme: string;
+  themes: Record<Theme, string>;
   autostart: string;
   lockScreen: string;
   lockDelay: string;
@@ -313,6 +316,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     general: "通用",
     language: "语言",
     followSystem: "跟随系统",
+    theme: "主题",
+    themes: { system: "跟随系统", dark: "深色", light: "浅色" },
     autostart: "开机自启",
     lockScreen: "休息开始后自动锁屏",
     lockDelay: "休息开始多久后锁屏（分钟）",
@@ -386,6 +391,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     general: "General",
     language: "Language",
     followSystem: "Follow system",
+    theme: "Theme",
+    themes: { system: "Follow system", dark: "Dark", light: "Light" },
     autostart: "Start at login",
     lockScreen: "Lock the screen during breaks",
     lockDelay: "Lock after (minutes into the break)",
@@ -459,6 +466,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     general: "सामान्य",
     language: "भाषा",
     followSystem: "सिस्टम के अनुसार",
+    theme: "थीम",
+    themes: { system: "सिस्टम के अनुसार", dark: "गहरा", light: "हल्का" },
     autostart: "लॉगिन पर शुरू करें",
     lockScreen: "ब्रेक के दौरान स्क्रीन लॉक करें",
     lockDelay: "इतने मिनट बाद लॉक करें",
@@ -532,6 +541,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     general: "General",
     language: "Idioma",
     followSystem: "Según el sistema",
+    theme: "Tema",
+    themes: { system: "Según el sistema", dark: "Oscuro", light: "Claro" },
     autostart: "Iniciar con el sistema",
     lockScreen: "Bloquear la pantalla durante el descanso",
     lockDelay: "Bloquear tras (minutos de descanso)",
@@ -605,6 +616,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     general: "عام",
     language: "اللغة",
     followSystem: "حسب النظام",
+    theme: "المظهر",
+    themes: { system: "حسب النظام", dark: "داكن", light: "فاتح" },
     autostart: "التشغيل عند تسجيل الدخول",
     lockScreen: "قفل الشاشة أثناء الاستراحة",
     lockDelay: "القفل بعد (دقائق من الاستراحة)",
@@ -678,6 +691,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     general: "Général",
     language: "Langue",
     followSystem: "Suivre le système",
+    theme: "Thème",
+    themes: { system: "Suivre le système", dark: "Sombre", light: "Clair" },
     autostart: "Lancer au démarrage",
     lockScreen: "Verrouiller l'écran pendant la pause",
     lockDelay: "Verrouiller après (minutes de pause)",
@@ -751,6 +766,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     general: "সাধারণ",
     language: "ভাষা",
     followSystem: "সিস্টেম অনুসারে",
+    theme: "থিম",
+    themes: { system: "সিস্টেম অনুসারে", dark: "গাঢ়", light: "হালকা" },
     autostart: "লগইনের সময় চালু করুন",
     lockScreen: "বিরতির সময় স্ক্রিন লক করুন",
     lockDelay: "এত মিনিট পরে লক করুন",
@@ -824,6 +841,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     general: "Geral",
     language: "Idioma",
     followSystem: "Seguir o sistema",
+    theme: "Tema",
+    themes: { system: "Seguir o sistema", dark: "Escuro", light: "Claro" },
     autostart: "Iniciar com o sistema",
     lockScreen: "Bloquear a tela durante a pausa",
     lockDelay: "Bloquear após (minutos de pausa)",
@@ -897,6 +916,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     general: "Allgemein",
     language: "Sprache",
     followSystem: "Systemsprache",
+    theme: "Design",
+    themes: { system: "Systemeinstellung", dark: "Dunkel", light: "Hell" },
     autostart: "Beim Anmelden starten",
     lockScreen: "Bildschirm in der Pause sperren",
     lockDelay: "Sperren nach (Minuten der Pause)",
@@ -971,6 +992,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     general: "一般",
     language: "言語",
     followSystem: "システムに従う",
+    theme: "テーマ",
+    themes: { system: "システムに従う", dark: "ダーク", light: "ライト" },
     autostart: "ログイン時に起動",
     lockScreen: "休憩中に画面をロック",
     lockDelay: "ロックまでの時間（休憩開始からの分）",
@@ -1044,6 +1067,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     general: "Generale",
     language: "Lingua",
     followSystem: "Segui il sistema",
+    theme: "Tema",
+    themes: { system: "Segui il sistema", dark: "Scuro", light: "Chiaro" },
     autostart: "Avvia all'accesso",
     lockScreen: "Blocca lo schermo durante la pausa",
     lockDelay: "Blocca dopo (minuti di pausa)",
@@ -1117,6 +1142,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     general: "일반",
     language: "언어",
     followSystem: "시스템 설정 따르기",
+    theme: "테마",
+    themes: { system: "시스템 설정 따르기", dark: "다크", light: "라이트" },
     autostart: "로그인 시 시작",
     lockScreen: "휴식 중 화면 잠금",
     lockDelay: "잠금까지 시간(휴식 시작 후 분)",
@@ -1190,6 +1217,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     general: "Umum",
     language: "Bahasa",
     followSystem: "Ikuti sistem",
+    theme: "Tema",
+    themes: { system: "Ikuti sistem", dark: "Gelap", light: "Terang" },
     autostart: "Mulai saat masuk",
     lockScreen: "Kunci layar saat istirahat",
     lockDelay: "Kunci setelah (menit istirahat)",

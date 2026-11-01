@@ -101,6 +101,7 @@
     {#if snap.canShrink || shrunk}
       <button class="ghost shrink" onclick={toggleShrink}>
         {shrunk ? s.unshrink : s.shrink}
+        {#if shrunk && snap.urgentLeftSecs !== null}{formatClock(snap.urgentLeftSecs)}{/if}
       </button>
     {/if}
     <!-- Language names are always shown in their own language -->

@@ -50,6 +50,8 @@ pub struct Snapshot {
     pub can_skip: bool,
     /// Offer "Urgent? Shrink it" on the overlay
     pub can_shrink: bool,
+    /// While shrunk, how long until the overlay restores itself; filled in by lib.rs, which tracks urgent mode
+    pub urgent_left_secs: Option<u64>,
     /// The overlay can be dragged within its screen when it doesn't fill it
     pub movable: bool,
     /// The overlay fills the screen in normal mode (so it can't be dragged even if movable)
@@ -326,6 +328,7 @@ impl Timer {
             can_shrink: self.phase != Phase::Working
                 && self.profile.force_rest
                 && self.profile.urgent_mode,
+            urgent_left_secs: None,
             movable: self.profile.movable,
             full_screen: self.profile.overlay_coverage >= 1.0,
         }
@@ -374,7 +377,7 @@ impl Timer {
     }
 }
 
-fn ceil_secs(d: Duration) -> u64 {
+pub(crate) fn ceil_secs(d: Duration) -> u64 {
     d.as_millis().div_ceil(1000) as u64
 }
 

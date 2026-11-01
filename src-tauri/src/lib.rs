@@ -33,6 +33,9 @@ const SHRINK_EVENT: &str = "overlay:shrunk";
 const AUTOSTART_EVENT: &str = "autostart:changed";
 /// Payload is the new config; matches CONFIG_EVENT in src/lib/config.ts
 const CONFIG_EVENT: &str = "config:changed";
+/// Total time the overlay may stay shrunk per break; then it restores itself and can't be shrunk again,
+/// so urgent mode can't be used to sit out the whole break
+const URGENT_LIMIT: Duration = Duration::from_secs(2 * 60);
 
 struct AppState {
     timer: Mutex<Timer>,
@@ -52,6 +55,14 @@ impl AppState {
 fn get_state(app: AppHandle) -> Snapshot {
     let state = app.state::<AppState>();
     let snap = state.timer.lock().unwrap().snapshot(Instant::now());
+    with_urgent(snap)
+}
+
+/// Adds the urgent mode state, which lives with the overlays rather than the timer
+fn with_urgent(mut snap: Snapshot) -> Snapshot {
+    let left = overlay::urgent_left(URGENT_LIMIT);
+    snap.can_shrink &= !left.is_zero();
+    snap.urgent_left_secs = overlay::is_shrunk().then(|| timer::ceil_secs(left));
     snap
 }
 
@@ -251,13 +262,17 @@ fn dismiss_break(app: AppHandle) -> Result<(), String> {
 #[tauri::command]
 async fn set_overlay_shrunk(app: AppHandle, shrunk: bool) -> Result<(), String> {
     if shrunk && !get_state(app.clone()).can_shrink {
-        return Err("The current enforcement level does not allow urgent mode".into());
+        return Err("Urgent mode is not allowed now, or its time in this break is used up".into());
     }
+    shrink_overlays(&app, shrunk);
+    Ok(())
+}
+
+fn shrink_overlays(app: &AppHandle, shrunk: bool) {
     let coverage = app.state::<AppState>().overlay_coverage(shrunk);
-    overlay::set_coverage(&app, coverage, shrunk);
+    overlay::set_coverage(app, coverage, shrunk);
     // Notify all overlays (including secondary screens) to update their draggable state
     let _ = app.emit(SHRINK_EVENT, shrunk);
-    Ok(())
 }
 
 /// Dev builds only: pressing Esc on the overlay ends the break immediately, for debugging
@@ -345,6 +360,7 @@ fn open_overlays(app: &AppHandle) {
 }
 
 fn broadcast(app: &AppHandle, snap: &Snapshot) {
+    let snap = &with_urgent(snap.clone());
     let _ = app.emit(STATE_EVENT, snap);
     tray::update(app, snap);
 }
@@ -386,6 +402,10 @@ fn spawn_ticker(app: AppHandle) {
                 phone::announce(&cfg);
             }
             None => {}
+        }
+        // Urgent time used up: restore the overlay; auto-lock below then applies again
+        if overlay::is_shrunk() && overlay::urgent_left(URGENT_LIMIT).is_zero() {
+            shrink_overlays(&app, false);
         }
         if snap.phase != Phase::Resting {
             locked = false;

@@ -3,6 +3,7 @@ mod bypass;
 mod config;
 mod i18n;
 mod idle;
+mod lock;
 #[cfg(windows)]
 mod msix;
 mod overlay;
@@ -253,7 +254,7 @@ async fn set_overlay_shrunk(app: AppHandle, shrunk: bool) -> Result<(), String> 
         return Err("The current enforcement level does not allow urgent mode".into());
     }
     let coverage = app.state::<AppState>().overlay_coverage(shrunk);
-    overlay::set_coverage(&app, coverage);
+    overlay::set_coverage(&app, coverage, shrunk);
     // Notify all overlays (including secondary screens) to update their draggable state
     let _ = app.emit(SHRINK_EVENT, shrunk);
     Ok(())
@@ -349,6 +350,8 @@ fn broadcast(app: &AppHandle, snap: &Snapshot) {
 }
 
 fn spawn_ticker(app: AppHandle) {
+    // Whether the screen was already locked in this break; the user may unlock and keep resting at the overlay
+    let mut locked = false;
     thread::spawn(move || loop {
         thread::sleep(Duration::from_millis(500));
         // Query before taking the lock: on Linux this spawns an external process
@@ -383,6 +386,17 @@ fn spawn_ticker(app: AppHandle) {
                 phone::announce(&cfg);
             }
             None => {}
+        }
+        if snap.phase != Phase::Resting {
+            locked = false;
+        } else if !locked && !overlay::is_shrunk() {
+            // Never while shrunk for urgent work; once restored, locks right away if the delay has passed
+            let delay = app.state::<AppState>().config.lock().unwrap().lock_delay();
+            let elapsed = Duration::from_secs(snap.total_secs.saturating_sub(snap.remaining_secs));
+            if delay.is_some_and(|d| elapsed >= d) {
+                locked = true;
+                thread::spawn(lock::lock_screen);
+            }
         }
         broadcast(&app, &snap);
     });

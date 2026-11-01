@@ -155,6 +155,10 @@ pub struct Config {
     pub fixed_breaks: Vec<FixedBreak>,
     /// Current enforcement level: a built-in level (see Profile::builtin) or the name of a custom profile
     pub level: String,
+    /// Lock the screen once a break has lasted lock_delay_minutes
+    pub lock_screen: bool,
+    /// How long into a break to lock the screen; at most rest_minutes
+    pub lock_delay_minutes: f64,
     /// Play a sound when a break ends
     pub sound_prompt: bool,
     /// The sound; see SOUNDS for values
@@ -180,6 +184,8 @@ impl Default for Config {
             idle_minutes: 5.0,
             fixed_breaks: BUILTIN_FIXED_BREAKS.iter().filter_map(|b| FixedBreak::builtin(b)).collect(),
             level: DEFAULT_LEVEL.to_string(),
+            lock_screen: false,
+            lock_delay_minutes: 3.0,
             sound_prompt: true,
             sound: DEFAULT_SOUND.to_string(),
             sound_file: String::new(),
@@ -249,6 +255,8 @@ impl Config {
              # {}\npostpone_minutes = {:?}\n\n\
              # {}\nidle_minutes = {:?}\n\n\
              # {}\nlevel = {}\n\n\
+             # {}\nlock_screen = {}\n\n\
+             # {}\nlock_delay_minutes = {:?}\n\n\
              # {}\nsound_prompt = {}\n\n\
              # {}\nsound = {}\n\n\
              # {}\nsound_file = {}\n\n\
@@ -268,6 +276,10 @@ impl Config {
             self.idle_minutes,
             c(&comment::LEVEL),
             quote(&self.level),
+            c(&comment::LOCK_SCREEN),
+            self.lock_screen,
+            c(&comment::LOCK_DELAY),
+            self.lock_delay_minutes,
             c(&comment::SOUND_PROMPT),
             self.sound_prompt,
             c(&comment::SOUND),
@@ -374,9 +386,17 @@ impl Config {
             s if s.contains("://") => s.to_string(),
             s => format!("https://{s}"),
         };
+        let rest_minutes = positive(self.rest_minutes, d.rest_minutes);
+        // Locking later than the break lasts would never happen
+        let lock_delay_minutes = if self.lock_delay_minutes.is_finite() && self.lock_delay_minutes >= 0.0 {
+            self.lock_delay_minutes
+        } else {
+            d.lock_delay_minutes
+        }
+        .min(rest_minutes);
         Self {
             work_minutes: positive(self.work_minutes, d.work_minutes),
-            rest_minutes: positive(self.rest_minutes, d.rest_minutes),
+            rest_minutes,
             postpone_minutes: positive(self.postpone_minutes, d.postpone_minutes),
             idle_minutes: if self.idle_minutes.is_finite() && self.idle_minutes >= 0.0 {
                 self.idle_minutes
@@ -385,6 +405,8 @@ impl Config {
             },
             fixed_breaks,
             level,
+            lock_screen: self.lock_screen,
+            lock_delay_minutes,
             sound_prompt: self.sound_prompt,
             sound,
             sound_file,
@@ -412,6 +434,11 @@ impl Config {
 
     pub fn postpone(&self) -> Duration {
         minutes(self.postpone_minutes)
+    }
+
+    /// How long into a break to lock the screen; None when auto-lock is off
+    pub fn lock_delay(&self) -> Option<Duration> {
+        self.lock_screen.then(|| minutes(self.lock_delay_minutes))
     }
 
     /// Idle detection threshold; None means disabled
@@ -512,6 +539,8 @@ mod tests {
                 },
             ],
             level: "我的 \"方案\"".into(),
+            lock_screen: true,
+            lock_delay_minutes: 0.25,
             sound_prompt: false,
             sound: "file".into(),
             sound_file: "C:\\Users\\me\\Music\\叮 \"ding\".mp3".into(),
@@ -570,6 +599,24 @@ mod tests {
         assert_eq!(cfg.work_minutes, 60.0);
         assert_eq!(cfg.profiles[0].overlay_coverage, 1.0);
         assert_eq!(cfg.profiles[0].urgent_scale, 0.9);
+    }
+
+    #[test]
+    fn lock_delay_is_within_rest() {
+        let delay = |lock_delay_minutes: f64| {
+            Config {
+                rest_minutes: 5.0,
+                lock_delay_minutes,
+                ..Config::default()
+            }
+            .sanitized()
+            .lock_delay_minutes
+        };
+        assert_eq!(delay(0.0), 0.0, "Lock as soon as the break starts");
+        assert_eq!(delay(2.5), 2.5);
+        assert_eq!(delay(8.0), 5.0, "No later than the break lasts");
+        assert_eq!(delay(-1.0), 3.0);
+        assert_eq!(Config::default().lock_delay(), None, "Off by default");
     }
 
     #[test]

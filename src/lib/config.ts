@@ -114,6 +114,10 @@ export interface Config {
   fixed_breaks: FixedBreak[];
   // A built-in level or the name of a custom profile
   level: string;
+  // Lock the screen once a break has lasted lock_delay_minutes
+  lock_screen: boolean;
+  // At most rest_minutes
+  lock_delay_minutes: number;
   // Play a sound when a break ends
   sound_prompt: boolean;
   sound: SoundId;
@@ -141,6 +145,8 @@ export const DEFAULT_CONFIG: Config = {
     { name: "lunch", enabled: false, time: "12:00", quiet_minutes: 30, rest_minutes: 30 },
   ],
   level: "medium",
+  lock_screen: false,
+  lock_delay_minutes: 3,
   sound_prompt: true,
   sound: "beep",
   sound_file: "",

@@ -102,6 +102,13 @@
     rest_minutes: !positive(draft.rest_minutes),
     postpone_minutes: !positive(draft.postpone_minutes),
     idle_minutes: !(positive(draft.idle_minutes) || draft.idle_minutes === 0),
+    // Not checked when auto-lock is off; can't be later than the break lasts
+    lock_delay_minutes:
+      draft.lock_screen &&
+      !(
+        (positive(draft.lock_delay_minutes) || draft.lock_delay_minutes === 0) &&
+        draft.lock_delay_minutes <= draft.rest_minutes
+      ),
     max_postpones: !count(profile.max_postpones),
     // Not checked when the sound is off; the backend replaces file with no path by the default sound
     sound_file: draft.sound_prompt && draft.sound === "file" && !draft.sound_file.trim(),
@@ -366,8 +373,27 @@
           <input type="checkbox" bind:checked={autostart} onchange={changeAutostart} />
           <span>{s.autostart}</span>
         </label>
-        <!-- Break-over alerts only apply after saving and are locked during a break -->
+        <!-- Auto-lock and break-over alerts only apply after saving and are locked during a break -->
         <fieldset disabled={locked}>
+          <label class="check">
+            <input type="checkbox" bind:checked={draft.lock_screen} />
+            <span>{s.lockScreen}</span>
+          </label>
+          <label class="sub">
+            <span>{s.lockDelay}</span>
+            <input
+              type="number"
+              min="0"
+              max={draft.rest_minutes}
+              step="any"
+              disabled={!draft.lock_screen}
+              class:invalid={errors.lock_delay_minutes}
+              bind:value={draft.lock_delay_minutes}
+            />
+          </label>
+          {#if errors.lock_delay_minutes}
+            <p class="hint sub warn">{s.lockDelayRule}</p>
+          {/if}
           <label class="check">
             <input type="checkbox" bind:checked={draft.sound_prompt} />
             <span>{s.soundPrompt}</span>

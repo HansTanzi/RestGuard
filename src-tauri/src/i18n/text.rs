@@ -636,6 +636,38 @@ pub mod config {
         id: "Profil kustom, satu [[profiles]] untuk masing-masing. max_postpones: penundaan sebelum istirahat penuh; urgent_mode: izinkan memperkecil lapisan; meeting_detection: deteksi aplikasi rapat; force_rest = false hanya menampilkan jendela yang bisa ditutup; allow_skip: tetap tampilkan \"Lewati istirahat ini\" saat istirahat dipaksa;overlay_coverage: bagian setiap layar yang ditutupi, 0.1 ~ 1.0; urgent_scale: skala mode darurat relatif terhadap overlay_coverage, 0.1 ~ 0.9; movable: izinkan menyeret lapisan di dalam layarnya saat tidak layar penuh",
     };
 
+    pub const LOCK_SCREEN: Tr = Tr {
+        zh: "休息开始一段时间后是否自动锁屏（true / false），解锁后遮罩继续显示剩余休息时间",
+        en: "Lock the screen once a break is under way (true / false); the overlay shows the rest of the break after unlocking",
+        hi: "ब्रेक शुरू होने पर स्क्रीन अपने आप लॉक करें (true / false); अनलॉक करने के बाद ओवरले बचा हुआ ब्रेक दिखाता है",
+        es: "Bloquear la pantalla al empezar el descanso (true / false); al desbloquear, la superposición muestra el resto del descanso",
+        ar: "قفل الشاشة عند بدء الاستراحة (true / false)؛ بعد إلغاء القفل تعرض الطبقة ما تبقى من الاستراحة",
+        fr: "Verrouiller l'écran au début de la pause (true / false) ; après déverrouillage, le voile affiche le reste de la pause",
+        bn: "বিরতি শুরু হলে স্ক্রিন লক করা হবে কি না (true / false); আনলক করার পর ওভারলে বিরতির বাকি সময় দেখায়",
+        pt: "Bloquear a tela quando a pausa começar (true / false); após desbloquear, a sobreposição mostra o restante da pausa",
+        de: "Beim Start der Pause den Bildschirm sperren (true / false); nach dem Entsperren zeigt das Overlay die restliche Pause",
+        ja: "休憩が始まったら画面をロックするか（true / false）。ロック解除後はオーバーレイが残りの休憩時間を表示します",
+        it: "Bloccare lo schermo all'inizio della pausa (true / false); dopo lo sblocco l'overlay mostra il resto della pausa",
+        ko: "휴식이 시작되면 화면을 잠글지 여부(true / false). 잠금을 해제하면 오버레이가 남은 휴식 시간을 보여 줍니다",
+        id: "Kunci layar saat istirahat dimulai (true / false); setelah dibuka, overlay menampilkan sisa waktu istirahat",
+    };
+
+    pub const LOCK_DELAY: Tr = Tr {
+        zh: "休息开始多少分钟后锁屏，0 表示立即锁屏，不能超过 rest_minutes",
+        en: "Minutes into a break before locking the screen; 0 locks right away. At most rest_minutes",
+        hi: "ब्रेक शुरू होने के कितने मिनट बाद स्क्रीन लॉक हो; 0 का मतलब तुरंत। rest_minutes से ज़्यादा नहीं",
+        es: "Minutos de descanso antes de bloquear la pantalla; 0 bloquea al instante. Como máximo rest_minutes",
+        ar: "عدد دقائق الاستراحة قبل قفل الشاشة؛ 0 يقفلها فورًا. لا يتجاوز rest_minutes",
+        fr: "Minutes de pause avant de verrouiller l'écran ; 0 verrouille tout de suite. Au plus rest_minutes",
+        bn: "বিরতি শুরুর কত মিনিট পরে স্ক্রিন লক হবে; 0 মানে সঙ্গে সঙ্গে। rest_minutes-এর বেশি নয়",
+        pt: "Minutos de pausa antes de bloquear a tela; 0 bloqueia na hora. No máximo rest_minutes",
+        de: "Minuten nach Pausenbeginn, bis der Bildschirm gesperrt wird; 0 sperrt sofort. Höchstens rest_minutes",
+        ja: "休憩開始から画面をロックするまでの分数。0 ですぐにロック。rest_minutes 以下",
+        it: "Minuti di pausa prima di bloccare lo schermo; 0 blocca subito. Al massimo rest_minutes",
+        ko: "휴식 시작 후 화면을 잠그기까지의 분. 0이면 바로 잠급니다. rest_minutes 이하",
+        id: "Menit setelah istirahat dimulai sebelum layar dikunci; 0 langsung mengunci. Paling lama rest_minutes",
+    };
+
     pub const SOUND_PROMPT: Tr = Tr {
         zh: "休息结束时是否播放提示音（true / false）",
         en: "Play a sound when a break ends (true / false)",
@@ -734,7 +766,7 @@ pub mod config {
 
     /// For tests: all comments
     #[cfg(test)]
-    pub const ALL: [&Tr; 15] = [
+    pub const ALL: [&Tr; 17] = [
         &HEADER,
         &UNITS,
         &WORK,
@@ -743,6 +775,8 @@ pub mod config {
         &IDLE,
         &FIXED_BREAKS,
         &LEVEL,
+        &LOCK_SCREEN,
+        &LOCK_DELAY,
         &SOUND_PROMPT,
         &SOUND,
         &SOUND_FILE,

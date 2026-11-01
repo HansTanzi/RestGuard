@@ -69,6 +69,8 @@ struct Layout {
     /// Current coverage fraction; when not draggable, windows are pinned to the centered position it implies
     coverage: f64,
     movable: bool,
+    /// Urgent mode: the user is dealing with something urgent, so auto-lock waits
+    shrunk: bool,
 }
 
 static LAYOUT: LazyLock<Mutex<Layout>> = LazyLock::new(Default::default);
@@ -102,6 +104,7 @@ pub fn open_all(app: &AppHandle, coverage: f64, forced: bool, movable: bool) {
         let mut layout = LAYOUT.lock().unwrap();
         layout.coverage = coverage;
         layout.movable = movable;
+        layout.shrunk = false;
     }
 
     for (i, monitor) in monitors.iter().enumerate() {
@@ -192,11 +195,12 @@ pub fn close_all(app: &AppHandle) {
 
 /// Scales all overlays to a fraction (still centered and on top). Urgent mode passes a smaller fraction, exposing the edges for saving files etc.;
 /// leaving it passes the normal fraction back, restoring the original size and centering
-pub fn set_coverage(app: &AppHandle, coverage: f64) {
+pub fn set_coverage(app: &AppHandle, coverage: f64, shrunk: bool) {
     // Update the fraction before moving windows so the resulting Moved events are constrained to the new position
     let homes = {
         let mut layout = LAYOUT.lock().unwrap();
         layout.coverage = coverage;
+        layout.shrunk = shrunk;
         layout.homes.clone()
     };
     for (label, window) in app.webview_windows() {
@@ -206,6 +210,11 @@ pub fn set_coverage(app: &AppHandle, coverage: f64) {
             let _ = window.set_position(position(area.x, area.y));
         }
     }
+}
+
+/// Whether the overlays are shrunk for urgent mode
+pub fn is_shrunk() -> bool {
+    LAYOUT.lock().unwrap().shrunk
 }
 
 /// Called after a window moves: if it was dragged (or moved with Win+Shift+arrow) off its screen, pulls it back;

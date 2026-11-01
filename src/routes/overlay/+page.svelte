@@ -50,7 +50,8 @@
     invoke("set_lang", { lang: value }).catch(console.error);
   }
 
-  // Urgent mode: all overlays shrink by half but stay on top, enough to handle something urgent but not to keep working comfortably.
+  // Urgent mode: all overlays shrink by half but stay on top, enough to handle something urgent but not to keep working comfortably;
+  // the break starts over and pauses meanwhile and the backend restores the overlay once the time allowed is used up.
   // The backend broadcasts SHRINK_EVENT after scaling, and each overlay updates shrunk accordingly
   function toggleShrink() {
     invoke("set_overlay_shrunk", { shrunk: !shrunk }).catch(console.error);

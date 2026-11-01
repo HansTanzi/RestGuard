@@ -91,6 +91,8 @@ pub struct Timer {
     meeting_app: Option<String>,
     /// Remaining work time frozen while the user is away
     away_remaining: Option<Duration>,
+    /// When the break was paused for urgent mode (overlay shrunk); the break starts over, and time spent shrunk doesn't count as rest
+    paused_at: Option<Instant>,
 }
 
 impl Timer {
@@ -116,6 +118,7 @@ impl Timer {
             away: false,
             meeting_app: None,
             away_remaining: None,
+            paused_at: None,
         }
     }
 
@@ -208,12 +211,30 @@ impl Timer {
                 }
                 Some(TimerEvent::RestStarted)
             }
+            Phase::Resting if self.paused_at.is_some() => None,
             _ if now < self.deadline => None,
             Phase::Resting => {
                 self.phase = Phase::RestOver;
                 Some(TimerEvent::RestFinished)
             }
             Phase::RestOver => None,
+        }
+    }
+
+    /// Urgent mode (overlay shrunk) interrupts the break: it starts over from its full length and stays paused there,
+    /// counting down again once restored. Only a running break pauses; one that's over just waits for "Start working"
+    pub fn pause_rest(&mut self, now: Instant, paused: bool) {
+        if !paused {
+            if let Some(at) = self.paused_at.take() {
+                let shift = now.saturating_duration_since(at);
+                self.started += shift;
+                self.deadline += shift;
+            }
+        } else if self.phase == Phase::Resting && self.paused_at.is_none() {
+            let total = self.deadline - self.started;
+            self.started = now;
+            self.deadline = now + total;
+            self.paused_at = Some(now);
         }
     }
 
@@ -308,6 +329,8 @@ impl Timer {
     }
 
     pub fn snapshot(&self, now: Instant) -> Snapshot {
+        // A paused break shows the time left when it was paused
+        let now = self.paused_at.unwrap_or(now);
         let remaining = self.deadline.saturating_duration_since(now);
         Snapshot {
             phase: self.phase,
@@ -359,6 +382,7 @@ impl Timer {
         self.away = false;
         self.meeting_app = None;
         self.away_remaining = None;
+        self.paused_at = None;
         self.started = now;
         self.deadline = now + self.rest;
     }
@@ -372,6 +396,7 @@ impl Timer {
         self.fixed_rest = false;
         self.meeting_app = None;
         self.away_remaining = None;
+        self.paused_at = None;
         self.started = now;
         self.deadline = now + length;
     }
@@ -405,6 +430,25 @@ mod tests {
         assert_eq!(t.tick(t0 + 71 * MIN), None);
         assert!(t.start_work(t0 + 72 * MIN));
         assert_eq!(t.snapshot(t0 + 72 * MIN).remaining_secs, 3600);
+    }
+
+    #[test]
+    fn shrunk_time_does_not_count_as_rest() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        let rest = t0 + 60 * MIN;
+        t.tick(rest);
+
+        t.pause_rest(rest + 8 * MIN, true);
+        let snap = t.snapshot(rest + 20 * MIN);
+        assert_eq!(t.tick(rest + 20 * MIN), None, "A paused break doesn't finish");
+        assert_eq!(snap.remaining_secs, 10 * 60, "Shrinking starts the break over");
+        assert_eq!(snap.total_secs, 10 * 60);
+
+        t.pause_rest(rest + 22 * MIN, false);
+        assert_eq!(t.snapshot(rest + 22 * MIN).remaining_secs, 10 * 60);
+        assert_eq!(t.tick(rest + 31 * MIN), None);
+        assert_eq!(t.tick(rest + 32 * MIN), Some(TimerEvent::RestFinished));
     }
 
     #[test]

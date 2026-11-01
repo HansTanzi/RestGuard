@@ -256,7 +256,7 @@ fn dismiss_break(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::skip)
 }
 
-/// The overlay's "shrink" button: shrinks the overlay to deal with something urgent without ending the break.
+/// The overlay's "shrink" button: shrinks the overlay to deal with something urgent without ending the break; the break starts over and pauses meanwhile.
 /// Refused when the current enforcement level doesn't allow urgent mode.
 /// async so it runs off the main thread, avoiding a hang while resizing windows on Windows
 #[tauri::command]
@@ -269,7 +269,10 @@ async fn set_overlay_shrunk(app: AppHandle, shrunk: bool) -> Result<(), String> 
 }
 
 fn shrink_overlays(app: &AppHandle, shrunk: bool) {
-    let coverage = app.state::<AppState>().overlay_coverage(shrunk);
+    let state = app.state::<AppState>();
+    // Dealing with something urgent interrupts the break: it starts over and waits until the overlay is restored
+    state.timer.lock().unwrap().pause_rest(Instant::now(), shrunk);
+    let coverage = state.overlay_coverage(shrunk);
     overlay::set_coverage(app, coverage, shrunk);
     // Notify all overlays (including secondary screens) to update their draggable state
     let _ = app.emit(SHRINK_EVENT, shrunk);

@@ -30,10 +30,12 @@ export function setTheme(theme: Theme) {
 }
 
 // Resolves "system" to dark or light for the stylesheet (src/lib/theme.css), and matches the native title bar.
-// The window theme must go back to the system's first: on macOS it also drives prefers-color-scheme in the WebView
+// The window theme must go back to the system's first: on macOS it also drives prefers-color-scheme in the WebView.
+// Break overlays (labels overlay-*, see overlay.rs) always stay dark: a full-screen light page is glaring right when the eyes should rest
 function applyTheme() {
-  const theme = getTheme();
-  getCurrentWindow()
+  const win = getCurrentWindow();
+  const theme: Theme = win.label.startsWith("overlay-") ? "dark" : getTheme();
+  win
     .setTheme(theme === "system" ? null : theme)
     .catch(console.error);
   document.documentElement.dataset.theme = theme === "system" ? (systemDark() ? "dark" : "light") : theme;

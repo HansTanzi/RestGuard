@@ -1,0 +1,67 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please check the [Platform limitations](https://github.com/HansTanzi/RestGuard#platform-limitations) first; some things (e.g. Force Quit on macOS, the overlay on Wayland) can't be fixed.
+        For security problems, please don't open an issue; see [SECURITY.md](https://github.com/HansTanzi/RestGuard/blob/main/SECURITY.md).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead? Screenshots help.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Tip — set `work_minutes = 0.1` in config.toml to trigger a break in 6 seconds.
+      placeholder: |
+        1. Set enforcement to High
+        2. Wait for the break
+        3. ...
+  - type: input
+    id: version
+    attributes:
+      label: RestGuard version
+      description: Shown in the About window (tray menu → About)
+      placeholder: e.g. 0.1.19
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true
+  - type: input
+    id: os-details
+    attributes:
+      label: OS version and details
+      description: On Linux, include the distro, desktop environment and X11 / Wayland. Number of monitors if relevant.
+      placeholder: e.g. Windows 11 24H2, 2 monitors / Ubuntu 24.04 GNOME X11
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install it?
+      options:
+        - WinGet
+        - Scoop
+        - Microsoft Store
+        - Homebrew
+        - APT
+        - Downloaded from Releases
+        - Built from source
+  - type: textarea
+    id: config
+    attributes:
+      label: config.toml (optional)
+      description: Remove your ntfy topic before pasting.
+      render: toml

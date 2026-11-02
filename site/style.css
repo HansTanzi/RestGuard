@@ -223,6 +223,30 @@ code { font-family: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace; }
 .verify summary { cursor: pointer; font-weight: 600; }
 .verify p { color: var(--muted); font-size: 15px; }
 
+.why-for { font-weight: 600; margin: 0; }
+#why .features { margin-top: 12px; }
+
+.rivals { min-width: 720px; font-size: 14px; }
+.rivals td { vertical-align: top; }
+.rivals th:nth-child(2), .rivals td:nth-child(2) { background: var(--accent-soft); }
+.rivals thead th:nth-child(2) { color: var(--accent); }
+.cmp-note { margin-top: 12px; max-width: 760px; }
+
+:not(pre) > code {
+  font-size: 0.9em;
+  background: var(--accent-soft);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+.faq { display: grid; gap: 10px; margin-top: 20px; }
+.faq details { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 20px; }
+.faq summary { cursor: pointer; font-weight: 600; }
+.faq p { color: var(--muted); font-size: 15px; margin: 10px 0 2px; }
+
+#contribute p { max-width: 680px; }
+.cta-left { justify-content: flex-start; margin-top: 16px; }
+
 .footer { text-align: center; padding: 32px 16px 48px; font-size: 14px; }
 .muted { color: var(--muted); }
 

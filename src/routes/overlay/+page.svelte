@@ -50,7 +50,8 @@
     invoke("set_lang", { lang: value }).catch(console.error);
   }
 
-  // Urgent mode: all overlays shrink by half but stay on top, enough to handle something urgent but not to keep working comfortably.
+  // Urgent mode: all overlays shrink by half but stay on top, enough to handle something urgent but not to keep working comfortably;
+  // the break starts over and pauses meanwhile and the backend restores the overlay once the time allowed is used up.
   // The backend broadcasts SHRINK_EVENT after scaling, and each overlay updates shrunk accordingly
   function toggleShrink() {
     invoke("set_overlay_shrunk", { shrunk: !shrunk }).catch(console.error);
@@ -101,6 +102,7 @@
     {#if snap.canShrink || shrunk}
       <button class="ghost shrink" onclick={toggleShrink}>
         {shrunk ? s.unshrink : s.shrink}
+        {#if shrunk && snap.urgentLeftSecs !== null}{formatClock(snap.urgentLeftSecs)}{/if}
       </button>
     {/if}
     <!-- Language names are always shown in their own language -->
@@ -164,13 +166,6 @@
   }
 
   main {
-    --bg-1: #0f172a;
-    --bg-2: #1e3a5f;
-    --fg: #e2e8f0;
-    --muted: #94a3b8;
-    --accent: #38bdf8;
-    --warn: #f87171;
-
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -178,7 +173,7 @@
     justify-content: center;
     gap: 1.5rem;
     color: var(--fg);
-    background: radial-gradient(ellipse at center, var(--bg-2), var(--bg-1) 70%);
+    background: radial-gradient(ellipse at center, var(--glow), var(--bg-1) 70%);
     font-family:
       system-ui,
       -apple-system,
@@ -224,7 +219,7 @@
   }
 
   .track {
-    stroke: rgb(255 255 255 / 0.08);
+    stroke: var(--track);
   }
 
   .bar {
@@ -280,27 +275,26 @@
   }
 
   .primary:hover:not(:disabled) {
-    background: #7dd3fc;
+    background: var(--accent-hover);
   }
 
   .ghost {
     padding: 0.4rem 1.2rem;
     font-size: 0.9rem;
-    border: 1px solid rgb(255 255 255 / 0.2);
+    border: 1px solid var(--line-strong);
     color: var(--muted);
     background: transparent;
   }
 
   .ghost:hover:not(:disabled) {
-    background: rgb(255 255 255 / 0.06);
+    background: var(--hover);
   }
 
   select.ghost {
-    color-scheme: dark;
     outline: none;
   }
 
-  /* The dropdown list doesn't inherit the transparent background, so give it a dark one */
+  /* The dropdown list doesn't inherit the transparent background, so give it the theme's one */
   option {
     color: var(--fg);
     background: var(--bg-1);

@@ -1,0 +1,36 @@
+RestGuard ist eine Pausenerinnerung, die dich wirklich Pause machen lässt.
+
+Anders als übliche Pausenerinnerungen bietet RestGuard drei Strengestufen. Es kann dich sanft erinnern – oder dich einfach stoppen, wenn du wieder „nur noch fünf Minuten“ weiterarbeiten willst.
+
+■ Pausen, die wirklich eingehalten werden
+• Nach jeweils 60 Minuten Arbeit folgt eine erzwungene Pause von 10 Minuten (beide Zeiten sind einstellbar)
+• Mehrere Monitore: Jeder Bildschirm wird abgedeckt
+• Während der Pause lässt sich das Overlay nicht schließen (Alt+F4 wirkt nicht), und RestGuard kann nicht über das Tray-Menü beendet werden
+• Um 5 Minuten aufschieben, bis zu 3-mal; nach einer vollständigen Pause wird der Zähler zurückgesetzt
+• Notfallmodus: Wenn etwas dringend ist, verkleinerst du das Overlay vorübergehend und speicherst deine Arbeit – der Countdown läuft dabei weiter
+
+■ Drei Strengestufen für unterschiedliche Situationen
+• Hohe Strenge: für alle, die streng mit sich sind, aber immer noch „fünf Minuten“ wollen. Das Overlay füllt den ganzen Bildschirm und lässt sich nicht verschieben, Aufschieben ist nur einmal möglich, und es gibt keinen Notfallmodus
+• Mittlere Strenge (Standard): für den Arbeitsalltag. Bis zu 3-mal aufschieben, mit Notfallmodus und Meeting-Erkennung. Du kannst weiterarbeiten, aber es wird spürbar unbequemer – ein deutlicher Anstoß, die Pause zu machen
+• Niedrige Strenge: für alle, die nur eine sanfte Erinnerung möchten. Das Overlay bedeckt 80 % des Bildschirms, und eine Pause kann übersprungen werden
+
+■ Umfassend anpassbar
+Lege auf Basis einer beliebigen integrierten Stufe eigene Profile an und stelle jede Option einzeln ein: Anzahl der Aufschübe, ob Beenden oder Überspringen erlaubt ist, Notfallmodus, Abdeckung des Overlays (10 %–100 %), ob sich das Overlay verschieben lässt und Erkennung von Meeting-Apps. Speichere mehrere Profile und wechsle jederzeit zwischen ihnen.
+
+■ Stört nicht bei wichtiger Arbeit
+• Meeting-Erkennung: Wenn Zoom, Microsoft Teams, Webex oder Tencent Meeting im Vordergrund ist oder dein Mikrofon verwendet wird, wartet die Pause, bis das Meeting vorbei ist. Während einer Pause kannst du außerdem auf „Ich bin in einem Meeting“ klicken und wirst in 15 Minuten erneut erinnert
+• Inaktivitätserkennung: 5 Minuten ohne Tastatur- oder Mauseingabe gelten als abwesend, und der Arbeits-Countdown pausiert; warst du so lange weg wie eine Pause dauert, zählt das als Pause
+
+■ Das Pausenende nie verpassen – auch nicht fern vom Schreibtisch
+• Zum Ende der Pause wird ein Ton abgespielt: ein integrierter Klang oder deine eigene Audiodatei
+• Handy-Benachrichtigungen: per ntfy auf Android oder iOS, damit du auch fern vom Computer weißt, wann es weitergeht; unter Android kann es wie ein Wecker klingeln, bis du die Benachrichtigung wegtippst
+• Smartwatches: Benachrichtigungen vom Handy erscheinen auch auf Apple Watch, Wear OS, Galaxy Watch sowie Uhren und Fitnessarmbändern von Xiaomi, Huawei, Garmin und anderen
+
+■ Klein und schnell
+Mit Rust + Tauri entwickelt, nutzt RestGuard die im System integrierte WebView und braucht im Hintergrund kaum Ressourcen.
+
+■ Außerdem
+• Tray-Menü: verbleibende Zeit anzeigen, früher Pause machen, Einstellungen öffnen, Autostart, Strengeprofil wechseln
+• 13 Sprachen: Deutsch, Englisch, vereinfachtes Chinesisch, Hindi, Spanisch, Arabisch, Französisch, Bengalisch, Portugiesisch, Japanisch, Italienisch, Koreanisch und Indonesisch
+• Kostenlos und Open Source, wahlweise unter MIT- oder Apache-2.0-Lizenz
+• Datenschutz zuerst: keine Datenerfassung, keine Konten, keine Analyse oder Telemetrie; eine Internetverbindung wird nur für Handy-Benachrichtigungen genutzt, wenn du sie einschaltest

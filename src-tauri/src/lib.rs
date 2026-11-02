@@ -3,6 +3,7 @@ mod bypass;
 mod config;
 mod i18n;
 mod idle;
+mod lock;
 #[cfg(windows)]
 mod msix;
 mod overlay;
@@ -32,6 +33,9 @@ const SHRINK_EVENT: &str = "overlay:shrunk";
 const AUTOSTART_EVENT: &str = "autostart:changed";
 /// Payload is the new config; matches CONFIG_EVENT in src/lib/config.ts
 const CONFIG_EVENT: &str = "config:changed";
+/// Total time the overlay may stay shrunk per break; then it restores itself and can't be shrunk again,
+/// so urgent mode can't be used to sit out the whole break
+const URGENT_LIMIT: Duration = Duration::from_secs(2 * 60);
 
 struct AppState {
     timer: Mutex<Timer>,
@@ -51,6 +55,14 @@ impl AppState {
 fn get_state(app: AppHandle) -> Snapshot {
     let state = app.state::<AppState>();
     let snap = state.timer.lock().unwrap().snapshot(Instant::now());
+    with_urgent(snap)
+}
+
+/// Adds the urgent mode state, which lives with the overlays rather than the timer
+fn with_urgent(mut snap: Snapshot) -> Snapshot {
+    let left = overlay::urgent_left(URGENT_LIMIT);
+    snap.can_shrink &= !left.is_zero();
+    snap.urgent_left_secs = overlay::is_shrunk().then(|| timer::ceil_secs(left));
     snap
 }
 
@@ -244,19 +256,26 @@ fn dismiss_break(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::skip)
 }
 
-/// The overlay's "shrink" button: shrinks the overlay to deal with something urgent without ending the break.
+/// The overlay's "shrink" button: shrinks the overlay to deal with something urgent without ending the break; the break starts over and pauses meanwhile.
 /// Refused when the current enforcement level doesn't allow urgent mode.
 /// async so it runs off the main thread, avoiding a hang while resizing windows on Windows
 #[tauri::command]
 async fn set_overlay_shrunk(app: AppHandle, shrunk: bool) -> Result<(), String> {
     if shrunk && !get_state(app.clone()).can_shrink {
-        return Err("The current enforcement level does not allow urgent mode".into());
+        return Err("Urgent mode is not allowed now, or its time in this break is used up".into());
     }
-    let coverage = app.state::<AppState>().overlay_coverage(shrunk);
-    overlay::set_coverage(&app, coverage);
+    shrink_overlays(&app, shrunk);
+    Ok(())
+}
+
+fn shrink_overlays(app: &AppHandle, shrunk: bool) {
+    let state = app.state::<AppState>();
+    // Dealing with something urgent interrupts the break: it starts over and waits until the overlay is restored
+    state.timer.lock().unwrap().pause_rest(Instant::now(), shrunk);
+    let coverage = state.overlay_coverage(shrunk);
+    overlay::set_coverage(app, coverage, shrunk);
     // Notify all overlays (including secondary screens) to update their draggable state
     let _ = app.emit(SHRINK_EVENT, shrunk);
-    Ok(())
 }
 
 /// Dev builds only: pressing Esc on the overlay ends the break immediately, for debugging
@@ -344,11 +363,14 @@ fn open_overlays(app: &AppHandle) {
 }
 
 fn broadcast(app: &AppHandle, snap: &Snapshot) {
+    let snap = &with_urgent(snap.clone());
     let _ = app.emit(STATE_EVENT, snap);
     tray::update(app, snap);
 }
 
 fn spawn_ticker(app: AppHandle) {
+    // Whether the screen was already locked in this break; the user may unlock and keep resting at the overlay
+    let mut locked = false;
     thread::spawn(move || loop {
         thread::sleep(Duration::from_millis(500));
         // Query before taking the lock: on Linux this spawns an external process
@@ -360,6 +382,7 @@ fn spawn_ticker(app: AppHandle) {
             if let Some(idle) = idle {
                 timer.idle(now, idle);
             }
+            timer.defer(now, chrono::Local::now().time());
             // Only check the foreground app once a break is due; the enforcement level can disable meeting detection
             let detect = timer.profile().meeting_detection;
             let held = if detect && timer.rest_due(now) {
@@ -382,6 +405,21 @@ fn spawn_ticker(app: AppHandle) {
                 phone::announce(&cfg);
             }
             None => {}
+        }
+        // Urgent time used up: restore the overlay; auto-lock below then applies again
+        if overlay::is_shrunk() && overlay::urgent_left(URGENT_LIMIT).is_zero() {
+            shrink_overlays(&app, false);
+        }
+        if snap.phase != Phase::Resting {
+            locked = false;
+        } else if !locked && !overlay::is_shrunk() {
+            // Never while shrunk for urgent work; once restored, locks right away if the delay has passed
+            let delay = app.state::<AppState>().config.lock().unwrap().lock_delay();
+            let elapsed = Duration::from_secs(snap.total_secs.saturating_sub(snap.remaining_secs));
+            if delay.is_some_and(|d| elapsed >= d) {
+                locked = true;
+                thread::spawn(lock::lock_screen);
+            }
         }
         broadcast(&app, &snap);
     });

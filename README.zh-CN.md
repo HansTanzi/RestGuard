@@ -1,6 +1,28 @@
-# RestGuard
+<p align="center">
+  <img src="./src-tauri/icons/128x128@2x.png" width="128" alt="RestGuard logo">
+</p>
 
-[English](README.md) | 简体中文 | [Deutsch](README.de.md)
+<h1 align="center">RestGuard</h1>
+
+<p align="center"><strong>一个你没法无视的休息提醒。</strong></p>
+
+<p align="center">免费开源，支持 Windows、macOS 和 Linux：既可提醒你休息，也可强制你休息。</p>
+
+<p align="center">
+  <a href="https://github.com/HansTanzi/RestGuard/releases/latest"><img src="https://img.shields.io/github/v/release/HansTanzi/RestGuard?label=release" alt="Latest release"></a>
+  <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
+  <a href="#安装"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
+  <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="#许可证"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
+</p>
+
+<p align="center">
+  安装： <a href="#windows"><b>Windows</b></a> · <a href="#macos"><b>macOS</b></a> · <a href="#linux"><b>Linux</b></a> · <a href="https://hanstanzi.github.io/RestGuard/">官网</a>
+</p>
+
+<p align="center"><a href="README.md">English</a> | 简体中文 | <a href="README.de.md">Deutsch</a> | <a href="README.ja.md">日本語</a> | <a href="README.es.md">Español</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.ko.md">한국어</a></p>
+
+![休息遮罩-高等强制](./docs/images/CN/HighEnforcement.webp)
 
 跨平台的休息提醒工具：特色是内置三种不同的强制等级，既可提醒你休息，也可强制你休息。相比同类软件，强制模式是最大特色。
 
@@ -8,9 +30,26 @@
 - 中等强制模式下：依然可以办公，但是会尽可能降低办公体验，从而半强制你休息。
 - 低强制模式下：和其他的休息提醒软件一样，主要是提醒。
 
-> 前身是 Windows 专用的 C# 版 [ProtectEyes](./ProtectEyes)。
+> 前身是我多年前开源的 Windows 专用 C# 应用 [ProtectEyes](https://github.com/HansTanzi/ProtectEyes)。
 
-![休息遮罩-低等强制](./docs/images/CN/LowEnforcement.webp)
+一行命令安装：
+
+```sh
+winget install HansTanzi.RestGuard            # Windows
+brew install --cask hanstanzi/tap/restguard   # macOS
+```
+
+APT、Scoop、Linux 上的 Homebrew 以及免安装版下载，见[安装](#安装)。
+
+## 为什么选 RestGuard
+
+大多数休息提醒都很容易被无视：弹出一个通知，随手关掉，“再干五分钟”就变成了两个小时。长时间盯着屏幕与眼疲劳、干眼症、颈肩腰背痛和重复性劳损（RSI）都有关联。20-20-20 法则、每小时休息一下之类的建议，只有真的去休息才有用。
+
+RestGuard 适合那些知道该休息、却总在拖延的人：
+
+- **不是点一下就能关掉。** 高等强制模式下，遮罩覆盖所有屏幕，直到休息结束。
+- **知道什么时候不该打扰。** 推迟、紧急模式和会议检测，让休息既不会搅了会议，也不会让你丢掉没保存的工作。
+- **严格程度由你决定。** 高、中、低三档任选，也可以自建方案。
 
 ## 功能
 
@@ -35,10 +74,6 @@
 | 允许关闭 / 跳过本次休息 | ✗ | ✗ | ✓ |
 | 遮罩覆盖屏幕 | 100% | 100% | 80% |
 | 遮罩可拖动 | ✗ | ✓ | ✓ |
-
-高等强制模式
-
-![休息遮罩-高等强制](./docs/images/CN/HighEnforcement.webp)
 
 中等强制模式
 
@@ -73,7 +108,7 @@
 ### 小巧轻快
 
 - 基于 Rust + Tauri 2 构建，使用系统自带的 WebView，不捆绑浏览器内核，常驻后台几乎不占资源
-- 体积小：下载仅 2.5 ~ 4.6 MB（Windows 4.6 MB、macOS 4.0 MB、Linux 2.5 MB）
+- 体积小：下载仅约 3–6 MB，只有基于 Electron 的同类软件的几十分之一（见[与同类软件对比](#与同类软件对比)）
 - 绿色免安装：Windows 版是单个 exe，macOS 版是解压即用的 `.app`，删掉即卸载
 
 ### 其他
@@ -85,6 +120,22 @@
 - 支持简体中文、英语、印地语、西班牙语、阿拉伯语、法语、孟加拉语、葡萄牙语、德语、日语、意大利语、韩语和印尼语。界面语言默认跟随系统（系统语言不在支持列表中时显示英文），也可以随时在托盘菜单的「语言 / Language」中切换
 
 ![托盘菜单](./docs/images/CN/TrayMenu.webp)
+
+## 与同类软件对比
+
+| | RestGuard | [Stretchly](https://github.com/hovancik/stretchly) | [Workrave](https://github.com/rcaelers/workrave) | [Safe Eyes](https://github.com/slgobinath/SafeEyes) |
+|---|:---:|:---:|:---:|:---:|
+| Windows | ✓ | ✓ | ✓ | ✗ |
+| macOS | ✓ | ✓ | ✗ | ✗ |
+| Linux | ✓ | ✓ | ✓ | ✓ |
+| 下载体积 | **约 3–6 MB** | Windows 163 MB<br>macOS 187 MB<br>Linux 155 MB | Windows 61 MB<br>Linux 64 MB| Linux 0.3 MB |
+| 强制方式 | 三档 + 自定义方案 | 严格模式（开 / 关） | 可锁定输入和屏幕 | 可禁用键盘 |
+| 开会时暂缓休息 | 识别 Zoom、Teams、Webex、腾讯会议 | 跟随勿扰模式；可按应用排除 | — | — |
+| 休息结束时通知手机 / 手表 | ✓（ntfy） | — | — | — |
+| 技术栈 | Rust + Tauri（系统 WebView） | Electron（内置 Chromium） | C++ | Python + GTK |
+| 许可证 | MIT / Apache-2.0 | BSD-2-Clause | GPL-3.0 | GPL-3.0 |
+
+— 表示没有内置该功能。下载体积取自各项目在 GitHub 上的最新版本（Stretchly 1.22.1、Workrave 1.11.5、Safe Eyes 3.5.1），分别为 Windows 安装包或 exe、macOS 下载包和 Linux `.deb`。以上依据各项目 2026 年 11 月的文档整理，如有错误欢迎[提 Issue](https://github.com/HansTanzi/RestGuard/issues)。
 
 ## 安装
 
@@ -181,7 +232,7 @@ Windows 上用 `Get-FileHash .\RestGuard_*_x64.exe`，将输出与 `SHA256SUMS.t
 
 ### 从源码构建
 
-先安装[开发](#开发)一节列出的依赖，再构建某个已发布的版本：
+先安装 [CONTRIBUTING.md](CONTRIBUTING.md#development-setup) 中列出的依赖，再构建某个已发布的版本：
 
 ```sh
 git clone https://github.com/HansTanzi/RestGuard
@@ -217,6 +268,26 @@ sound_file = ""          # 自选音频文件的完整路径，sound = "file" �
 phone_notify = false     # 休息结束时通过 ntfy 推送到手机
 ntfy_server = "https://ntfy.sh"  # ntfy 服务器，公共服务器或自建的
 ntfy_topic = ""          # 在 ntfy 应用里订阅的主题，请取一个不易猜到的名字
+
+[[fixed_breaks]]         # 固定休息；"work_end"（下班）和 "lunch"（午休）是内置的
+name = "work_end"
+enabled = false          # 临近这个时间时不再提醒休息
+time = "18:00"           # 24 小时制 HH:MM（本地时间）
+quiet_minutes = 30.0     # 这个时间之前这么久内到点的休息推迟到这个时间
+
+[[fixed_breaks]]         # 午休：到 time 时开始一次 rest_minutes 长的休息
+name = "lunch"
+enabled = true
+time = "12:00"
+quiet_minutes = 30.0
+rest_minutes = 30.0      # 休息多长（午休和自己添加的固定休息才有）
+
+[[fixed_breaks]]         # 也可以自己添加，比如茶歇，每个一个 [[fixed_breaks]]
+name = "茶歇"
+enabled = true
+time = "15:00"
+quiet_minutes = 15.0
+rest_minutes = 15.0
 
 [[profiles]]             # 自定义方案，每个方案一个 [[profiles]]
 name = "专注"
@@ -259,30 +330,38 @@ movable = false          # 遮罩未占满屏幕时允许在本屏幕内拖动�
 - **Linux**：提示音用 `paplay`、`pw-play` 或 `aplay` 播放，自选文件请用 wav、ogg 或 flac（不支持 mp3）
 - **Linux Wayland**：协议不允许应用自行置顶和定位窗口，遮罩可能失效；X11 正常
 
-## 开发
+## 常见问题
 
-需要 [Rust](https://rustup.rs)、Node.js、pnpm，以及 [Tauri 的系统依赖](https://tauri.app/start/prerequisites/)。
+**能退出 RestGuard 吗？**
+两次休息之间可以，在托盘菜单里点「退出」。休息期间，或推迟后还欠着一次休息时，「退出」不可用。
 
-```sh
-pnpm install
-pnpm tauri dev      # 开发运行
-pnpm tauri build    # 打包安装包
-cd src-tauri && cargo test
-```
+**休息时间到了，可我正在开会怎么办？**
+中等和低等强制模式下，只要 Zoom、Microsoft Teams、Webex 或腾讯会议在前台（Windows、macOS；Windows 上还包括正在使用麦克风），休息就会暂缓。如果休息已经开始，点「我在开会」，15 分钟后再提醒。高等强制模式下不会暂缓。
 
-开发构建读取同目录下的 `config.dev.toml` 和 `language.dev`，可以放心改短时长、切换语言，不影响已安装的正式版；遮罩上按 `Esc` 可直接结束休息。调试前请先退出已安装的 RestGuard，否则单实例检查会让开发版直接退出。
+**手头有急事，会丢掉没保存的工作吗？**
+可以推迟 5 分钟（中等和低等最多 3 次，高等 1 次）；中等和低等模式下还可以用紧急模式把遮罩缩小，保存工作，倒计时照常进行。
 
-发布：在干净的 `dev` 分支上运行 `pnpm release <版本号>`（如 `pnpm release 0.2.0`），脚本会同步修改 `package.json`、`tauri.conf.json`、`Cargo.toml`、`Cargo.lock` 中的版本号，提交并推送 `v<版本号>` 标签。之后 GitHub Actions 会构建 exe、macOS 通用版 `.app`，以及 Linux 的 `.deb`、`.rpm` 和 Arch 的 `.pkg.tar.zst`（用 `src-tauri/arch/PKGBUILD` 由 `.deb` 重新打包）、创建 Release，并把更新后的 `bucket/restguard.json` 推送到 [HansTanzi/scoop-bucket](https://github.com/HansTanzi/scoop-bucket)、`Casks/restguard.rb`（macOS 上安装 `.app`，Linux 上安装 Arch 包中的可执行文件）推送到 [HansTanzi/homebrew-tap](https://github.com/HansTanzi/homebrew-tap)。需要配置仓库 secret `SCOOP_BUCKET_DEPLOY_KEY` 和 `HOMEBREW_TAP_DEPLOY_KEY`：分别是这两个仓库中有写权限的 deploy key 的私钥。正式版还会触发 [HansTanzi/apt](https://github.com/HansTanzi/apt) 从各应用的最新 Release 重新生成 APT 源，需要配置仓库 secret `APT_DISPATCH_TOKEN`（仅限该仓库、只有 Actions 读写权限的 fine-grained PAT）。签名密钥和配置方法见该仓库。正式版（不含 `-` 的版本号）还会通过 [winget-releaser](https://github.com/vedantmgoyal9/winget-releaser) 向 [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) 提交 PR，需要配置仓库 secret `WINGET_TOKEN`（具有 `public_repo` 权限的 classic PAT），且 token 所属账号下已 fork `winget-pkgs`。WinGet 的首个版本需手动提交，例如用 [Komac](https://github.com/russellbanks/Komac) 运行 `komac new HansTanzi.RestGuard --version <版本号> --urls <Release 中 exe 的下载地址>`（安装类型选 `portable`，并添加依赖 `Microsoft.EdgeWebView2Runtime`）。
+**离开电脑的时间也算工作时间吗？**
+不算。5 分钟没有键盘鼠标操作，工作倒计时就会暂停；离开满一次休息的时长就当已经休息过。
 
-### 微软商店
+**macOS 提示无法打开应用？**
+RestGuard 没有经过 Apple 公证。用 Homebrew 安装，或者先运行一次 `xattr -dr com.apple.quarantine /Applications/RestGuard.app`（见 [macOS](#macos)）。
 
-商店版是 MSIX 包，由商店负责签名，不需要代码签名证书。运行 `pnpm msix` 可在本地生成 `src-tauri/target/msix/RestGuard_<version>_x64.msix`（需要 Windows SDK）；发布工作流也会为正式版本构建它，作为本次运行的 `msix` 构建产物（artifact）。在[合作伙伴中心](https://partner.microsoft.com/dashboard)新建提交并上传即可。
+**支持 Wayland 吗？**
+不能保证：Wayland 不允许应用把自己的窗口保持在最前，请使用 X11 会话（见[平台限制](#平台限制)）。
 
-首次准备：在合作伙伴中心保留应用名称，然后把应用“产品标识”（Product identity）页面上的 `Package/Identity/Name`、`Package/Identity/Publisher` 和 `Package/Properties/PublisherDisplayName` 填入 `src-tauri/msix/AppxManifest.xml`。包声明了受限功能 `runFullTrust`（桌面应用必需），提交时需要填写理由，例如“基于 Tauri 的桌面应用，需要完全信任权限在所有屏幕上显示置顶的休息遮罩”。
+**会收集数据吗？**
+不会。见[隐私](#隐私)。
 
-包内的开机自启使用清单中的 `StartupTask`，而不是注册表（包内的注册表写入会被虚拟化）。想不经商店试用该包，可开启开发者模式后运行 `Add-AppxPackage -Register src-tauri/target/msix/layout/AppxManifest.xml`。
+## 参与贡献
 
-调试时可以把 `work_minutes` 设为 `0.1`（6 秒），快速触发休息。
+欢迎提交 bug、想法、翻译和 Pull Request。开发环境搭建、提交前的检查以及如何改进翻译见 [CONTRIBUTING.md](CONTRIBUTING.md)（英文），各版本的改动见 [CHANGELOG.md](CHANGELOG.md)。安全问题请按 [SECURITY.md](SECURITY.md) 私下报告。
+
+如果 RestGuard 帮你养成了休息的习惯，点个 ⭐ 能让更多人发现它。
+
+[![贡献者](https://contrib.rocks/image?repo=HansTanzi/RestGuard)](https://github.com/HansTanzi/RestGuard/graphs/contributors)
+
+[![Star 历史曲线](https://api.star-history.com/svg?repos=HansTanzi/RestGuard&type=Date)](https://star-history.com/#HansTanzi/RestGuard&Date)
 
 ## 隐私
 

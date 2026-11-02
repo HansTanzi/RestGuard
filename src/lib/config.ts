@@ -65,6 +65,41 @@ export function isBuiltinLevel(level: string): level is BuiltinLevel {
   return (BUILTIN_LEVELS as readonly string[]).includes(level);
 }
 
+// A fixed time of day when the user stops anyway; a break falling due shortly before it waits until then.
+// Keep in sync with FixedBreak in src-tauri/src/config.rs
+export interface FixedBreak {
+  // A built-in fixed break (see BUILTIN_FIXED_BREAKS), shown translated, or the user's own name
+  name: string;
+  enabled: boolean;
+  // Time of day, as HH:MM in local time
+  time: string;
+  // A break due this long before time waits until time
+  quiet_minutes: number;
+  // How long the break that starts at time lasts. Not used by work_end: the day is over then
+  rest_minutes: number;
+}
+
+// Matches BUILTIN_FIXED_BREAKS in src-tauri/src/config.rs
+export const BUILTIN_FIXED_BREAKS = ["work_end", "lunch"] as const;
+export type BuiltinFixedBreak = (typeof BUILTIN_FIXED_BREAKS)[number];
+
+// Matches FixedBreak::has_rest in src-tauri/src/config.rs
+export function fixedBreakHasRest(b: FixedBreak): boolean {
+  return b.name !== "work_end";
+}
+
+export function isBuiltinFixedBreak(name: string): name is BuiltinFixedBreak {
+  return (BUILTIN_FIXED_BREAKS as readonly string[]).includes(name);
+}
+
+// A new custom fixed break; matches FixedBreak::default in src-tauri/src/config.rs
+export function newFixedBreak(name: string): FixedBreak {
+  return { name, enabled: true, time: "15:00", quiet_minutes: 30, rest_minutes: 30 };
+}
+
+// Longest quiet window before a fixed break, and longest fixed break; matches MAX_FIXED_MINUTES in src-tauri/src/config.rs
+export const MAX_FIXED_MINUTES = 12 * 60;
+
 // Sound played when a break ends: a built-in sound or a user-chosen audio file. Matches SOUNDS in src-tauri/src/config.rs
 export const SOUNDS = ["beep", "chime", "rise", "file"] as const;
 export type SoundId = (typeof SOUNDS)[number];
@@ -75,8 +110,14 @@ export interface Config {
   rest_minutes: number;
   postpone_minutes: number;
   idle_minutes: number;
+  // Fixed times such as the end of the working day or lunch; the built-in ones come first, followed by the user's own
+  fixed_breaks: FixedBreak[];
   // A built-in level or the name of a custom profile
   level: string;
+  // Lock the screen once a break has lasted lock_delay_minutes
+  lock_screen: boolean;
+  // At most rest_minutes
+  lock_delay_minutes: number;
   // Play a sound when a break ends
   sound_prompt: boolean;
   sound: SoundId;
@@ -99,7 +140,13 @@ export const DEFAULT_CONFIG: Config = {
   rest_minutes: 10,
   postpone_minutes: 5,
   idle_minutes: 5,
+  fixed_breaks: [
+    { name: "work_end", enabled: false, time: "18:00", quiet_minutes: 30, rest_minutes: 30 },
+    { name: "lunch", enabled: false, time: "12:00", quiet_minutes: 30, rest_minutes: 30 },
+  ],
   level: "medium",
+  lock_screen: false,
+  lock_delay_minutes: 3,
   sound_prompt: true,
   sound: "beep",
   sound_file: "",

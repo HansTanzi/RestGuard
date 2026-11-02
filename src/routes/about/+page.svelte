@@ -102,19 +102,10 @@
   :global(html, body) {
     margin: 0;
     min-height: 100%;
-    background: #0f172a;
+    background: var(--bg-1);
   }
 
-  /* Colors match the settings panel (src/routes/+page.svelte) */
   main {
-    --bg-1: #0f172a;
-    --bg-2: #1e293b;
-    --fg: #e2e8f0;
-    --muted: #94a3b8;
-    --accent: #38bdf8;
-    --warn: #f87171;
-    --line: rgb(255 255 255 / 0.12);
-
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -130,7 +121,6 @@
       sans-serif;
     font-size: 0.95rem;
     text-align: center;
-    color-scheme: dark;
     user-select: none;
   }
 

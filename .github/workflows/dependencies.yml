@@ -1,0 +1,118 @@
+# Supply-chain checks for npm and Rust dependencies: licenses, known vulnerabilities, known malicious packages,
+# and where crates come from. Runs on PRs, and weekly so advisories published after a dependency was added still surface.
+# Run locally: `cargo deny check` in src-tauri/, `pnpm audit`, `osv-scanner scan source -r .`
+name: Dependencies
+
+on:
+  pull_request:
+    branches: [dev, main, master]
+  push:
+    branches: [dev]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Cancel older runs still in progress when a PR gets new pushes
+concurrency:
+  group: dependencies-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Diff-based review of what a PR adds or upgrades, from GitHub's dependency graph and advisory database:
+  # vulnerabilities, licenses and the OpenSSF Scorecard of each new package
+  review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high
+          # Keep in sync with src-tauri/deny.toml and the npm job below
+          allow-licenses: >-
+            0BSD, Apache-2.0, Apache-2.0 WITH LLVM-exception, BSD-2-Clause, BSD-3-Clause, CC0-1.0, ISC,
+            MIT, MIT-0, MPL-2.0, Unicode-3.0, Unlicense, Zlib
+          show-openssf-scorecard: true
+          warn-on-openssf-scorecard-level: 3
+
+  # Rust: RustSec advisories (vulnerable, yanked), license allowlist, crates.io as the only source. See src-tauri/deny.toml
+  cargo-deny:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          manifest-path: src-tauri/Cargo.toml
+          command: check
+
+  npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      # --ignore-scripts: nothing from a dependency runs here. The install also enforces the trust policy in pnpm-workspace.yaml
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - run: pnpm audit --audit-level high
+
+      # Keep in sync with src-tauri/deny.toml. An SPDX "A OR B" expression passes if either side is allowed
+      - name: Check licenses
+        run: |
+          allowed='["0BSD","Apache-2.0","BSD-2-Clause","BSD-3-Clause","CC0-1.0","ISC","MIT","MIT-0","MPL-2.0","Unlicense","Zlib"]'
+          bad=$(pnpm licenses list --json | jq -r --argjson allowed "$allowed" '
+            to_entries[]
+            | select(.key | gsub("[()]"; "") | split(" OR ") | any(. as $l | $allowed | index($l)) | not)
+            | "\(.key): \([.value[].name] | join(", "))"')
+          if [ -n "$bad" ]; then
+            echo "::error::Dependencies with licenses not on the allowlist:"
+            echo "$bad"
+            exit 1
+          fi
+
+  # Both lockfiles against OSV, which includes the OpenSSF malicious-packages feed (MAL-* ids) for npm and crates.io.
+  # Fails only on malicious packages; vulnerabilities are gated by cargo-deny and pnpm audit above and just listed here
+  malware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install osv-scanner
+        env:
+          VERSION: 2.7.0
+          SHA256: 160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b
+        run: |
+          curl -fsSL -o osv-scanner "https://github.com/google/osv-scanner/releases/download/v${VERSION}/osv-scanner_linux_amd64"
+          echo "${SHA256}  osv-scanner" | sha256sum -c -
+          chmod +x osv-scanner
+
+      - name: Scan lockfiles
+        run: |
+          # Exit code 1 only means vulnerabilities were found; anything higher is a scanner error
+          code=0
+          ./osv-scanner scan source --format json --lockfile pnpm-lock.yaml --lockfile src-tauri/Cargo.lock > osv.json || code=$?
+          if [ "$code" -gt 1 ]; then
+            echo "::error::osv-scanner failed with exit code $code"
+            exit 1
+          fi
+          jq -r '.results[].packages[] | "\(.package.ecosystem) \(.package.name)@\(.package.version): \([.vulnerabilities[].id] | join(", "))"' osv.json
+          malicious=$(jq -r '.results[].packages[] | select(any(.vulnerabilities[]; .id | startswith("MAL-")))
+            | "\(.package.ecosystem) \(.package.name)@\(.package.version)"' osv.json)
+          if [ -n "$malicious" ]; then
+            echo "::error::Known malicious packages in the lockfiles:"
+            echo "$malicious"
+            exit 1
+          fi

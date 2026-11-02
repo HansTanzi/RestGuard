@@ -19,16 +19,22 @@
     BUILTIN_LEVELS,
     BUILTIN_PROFILES,
     DEFAULT_CONFIG,
+    MAX_FIXED_MINUTES,
     NTFY_TOPIC_PATTERN,
     SOUNDS,
+    fixedBreakHasRest,
+    isBuiltinFixedBreak,
     isBuiltinLevel,
+    newFixedBreak,
     type Config,
     type LangId,
     type Profile,
   } from "$lib/config";
+  import { THEMES, getTheme, setTheme, type Theme } from "$lib/theme";
 
   let s = $state<SettingsStrings | null>(null);
   let lang = $state<LangId>("auto");
+  let theme = $state<Theme>(getTheme());
   let autostart = $state(false);
   let phase = $state<Snapshot["phase"]>("working");
   let postponed = $state(false);
@@ -75,11 +81,36 @@
     );
   };
   const badName = (i: number) => nameInvalid(draft.profiles[i].name, i);
+  // Names tell fixed breaks apart (consistent with sanitized in config.rs); the other fields aren't checked when off,
+  // and the time input gives "" when cleared
+  const span = (v: number | null) => positive(v) && v! <= MAX_FIXED_MINUTES;
+  const fixedErrors = $derived(
+    draft.fixed_breaks.map((b, i) => {
+      const name = b.name.trim();
+      return {
+        name:
+          !isBuiltinFixedBreak(b.name) &&
+          (!name ||
+            isBuiltinFixedBreak(name) ||
+            draft.fixed_breaks.some((c, j) => j !== i && c.name.trim() === name)),
+        time: b.enabled && !/^\d{2}:\d{2}$/.test(b.time),
+        quiet_minutes: b.enabled && !span(b.quiet_minutes),
+        rest_minutes: b.enabled && fixedBreakHasRest(b) && !span(b.rest_minutes),
+      };
+    }),
+  );
   const errors = $derived({
     work_minutes: !positive(draft.work_minutes),
     rest_minutes: !positive(draft.rest_minutes),
     postpone_minutes: !positive(draft.postpone_minutes),
     idle_minutes: !(positive(draft.idle_minutes) || draft.idle_minutes === 0),
+    // Not checked when auto-lock is off; can't be later than the break lasts
+    lock_delay_minutes:
+      draft.lock_screen &&
+      !(
+        (positive(draft.lock_delay_minutes) || draft.lock_delay_minutes === 0) &&
+        draft.lock_delay_minutes <= draft.rest_minutes
+      ),
     max_postpones: !count(profile.max_postpones),
     // Not checked when the sound is off; the backend replaces file with no path by the default sound
     sound_file: draft.sound_prompt && draft.sound === "file" && !draft.sound_file.trim(),
@@ -89,6 +120,7 @@
   // Profiles edited earlier must stay valid after switching to another one
   const valid = $derived(
     !Object.values(errors).some(Boolean) &&
+      fixedErrors.every((e) => !Object.values(e).some(Boolean)) &&
       draft.profiles.every((p, i) => !badName(i) && count(p.max_postpones)),
   );
   // Field order always comes from the backend response (new profiles are built in the same order), so JSON can be compared directly
@@ -114,6 +146,14 @@
     while (names.has(s.defaultProfileName(n))) n++;
     draft.profiles.push({ ...$state.snapshot(profile), name: s.defaultProfileName(n) });
     selected = `custom:${draft.profiles.length - 1}`;
+  }
+
+  function addFixedBreak() {
+    if (!s) return;
+    const names = new Set(draft.fixed_breaks.map((b) => b.name.trim()));
+    let n = 1;
+    while (names.has(s.defaultFixedBreakName(n))) n++;
+    draft.fixed_breaks.push(newFixedBreak(s.defaultFixedBreakName(n)));
   }
 
   function openRename() {
@@ -297,8 +337,16 @@
             class="ghost"
             disabled={locked}
             onclick={() => {
-              // Custom profiles are user-created, so they're kept when restoring defaults
-              draft = { ...structuredClone(DEFAULT_CONFIG), profiles: $state.snapshot(draft.profiles) };
+              // Custom profiles and fixed breaks are user-created, so they're kept when restoring defaults
+              const defaults = structuredClone(DEFAULT_CONFIG);
+              draft = {
+                ...defaults,
+                fixed_breaks: [
+                  ...defaults.fixed_breaks,
+                  ...$state.snapshot(draft.fixed_breaks).filter((b) => !isBuiltinFixedBreak(b.name)),
+                ],
+                profiles: $state.snapshot(draft.profiles),
+              };
               selected = DEFAULT_CONFIG.level;
             }}
           >
@@ -310,7 +358,7 @@
         </div>
       </header>
 
-      <!-- Language and autostart apply immediately without saving; kept outside the fieldset so they can be changed during a break -->
+      <!-- Language, theme and autostart apply immediately without saving; kept outside the fieldset so they can be changed during a break -->
       <section>
         <h2>{s.general}</h2>
         <label>
@@ -323,12 +371,39 @@
             {/each}
           </select>
         </label>
+        <label>
+          <span>{s.theme}</span>
+          <select bind:value={theme} onchange={() => setTheme(theme)}>
+            {#each THEMES as id (id)}
+              <option value={id}>{s.themes[id]}</option>
+            {/each}
+          </select>
+        </label>
         <label class="check">
           <input type="checkbox" bind:checked={autostart} onchange={changeAutostart} />
           <span>{s.autostart}</span>
         </label>
-        <!-- Break-over alerts only apply after saving and are locked during a break -->
+        <!-- Auto-lock and break-over alerts only apply after saving and are locked during a break -->
         <fieldset disabled={locked}>
+          <label class="check">
+            <input type="checkbox" bind:checked={draft.lock_screen} />
+            <span>{s.lockScreen}</span>
+          </label>
+          <label class="sub">
+            <span>{s.lockDelay}</span>
+            <input
+              type="number"
+              min="0"
+              max={draft.rest_minutes}
+              step="any"
+              disabled={!draft.lock_screen}
+              class:invalid={errors.lock_delay_minutes}
+              bind:value={draft.lock_delay_minutes}
+            />
+          </label>
+          {#if errors.lock_delay_minutes}
+            <p class="hint sub warn">{s.lockDelayRule}</p>
+          {/if}
           <label class="check">
             <input type="checkbox" bind:checked={draft.sound_prompt} />
             <span>{s.soundPrompt}</span>
@@ -469,6 +544,83 @@
           {#if saved && draft.work_minutes !== saved.work_minutes}
             <p class="hint accent">{s.workRestartHint}</p>
           {/if}
+        </section>
+      </fieldset>
+
+      <!-- Built-in fixed breaks (end of day, lunch) can only be turned off; the user's own can be renamed and removed.
+           The end of the day has no break length -->
+      <fieldset disabled={locked}>
+        <section>
+          <h2>{s.fixedBreaks}</h2>
+          {#each draft.fixed_breaks as b, i (i)}
+            <div class="fixed">
+              <div class="row">
+                {#if isBuiltinFixedBreak(b.name)}
+                  <label class="check">
+                    <input type="checkbox" bind:checked={b.enabled} />
+                    <span>{s.fixedBreakNames[b.name]}</span>
+                  </label>
+                {:else}
+                  <span class="inline">
+                    <input type="checkbox" aria-label={b.name} bind:checked={b.enabled} />
+                    <input
+                      type="text"
+                      aria-label={s.fixedBreakName}
+                      class:invalid={fixedErrors[i]?.name}
+                      bind:value={b.name}
+                    />
+                  </span>
+                {/if}
+                <input
+                  type="time"
+                  class:invalid={fixedErrors[i]?.time}
+                  disabled={!b.enabled}
+                  bind:value={b.time}
+                />
+              </div>
+              <label class="sub">
+                <span>{s.quietMinutes}</span>
+                <input
+                  type="number"
+                  min="0"
+                  max={MAX_FIXED_MINUTES}
+                  step="any"
+                  class:invalid={fixedErrors[i]?.quiet_minutes}
+                  disabled={!b.enabled}
+                  bind:value={b.quiet_minutes}
+                />
+              </label>
+              {#if fixedBreakHasRest(b)}
+                <label class="sub">
+                  <span>{s.restMinutes}</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max={MAX_FIXED_MINUTES}
+                    step="any"
+                    class:invalid={fixedErrors[i]?.rest_minutes}
+                    disabled={!b.enabled}
+                    bind:value={b.rest_minutes}
+                  />
+                </label>
+              {/if}
+              {#if !isBuiltinFixedBreak(b.name)}
+                <div class="actions">
+                  <button
+                    type="button"
+                    class="ghost small"
+                    onclick={() => draft.fixed_breaks.splice(i, 1)}
+                  >
+                    {s.removeFixedBreak}
+                  </button>
+                </div>
+              {/if}
+            </div>
+          {/each}
+          <p class="hint">{s.fixedBreaksHint}</p>
+          <div class="actions profile-actions">
+            <button type="button" class="ghost" onclick={addFixedBreak}>{s.addFixedBreak}</button>
+          </div>
         </section>
       </fieldset>
 
@@ -640,18 +792,10 @@
   :global(html, body) {
     margin: 0;
     min-height: 100%;
-    background: #0f172a;
+    background: var(--bg-1);
   }
 
   main {
-    --bg-1: #0f172a;
-    --bg-2: #1e293b;
-    --fg: #e2e8f0;
-    --muted: #94a3b8;
-    --accent: #38bdf8;
-    --warn: #f87171;
-    --line: rgb(255 255 255 / 0.12);
-
     box-sizing: border-box;
     /* The window is maximized by default; up to three columns on wide screens (see .flow) */
     max-width: 1200px;
@@ -666,7 +810,6 @@
       "Microsoft YaHei",
       sans-serif;
     font-size: 0.95rem;
-    color-scheme: dark;
   }
 
   /* Title and save bar: stick to the top when scrolling */
@@ -773,6 +916,23 @@
     padding: 0.35rem 0;
   }
 
+  /* Each fixed break is separated from the previous one by a line */
+  .fixed + .fixed {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .row label.check {
+    padding: 0;
+  }
+
+  .inline {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
   .file {
     display: flex;
     align-items: center;
@@ -798,6 +958,7 @@
 
   input[type="number"],
   input[type="text"],
+  input[type="time"],
   select {
     width: 7.5rem;
     box-sizing: border-box;
@@ -811,6 +972,7 @@
 
   input[type="number"]:focus,
   input[type="text"]:focus,
+  input[type="time"]:focus,
   select:focus {
     outline: 2px solid var(--accent);
     outline-offset: -1px;
@@ -887,7 +1049,7 @@
     background: var(--bg-2);
     border: 1px solid var(--line);
     border-radius: 6px;
-    box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);
+    box-shadow: 0 4px 12px var(--shadow);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -951,7 +1113,7 @@
   }
 
   .primary:hover:not(:disabled) {
-    background: #7dd3fc;
+    background: var(--accent-hover);
   }
 
   .ghost {
@@ -961,7 +1123,7 @@
   }
 
   .ghost:hover:not(:disabled) {
-    background: rgb(255 255 255 / 0.06);
+    background: var(--hover);
   }
 
   /* Sits between the title and buttons, filling the remaining width; wraps to the next line when too narrow */

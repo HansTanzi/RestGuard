@@ -1,6 +1,28 @@
-# RestGuard
+<p align="center">
+  <img src="./src-tauri/icons/128x128@2x.png" width="128" alt="RestGuard logo">
+</p>
 
-[English](README.md) | [简体中文](README.zh-CN.md) | Deutsch
+<h1 align="center">RestGuard</h1>
+
+<p align="center"><strong>Der Pausen-Erinnerer, den du nicht ignorieren kannst.</strong></p>
+
+<p align="center">Ein freier, quelloffener Pausen-Erinnerer für Windows, macOS und Linux, der dich an Pausen erinnert – oder dich dazu bringt, sie zu machen.</p>
+
+<p align="center">
+  <a href="https://github.com/HansTanzi/RestGuard/releases/latest"><img src="https://img.shields.io/github/v/release/HansTanzi/RestGuard?label=release" alt="Latest release"></a>
+  <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
+  <a href="#installation"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
+  <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="#lizenz"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
+</p>
+
+<p align="center">
+  Installieren unter <a href="#windows"><b>Windows</b></a> · <a href="#macos"><b>macOS</b></a> · <a href="#linux"><b>Linux</b></a> · <a href="https://hanstanzi.github.io/RestGuard/">Website</a>
+</p>
+
+<p align="center"><a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | Deutsch | <a href="README.ja.md">日本語</a> | <a href="README.es.md">Español</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.ko.md">한국어</a></p>
+
+![Das Pausen-Overlay (Hoch)](./docs/images/DE/HighEnforcement.webp)
 
 Ein plattformübergreifender Pausen-Erinnerer mit drei eingebauten Strenge-Stufen: Er kann dich an eine Pause erinnern – oder dich dazu bringen, sie wirklich zu machen. Genau diese Durchsetzung unterscheidet ihn von anderen Pausen-Erinnerern.
 
@@ -8,9 +30,26 @@ Ein plattformübergreifender Pausen-Erinnerer mit drei eingebauten Strenge-Stufe
 - Mittel: Du kannst weiterarbeiten, aber das Arbeiten wird so unbequem, dass du lieber Pause machst.
 - Niedrig: wie andere Pausen-Erinnerer, vor allem eine Erinnerung.
 
-Gebaut mit Rust + Tauri 2 + Svelte. Nachfolger der reinen Windows-App [ProtectEyes](./ProtectEyes) in C#.
+Gebaut mit Rust + Tauri 2 + Svelte. Nachfolger von [ProtectEyes](https://github.com/HansTanzi/ProtectEyes), einer reinen Windows-App in C#, die ich vor vielen Jahren als Open Source veröffentlicht habe.
 
-![Das Pausen-Overlay (Niedrig)](./docs/images/EN/LowEnforcement.webp)
+Installation mit einer Zeile:
+
+```sh
+winget install HansTanzi.RestGuard            # Windows
+brew install --cask hanstanzi/tap/restguard   # macOS
+```
+
+APT, Scoop, Homebrew unter Linux und portable Downloads findest du unter [Installation](#installation).
+
+## Warum RestGuard
+
+Die meisten Pausen-Erinnerer lassen sich leicht ignorieren: Eine Benachrichtigung erscheint, du klickst sie weg, und aus „nur noch fünf Minuten“ werden zwei Stunden. Lange Zeit am Bildschirm wird mit überanstrengten und trockenen Augen, Nacken- und Rückenschmerzen sowie Sehnenscheidenentzündung (RSI) in Verbindung gebracht. Ratschläge wie die 20-20-20-Regel oder eine kurze Pause jede Stunde helfen nur, wenn du die Pause auch wirklich machst.
+
+RestGuard ist für alle, die wissen, dass sie Pause machen sollten, es aber immer wieder aufschieben:
+
+- **Einfach wegklicken geht nicht.** In der Stufe Hoch deckt das Overlay jeden Bildschirm ab, bis die Pause vorbei ist.
+- **Es weiß, wann es nicht stören darf.** Aufschieben, Dringend-Modus und Meeting-Erkennung sorgen dafür, dass eine Pause weder ein Meeting sprengt noch ungespeicherte Arbeit kostet.
+- **Du bestimmst, wie streng es ist.** Wähle Hoch, Mittel oder Niedrig oder lege ein eigenes Profil an.
 
 ## Funktionen
 
@@ -22,7 +61,7 @@ Gebaut mit Rust + Tauri 2 + Svelte. Nachfolger der reinen Windows-App [ProtectEy
 - 5 Minuten aufschieben, bis zu 3-mal; der Zähler wird nach einer vollständigen Pause zurückgesetzt
 - Dringend-Modus: Etwas kann nicht warten? Verkleinere das Overlay kurz, um deine Arbeit zu speichern – der Countdown läuft weiter
 
-![Nach der Pause auf „Zurück an die Arbeit“ klicken](./docs/images/EN/Back2Work.webp)
+![Nach der Pause auf „Zurück an die Arbeit“ klicken](./docs/images/DE/Back2Work.webp)
 
 ### Drei eingebaute Profile für unterschiedliche Bedürfnisse
 
@@ -36,11 +75,9 @@ Gebaut mit Rust + Tauri 2 + Svelte. Nachfolger der reinen Windows-App [ProtectEy
 | Bildschirmabdeckung | 100 % | 100 % | 80 % |
 | Overlay verschiebbar | ✗ | ✓ | ✓ |
 
-![Das Pausen-Overlay (Hoch)](./docs/images/EN/HighEnforcement.webp)
+![Das Pausen-Overlay (Mittel)](./docs/images/DE/MediumEnforcement.webp)
 
-![Das Pausen-Overlay (Mittel)](./docs/images/EN/MediumEnforcement.webp)
-
-![Das Pausen-Overlay (Niedrig)](./docs/images/EN/LowEnforcement.webp)
+![Das Pausen-Overlay (Niedrig)](./docs/images/DE/LowEnforcement.webp)
 
 ### Umfassend anpassbar
 
@@ -67,7 +104,7 @@ Lege beliebig viele eigene Profile an und wechsle jederzeit. Arbeits-, Pausen-, 
 ### Klein und schnell
 
 - Gebaut mit Rust + Tauri 2 auf der System-WebView, ohne mitgelieferte Browser-Engine – im Hintergrund verbraucht es kaum Ressourcen
-- Winzig: Downloads sind nur 2,5 ~ 4,6 MB groß (Windows 4,6 MB, macOS 4,0 MB, Linux 2,5 MB)
+- Winzig: Downloads sind nur etwa 3–6 MB groß – ein Bruchteil von Electron-basierten Alternativen (siehe [Im Vergleich](#im-vergleich))
 - Portabel: unter Windows eine einzelne exe, unter macOS eine `.app` zum Entpacken und Starten; zum Deinstallieren einfach löschen
 
 ### Und mehr
@@ -78,7 +115,23 @@ Lege beliebig viele eigene Profile an und wechsle jederzeit. Arbeits-, Pausen-, 
 - Frei und Open Source unter der freizügigen Doppellizenz MIT / Apache-2.0 (siehe [Lizenz](#lizenz))
 - Verfügbar auf Vereinfachtem Chinesisch, Englisch, Hindi, Spanisch, Arabisch, Französisch, Bengalisch, Portugiesisch, Deutsch, Japanisch, Italienisch, Koreanisch und Indonesisch. Die Sprache der Oberfläche folgt standardmäßig dem System (Englisch, wenn die Systemsprache nicht unterstützt wird); du kannst sie jederzeit im Untermenü „语言 / Language“ des Tray-Menüs wechseln
 
-![Das Tray-Menü](./docs/images/EN/TrayMenu.webp)
+![Das Tray-Menü](./docs/images/DE/TrayMenu.webp)
+
+## Im Vergleich
+
+| | RestGuard | [Stretchly](https://github.com/hovancik/stretchly) | [Workrave](https://github.com/rcaelers/workrave) | [Safe Eyes](https://github.com/slgobinath/SafeEyes) |
+|---|:---:|:---:|:---:|:---:|
+| Windows | ✓ | ✓ | ✓ | ✗ |
+| macOS | ✓ | ✓ | ✗ | ✗ |
+| Linux | ✓ | ✓ | ✓ | ✓ |
+| Downloadgröße | **ca. 3–6 MB** | Windows 163 MB<br>macOS 187 MB<br>Linux 155 MB | Windows 61 MB<br>Linux 64 MB| Linux 0,3 MB |
+| Durchsetzung | 3 Stufen + eigene Profile | Strikter Modus an/aus | Kann Eingabe und Bildschirm sperren | Kann die Tastatur deaktivieren |
+| Hält Pausen während Meetings zurück | Erkennt Zoom, Teams, Webex, Tencent Meeting | Folgt „Nicht stören“; Ausnahmen pro App | — | — |
+| Hinweis auf Handy / Smartwatch am Pausenende | ✓ (ntfy) | — | — | — |
+| Gebaut mit | Rust + Tauri (System-WebView) | Electron (bringt Chromium mit) | C++ | Python + GTK |
+| Lizenz | MIT / Apache-2.0 | BSD-2-Clause | GPL-3.0 | GPL-3.0 |
+
+— bedeutet: nicht eingebaut. Die Downloadgrößen stammen aus dem jeweils neuesten GitHub-Release (Stretchly 1.22.1, Workrave 1.11.5, Safe Eyes 3.5.1): Windows-Installer bzw. exe, macOS-Download und Linux-`.deb`. Stand: Dokumentation der jeweiligen Projekte im November 2026; falls etwas nicht stimmt, [eröffne bitte ein Issue](https://github.com/HansTanzi/RestGuard/issues).
 
 ## Installation
 
@@ -175,7 +228,7 @@ Unter Windows vergleiche die Ausgabe von `Get-FileHash .\RestGuard_*_x64.exe` mi
 
 ### Aus dem Quellcode bauen
 
-Installiere die unter [Entwicklung](#entwicklung) genannten Voraussetzungen und baue dann eine getaggte Version:
+Installiere die in [CONTRIBUTING.md](CONTRIBUTING.md#development-setup) genannten Voraussetzungen und baue dann eine getaggte Version:
 
 ```sh
 git clone https://github.com/HansTanzi/RestGuard
@@ -211,6 +264,26 @@ sound_file = ""          # vollständiger Pfad deiner eigenen Audiodatei, verwen
 phone_notify = false     # am Ende einer Pause über ntfy eine Benachrichtigung ans Handy senden
 ntfy_server = "https://ntfy.sh"  # ntfy-Server, der öffentliche oder dein eigener
 ntfy_topic = ""          # Topic, das in der ntfy-App abonniert wird; schwer zu erraten halten
+
+[[fixed_breaks]]         # eine feste Pause; "work_end" (Feierabend) und "lunch" (Mittagspause) sind eingebaut
+name = "work_end"
+enabled = false          # Pausen, die kurz davor fällig werden, aufschieben
+time = "18:00"           # 24-Stunden-Format HH:MM in Ortszeit
+quiet_minutes = 30.0     # Pausen, die so lange vor time fällig werden, warten bis time
+
+[[fixed_breaks]]         # Mittagspause: um time beginnt eine Pause von rest_minutes
+name = "lunch"
+enabled = true
+time = "12:00"
+quiet_minutes = 30.0
+rest_minutes = 30.0      # wie lange die Pause dauert (Mittagspause und eigene feste Pausen)
+
+[[fixed_breaks]]         # eigene hinzufügen, z. B. eine Kaffeepause, je ein [[fixed_breaks]]
+name = "Kaffeepause"
+enabled = true
+time = "15:00"
+quiet_minutes = 15.0
+rest_minutes = 15.0
 
 [[profiles]]             # ein eigenes Profil; ein [[profiles]] pro Profil
 name = "Fokus"
@@ -253,30 +326,38 @@ Hinweise:
 - **Linux**: Töne werden mit `paplay`, `pw-play` oder `aplay` abgespielt; verwende für eigene Dateien daher wav, ogg oder flac (mp3 wird nicht unterstützt)
 - **Linux Wayland**: Das Protokoll erlaubt Apps nicht, sich selbst im Vordergrund zu halten oder ihre Fenster selbst zu positionieren, daher funktioniert das Overlay möglicherweise nicht; unter X11 klappt es
 
-## Entwicklung
+## Häufige Fragen
 
-Benötigt [Rust](https://rustup.rs), Node.js, pnpm und die [Systemabhängigkeiten von Tauri](https://tauri.app/start/prerequisites/).
+**Kann ich RestGuard beenden?**
+Zwischen den Pausen ja: Wähle „Beenden“ im Tray-Menü. Während einer Pause oder solange eine aufgeschobene Pause noch aussteht, ist „Beenden“ deaktiviert.
 
-```sh
-pnpm install
-pnpm tauri dev      # im Entwicklungsmodus starten
-pnpm tauri build    # Installationspakete bauen
-cd src-tauri && cargo test
-```
+**Was, wenn eine Pause mitten in ein Meeting fällt?**
+In den Stufen Mittel und Niedrig wartet die Pause, solange Zoom, Microsoft Teams, Webex oder Tencent Meeting im Vordergrund ist (Windows, macOS; unter Windows auch, solange es das Mikrofon nutzt). Hat die Pause schon begonnen, klicke auf „Ich bin in einem …-Meeting“, um in 15 Minuten erneut erinnert zu werden. In der Stufe Hoch wartet die Pause nicht.
 
-Entwicklungs-Builds lesen `config.dev.toml` und `language.dev` (im selben Verzeichnis wie `config.toml`), sodass du kurze Zeiten verwenden oder die Sprache wechseln kannst, ohne die installierte App zu beeinflussen. Drücke `Esc` auf dem Overlay, um eine Pause sofort zu beenden. Beende vorher das installierte RestGuard, sonst sorgt die Einzelinstanz-Prüfung dafür, dass sich der Entwicklungs-Build sofort beendet.
+**Ich bin mitten in etwas Dringendem. Verliere ich meine Arbeit?**
+Schiebe die Pause um 5 Minuten auf (in Mittel und Niedrig bis zu 3-mal, in Hoch einmal), oder nutze in Mittel und Niedrig den Dringend-Modus, um das Overlay zu verkleinern und deine Arbeit zu speichern, während der Countdown weiterläuft.
 
-Für ein Release führe `pnpm release <version>` (z. B. `pnpm release 0.2.0`) auf einem sauberen `dev`-Branch aus. Das Skript erhöht die Version in `package.json`, `tauri.conf.json`, `Cargo.toml` und `Cargo.lock`, committet und pusht ein Tag `v<version>`. GitHub Actions baut dann die exe, eine universelle macOS-`.app` sowie unter Linux die `.deb`, `.rpm` und die Arch-`.pkg.tar.zst` (mit `src-tauri/arch/PKGBUILD` aus der `.deb` neu verpackt), erstellt das Release und pusht die aktualisierte `bucket/restguard.json` nach [HansTanzi/scoop-bucket](https://github.com/HansTanzi/scoop-bucket) sowie `Casks/restguard.rb` (die macOS-`.app` und unter Linux die ausführbare Datei aus dem Arch-Paket) nach [HansTanzi/homebrew-tap](https://github.com/HansTanzi/homebrew-tap). Dafür werden die Repository-Secrets `SCOOP_BUCKET_DEPLOY_KEY` und `HOMEBREW_TAP_DEPLOY_KEY` benötigt: die privaten Hälften von Deploy-Keys mit Schreibzugriff auf diese Repositories. Bei stabilen Versionen wird außerdem [HansTanzi/apt](https://github.com/HansTanzi/apt) angestoßen, um das APT-Repository aus den neuesten Releases neu zu bauen; dafür wird das Repository-Secret `APT_DISPATCH_TOKEN` benötigt (ein auf dieses Repository beschränkter Fine-grained PAT mit ausschließlich Lese- und Schreibrechten für Actions). Signaturschlüssel und Einrichtung sind in jenem Repository beschrieben. Bei stabilen Versionen wird außerdem über [winget-releaser](https://github.com/vedantmgoyal9/winget-releaser) ein PR an [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) geöffnet; dafür werden das Repository-Secret `WINGET_TOKEN` (ein Classic PAT mit Scope `public_repo`) und ein Fork von `winget-pkgs` im Konto des Token-Inhabers benötigt. Die allererste WinGet-Version muss von Hand eingereicht werden, z. B. mit `komac new HansTanzi.RestGuard --version <version> --urls <exe-Release-URL>` über [Komac](https://github.com/russellbanks/Komac) (Installer-Typ `portable` wählen und `Microsoft.EdgeWebView2Runtime` als Paketabhängigkeit hinzufügen).
+**Zählt Zeit, in der ich nicht am Rechner bin, als Arbeitszeit?**
+Nein. Nach 5 Minuten ohne Tastatur- oder Mauseingabe pausiert der Arbeits-Countdown, und warst du so lange weg wie eine Pause dauert, zählt das als vollständige Pause.
 
-### Microsoft Store
+**macOS sagt, die App lässt sich nicht öffnen.**
+RestGuard ist nicht von Apple notarisiert. Installiere es mit Homebrew oder führe einmal `xattr -dr com.apple.quarantine /Applications/RestGuard.app` aus (siehe [macOS](#macos)).
 
-Der Store-Build ist ein MSIX-Paket; der Store signiert es, daher wird kein Code-Signing-Zertifikat benötigt. Führe `pnpm msix` aus, um lokal `src-tauri/target/msix/RestGuard_<version>_x64.msix` zu bauen (benötigt das Windows SDK); der Release-Workflow baut es für stabile Versionen ebenfalls und hängt es als Artefakt `msix` an den Workflow-Lauf an. Lade es in [Partner Center](https://partner.microsoft.com/dashboard) in eine neue Einreichung hoch.
+**Funktioniert es unter Wayland?**
+Nicht zuverlässig: Wayland erlaubt Apps nicht, ihre Fenster im Vordergrund zu halten, nutze daher eine X11-Sitzung (siehe [Plattformeinschränkungen](#plattformeinschränkungen)).
 
-Einmalige Einrichtung: Reserviere den App-Namen im Partner Center und kopiere dann `Package/Identity/Name`, `Package/Identity/Publisher` und `Package/Properties/PublisherDisplayName` von der Seite **Product identity** der App in `src-tauri/msix/AppxManifest.xml`. Das Paket deklariert die eingeschränkte Funktion `runFullTrust` (für Desktop-Apps erforderlich), daher verlangt die Einreichung eine Begründung, z. B. „Desktop-App auf Basis von Tauri; benötigt volles Vertrauen, um auf jedem Bildschirm Pausen-Overlays im Vordergrund anzuzeigen“.
+**Sammelt es Daten?**
+Nein. Siehe [Datenschutz](#datenschutz).
 
-Innerhalb des Pakets nutzt der Start beim Anmelden den `StartupTask` aus dem Manifest statt der Registry, da Registry-Schreibzugriffe dort virtualisiert werden. Um das Paket ohne den Store auszuprobieren, aktiviere den Entwicklermodus und führe `Add-AppxPackage -Register src-tauri/target/msix/layout/AppxManifest.xml` aus.
+## Mitwirken
 
-Zum Debuggen setze `work_minutes` auf `0.1` (6 Sekunden), um schnell eine Pause auszulösen.
+Fehlerberichte, Ideen, Übersetzungen und Pull Requests sind willkommen. [CONTRIBUTING.md](CONTRIBUTING.md) (auf Englisch) beschreibt die Entwicklungsumgebung, die Prüfungen vor einem PR und wie du eine Übersetzung verbesserst; die Änderungen jeder Version stehen in [CHANGELOG.md](CHANGELOG.md). Sicherheitsprobleme bitte vertraulich melden, wie in [SECURITY.md](SECURITY.md) beschrieben.
+
+Wenn dir RestGuard beim Pausemachen hilft, hilft ein ⭐ anderen, es zu finden.
+
+[![Mitwirkende](https://contrib.rocks/image?repo=HansTanzi/RestGuard)](https://github.com/HansTanzi/RestGuard/graphs/contributors)
+
+[![Verlauf der Sterne](https://api.star-history.com/svg?repos=HansTanzi/RestGuard&type=Date)](https://star-history.com/#HansTanzi/RestGuard&Date)
 
 ## Datenschutz
 

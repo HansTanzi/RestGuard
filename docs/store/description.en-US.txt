@@ -1,0 +1,36 @@
+RestGuard is a break reminder that actually makes you rest.
+
+Unlike typical break reminders, RestGuard has three enforcement levels. It can gently remind you, or it can stop you outright when you're tempted to work "just five more minutes".
+
+■ Breaks that are actually enforced
+• Every 60 minutes of work, a 10-minute break is enforced (both durations are adjustable)
+• Multi-monitor support: every screen is covered
+• The overlay can't be closed during a break (Alt+F4 doesn't work), and you can't quit from the tray
+• Postpone for 5 minutes, up to 3 times; the count resets after a full break
+• Urgent mode: when something can't wait, temporarily shrink the overlay to save your work while the countdown keeps running
+
+■ Three enforcement levels for different situations
+• High enforcement: for people who are strict with themselves but always want "five more minutes". The overlay is full-screen and can't be moved, you can postpone only once, and there's no urgent mode
+• Medium enforcement (default): for everyday work. Postpone up to 3 times, with urgent mode and meeting detection. You can still work, but it gets noticeably less pleasant, nudging you to take your break
+• Low enforcement: for people who just want a gentle reminder. The overlay covers 80% of the screen, and you can skip a break
+
+■ Highly customizable
+Create custom profiles based on any built-in level and fine-tune each setting: number of postpones, whether you can exit or skip breaks, urgent mode, overlay coverage (10%–100%), whether the overlay can be moved, and meeting app detection. Save multiple profiles and switch between them anytime.
+
+■ Stays out of the way of real work
+• Meeting detection: when Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground, or your microphone is in use, the break waits until the meeting is over. During a break you can also click "I'm in a meeting" to be reminded again in 15 minutes
+• Idle detection: 5 minutes without keyboard or mouse activity counts as being away, and the work countdown pauses; if you're away as long as a break, it counts as a break
+
+■ Never miss the end of a break, even away from your desk
+• A sound plays when the break ends: pick a built-in sound or your own audio file
+• Phone notifications: get notified on Android or iOS via ntfy, so you know when to come back even when you're away from the computer; on Android it can keep ringing like an alarm until you dismiss it
+• Smartwatches: phone notifications sync to Apple Watch, Wear OS, Galaxy Watch, and Xiaomi, Huawei, Garmin and other watches and fitness bands
+
+■ Small and light
+Built with Rust + Tauri, RestGuard uses the system's built-in WebView and barely uses any resources while running in the background.
+
+■ More
+• Tray menu: see the time remaining, take a break early, open settings, launch at startup, switch enforcement profiles
+• 13 languages: English, Simplified Chinese, Hindi, Spanish, Arabic, French, Bengali, Portuguese, German, Japanese, Italian, Korean and Indonesian
+• Free and open source, dual-licensed under MIT / Apache-2.0
+• Privacy first: no data collection, no accounts, no analytics or telemetry; it only goes online when phone notifications are turned on

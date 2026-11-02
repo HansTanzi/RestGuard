@@ -1,6 +1,28 @@
-# RestGuard
+<p align="center">
+  <img src="./src-tauri/icons/128x128@2x.png" width="128" alt="RestGuard logo">
+</p>
 
-English | [简体中文](README.zh-CN.md) | [Deutsch](README.de.md)
+<h1 align="center">RestGuard</h1>
+
+<p align="center"><strong>The break reminder you can't ignore.</strong></p>
+
+<p align="center">A free, open-source break reminder for Windows, macOS and Linux that can remind you to rest, or make you.</p>
+
+<p align="center">
+  <a href="https://github.com/HansTanzi/RestGuard/releases/latest"><img src="https://img.shields.io/github/v/release/HansTanzi/RestGuard?label=release" alt="Latest release"></a>
+  <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
+  <a href="#install"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
+  <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="#license"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
+</p>
+
+<p align="center">
+  Install on <a href="#windows"><b>Windows</b></a> · <a href="#macos"><b>macOS</b></a> · <a href="#linux"><b>Linux</b></a> · <a href="https://hanstanzi.github.io/RestGuard/">Website</a>
+</p>
+
+<p align="center">English | <a href="README.zh-CN.md">简体中文</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ja.md">日本語</a> | <a href="README.es.md">Español</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.ko.md">한국어</a></p>
+
+![The break overlay (High)](./docs/images/EN/HighEnforcement.webp)
 
 A cross-platform break reminder with three built-in enforcement levels: it can remind you to take a break, or make you take one. Enforcement is what sets it apart from other break reminders.
 
@@ -8,9 +30,26 @@ A cross-platform break reminder with three built-in enforcement levels: it can r
 - Medium: you can still work, but it makes working uncomfortable enough to nudge you into resting.
 - Low: like other break reminders, it mainly reminds you.
 
-Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [ProtectEyes](./ProtectEyes).
+Built with Rust + Tauri 2 + Svelte. Successor to [ProtectEyes](https://github.com/HansTanzi/ProtectEyes), a Windows-only C# app I open-sourced years ago.
 
-![The break overlay (Low)](./docs/images/EN/LowEnforcement.webp)
+Install in one line:
+
+```sh
+winget install HansTanzi.RestGuard            # Windows
+brew install --cask hanstanzi/tap/restguard   # macOS
+```
+
+APT, Scoop, Homebrew on Linux and portable downloads are covered in [Install](#install).
+
+## Why RestGuard
+
+Most break reminders are easy to ignore: a notification pops up, you dismiss it, and "just five more minutes" turns into two hours. Long stretches at a screen are linked to eye strain, dry eyes, neck and back pain, and repetitive strain injury (RSI). Advice like the 20-20-20 rule or a short break every hour only helps if you actually take the break.
+
+RestGuard is for people who know they should rest but keep putting it off:
+
+- **You can't just click it away.** On High, the overlay covers every screen until the break is over.
+- **It knows when not to interrupt.** Postpones, urgent mode and meeting detection keep a break from ruining a call or costing you unsaved work.
+- **You choose how strict it is.** Pick High, Medium or Low, or build your own profile.
 
 ## Features
 
@@ -35,8 +74,6 @@ Built with Rust + Tauri 2 + Svelte. Successor to the Windows-only C# app [Protec
 | Close / skip this break | ✗ | ✗ | ✓ |
 | Screen coverage | 100% | 100% | 80% |
 | Draggable overlay | ✗ | ✓ | ✓ |
-
-![The break overlay (High)](./docs/images/EN/HighEnforcement.webp)
 
 ![The break overlay (Medium)](./docs/images/EN/MediumEnforcement.webp)
 
@@ -67,7 +104,7 @@ Keep as many custom profiles as you like and switch any time. Work, break, postp
 ### Small and fast
 
 - Built with Rust + Tauri 2 on the system WebView, with no bundled browser engine, so it barely uses any resources while running in the background
-- Tiny: downloads are just 2.5 ~ 4.6 MB (Windows 4.6 MB, macOS 4.0 MB, Linux 2.5 MB)
+- Tiny: downloads are only about 3–6 MB, dozens of times smaller than Electron-based alternatives (see [How it compares](#how-it-compares))
 - Portable: a single exe on Windows, an unzip-and-run `.app` on macOS; delete it to uninstall
 
 ### And more
@@ -79,6 +116,22 @@ Keep as many custom profiles as you like and switch any time. Work, break, postp
 - Available in Simplified Chinese, English, Hindi, Spanish, Arabic, French, Bengali, Portuguese, German, Japanese, Italian, Korean and Indonesian. The UI language follows the system by default (English if the system language isn't supported); switch it any time from the tray menu's "语言 / Language" submenu
 
 ![The tray menu](./docs/images/EN/TrayMenu.webp)
+
+## How it compares
+
+| | RestGuard | [Stretchly](https://github.com/hovancik/stretchly) | [Workrave](https://github.com/rcaelers/workrave) | [Safe Eyes](https://github.com/slgobinath/SafeEyes) |
+|---|:---:|:---:|:---:|:---:|
+| Windows | ✓ | ✓ | ✓ | ✗ |
+| macOS | ✓ | ✓ | ✗ | ✗ |
+| Linux | ✓ | ✓ | ✓ | ✓ |
+| Download size | **~3–6 MB** | Windows 163 MB<br>macOS 187 MB<br>Linux 155 MB | Windows 61 MB<br>Linux 64 MB| Linux 0.3 MB |
+| Enforcement | 3 levels + custom profiles | Strict mode on/off | Can block input and screen | Can disable the keyboard |
+| Holds breaks during meetings | Detects Zoom, Teams, Webex, Tencent Meeting | Follows Do Not Disturb; per-app exclusions | — | — |
+| Phone / smartwatch alert when a break ends | ✓ (ntfy) | — | — | — |
+| Built with | Rust + Tauri (system WebView) | Electron (bundles Chromium) | C++ | Python + GTK |
+| License | MIT / Apache-2.0 | BSD-2-Clause | GPL-3.0 | GPL-3.0 |
+
+— means not built in. Download sizes are of each project's latest GitHub release (Stretchly 1.22.1, Workrave 1.11.5, Safe Eyes 3.5.1): the Windows installer or exe, the macOS download and the Linux `.deb`. Based on each project's documentation as of November 2026; if something here is wrong, please [open an issue](https://github.com/HansTanzi/RestGuard/issues).
 
 ## Install
 
@@ -175,7 +228,7 @@ On Windows, compare the output of `Get-FileHash .\RestGuard_*_x64.exe` with the 
 
 ### Build from source
 
-Install the prerequisites listed under [Development](#development), then build a tagged version:
+Install the prerequisites listed in [CONTRIBUTING.md](CONTRIBUTING.md#development-setup), then build a tagged version:
 
 ```sh
 git clone https://github.com/HansTanzi/RestGuard
@@ -211,6 +264,26 @@ sound_file = ""          # full path of your own audio file, used when sound = "
 phone_notify = false     # push a notification to your phone via ntfy when a break ends
 ntfy_server = "https://ntfy.sh"  # ntfy server, the public one or your own
 ntfy_topic = ""          # topic to subscribe to in the ntfy app; keep it hard to guess
+
+[[fixed_breaks]]         # a fixed break; "work_end" (end of the working day) and "lunch" are built in
+name = "work_end"
+enabled = false          # hold off breaks that fall due just before it
+time = "18:00"           # 24-hour HH:MM in local time
+quiet_minutes = 30.0     # breaks due this long before time wait until time
+
+[[fixed_breaks]]         # lunch: a break of rest_minutes starts at time
+name = "lunch"
+enabled = true
+time = "12:00"
+quiet_minutes = 30.0
+rest_minutes = 30.0      # how long the break lasts (lunch and your own fixed breaks)
+
+[[fixed_breaks]]         # add your own, e.g. a tea break, with one [[fixed_breaks]] each
+name = "Tea break"
+enabled = true
+time = "15:00"
+quiet_minutes = 15.0
+rest_minutes = 15.0
 
 [[profiles]]             # a custom profile; add one [[profiles]] per profile
 name = "Focus"
@@ -253,30 +326,38 @@ Notes:
 - **Linux**: sounds are played with `paplay`, `pw-play` or `aplay`, so use wav, ogg or flac for your own file (mp3 isn't supported)
 - **Linux Wayland**: the protocol doesn't let apps keep themselves on top or position their own windows, so the overlay may not work; X11 is fine
 
-## Development
+## FAQ
 
-Requires [Rust](https://rustup.rs), Node.js, pnpm, and [Tauri's system dependencies](https://tauri.app/start/prerequisites/).
+**Can I quit RestGuard?**
+Between breaks, yes: choose "Quit" in the tray menu. During a break, or while a postponed break is still owed, Quit is disabled.
 
-```sh
-pnpm install
-pnpm tauri dev      # run in development
-pnpm tauri build    # build installers
-cd src-tauri && cargo test
-```
+**What if a break comes up during a meeting?**
+On Medium and Low, the break waits while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (Windows, macOS; on Windows also while it uses the microphone). If a break has already started, click "I'm in a meeting" to be reminded in 15 minutes. On High, breaks don't wait.
 
-Dev builds read `config.dev.toml` and `language.dev` (same directory as `config.toml`), so you can use short durations or switch languages without touching the installed app. Press `Esc` on the overlay to end a break immediately. Quit the installed RestGuard first, otherwise the single-instance check makes the dev build exit right away.
+**I'm in the middle of something urgent. Will I lose my work?**
+Postpone the break by 5 minutes (up to 3 times on Medium and Low, once on High), or on Medium and Low use urgent mode to shrink the overlay and save your work while the countdown keeps running.
 
-To release, run `pnpm release <version>` (e.g. `pnpm release 0.2.0`) on a clean `dev` branch. It bumps the version in `package.json`, `tauri.conf.json`, `Cargo.toml` and `Cargo.lock`, commits, and pushes a `v<version>` tag. GitHub Actions then builds the exe, a universal macOS `.app`, and the Linux `.deb`, `.rpm` and Arch `.pkg.tar.zst` (repackaged from the `.deb` with `src-tauri/arch/PKGBUILD`), creates the Release, and pushes the updated `bucket/restguard.json` to [HansTanzi/scoop-bucket](https://github.com/HansTanzi/scoop-bucket) and `Casks/restguard.rb` (the macOS `.app`, and on Linux the executable from the Arch package) to [HansTanzi/homebrew-tap](https://github.com/HansTanzi/homebrew-tap). This needs the repository secrets `SCOOP_BUCKET_DEPLOY_KEY` and `HOMEBREW_TAP_DEPLOY_KEY`: the private halves of deploy keys with write access on those repos. For stable versions it also triggers [HansTanzi/apt](https://github.com/HansTanzi/apt) to rebuild the APT repository from the latest releases; this needs an `APT_DISPATCH_TOKEN` repository secret (a fine-grained PAT limited to that repo with only Actions read and write). The signing key and setup are described in that repo. For stable versions it also opens a PR to [microsoft/winget-pkgs](https://github.com/microsoft/winget-pkgs) via [winget-releaser](https://github.com/vedantmgoyal9/winget-releaser); this needs a `WINGET_TOKEN` repository secret (a classic PAT with `public_repo` scope) and a fork of `winget-pkgs` under the token owner's account. The very first WinGet version must be submitted by hand, e.g. `komac new HansTanzi.RestGuard --version <version> --urls <exe release URL>` with [Komac](https://github.com/russellbanks/Komac) (pick the `portable` installer type and add `Microsoft.EdgeWebView2Runtime` as a package dependency).
+**Does time away from the computer count as work?**
+No. After 5 minutes without keyboard or mouse input the work countdown pauses, and being away as long as a break counts as a full break.
 
-### Microsoft Store
+**macOS says the app can't be opened.**
+RestGuard isn't notarized by Apple. Install it with Homebrew, or run `xattr -dr com.apple.quarantine /Applications/RestGuard.app` once (see [macOS](#macos)).
 
-The Store build is an MSIX package; the Store signs it, so no code-signing certificate is needed. Run `pnpm msix` to build `src-tauri/target/msix/RestGuard_<version>_x64.msix` locally (needs the Windows SDK); the release workflow also builds it for stable versions and attaches it to the workflow run as the `msix` artifact. Upload it to a new submission in [Partner Center](https://partner.microsoft.com/dashboard).
+**Does it work on Wayland?**
+Not reliably: Wayland doesn't let apps keep their windows on top, so use an X11 session (see [Platform limitations](#platform-limitations)).
 
-One-time setup: reserve the app name in Partner Center, then copy `Package/Identity/Name`, `Package/Identity/Publisher` and `Package/Properties/PublisherDisplayName` from the app's **Product identity** page into `src-tauri/msix/AppxManifest.xml`. The package declares the restricted `runFullTrust` capability (required for desktop apps), so the submission asks for a justification, e.g. "Desktop app built with Tauri; needs full trust to show always-on-top break overlays on every screen".
+**Does it collect any data?**
+No. See [Privacy](#privacy).
 
-Inside the package, start-at-login uses the manifest's `StartupTask` instead of the registry, since registry writes are virtualized there. To try the package without the Store, enable Developer Mode and run `Add-AppxPackage -Register src-tauri/target/msix/layout/AppxManifest.xml`.
+## Contributing
 
-For debugging, set `work_minutes` to `0.1` (6 seconds) to trigger a break quickly.
+Bug reports, ideas, translations and pull requests are all welcome. [CONTRIBUTING.md](CONTRIBUTING.md) covers the development setup, checks and how to improve a translation; changes in each version are in [CHANGELOG.md](CHANGELOG.md). Please report security issues privately as described in [SECURITY.md](SECURITY.md).
+
+If RestGuard helps you rest, a ⭐ helps others find it.
+
+[![Contributors](https://contrib.rocks/image?repo=HansTanzi/RestGuard)](https://github.com/HansTanzi/RestGuard/graphs/contributors)
+
+[![Star history chart](https://api.star-history.com/svg?repos=HansTanzi/RestGuard&type=Date)](https://star-history.com/#HansTanzi/RestGuard&Date)
 
 ## Privacy
 

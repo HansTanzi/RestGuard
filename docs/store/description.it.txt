@@ -1,0 +1,36 @@
+RestGuard è un promemoria per le pause che ti fa riposare davvero.
+
+A differenza dei soliti promemoria, RestGuard offre tre livelli di rigore. Può ricordartelo con delicatezza, oppure fermarti di colpo quando vorresti lavorare "solo altri cinque minuti".
+
+■ Pause che vengono davvero rispettate
+• Ogni 60 minuti di lavoro, una pausa obbligatoria di 10 minuti (entrambe le durate sono regolabili)
+• Più monitor: ogni schermo viene coperto
+• Durante la pausa non puoi chiudere la sovrapposizione (Alt+F4 non funziona) né uscire dall'area di notifica
+• Puoi rimandare di 5 minuti, fino a 3 volte; il conteggio si azzera dopo una pausa completa
+• Modalità urgente: se c'è qualcosa che non può aspettare, riduci temporaneamente la sovrapposizione per salvare il lavoro, mentre il conto alla rovescia continua
+
+■ Tre livelli di rigore per ogni situazione
+• Rigore alto: per chi è esigente con sé stesso ma vuole sempre "altri cinque minuti". La sovrapposizione copre tutto lo schermo e non si può spostare, puoi rimandare una sola volta e non c'è la modalità urgente
+• Rigore medio (predefinito): per il lavoro di tutti i giorni. Fino a 3 rinvii, con modalità urgente e rilevamento delle riunioni. Puoi continuare a lavorare, ma diventa decisamente più scomodo, così sei spinto a fare la pausa
+• Rigore basso: per chi vuole solo un promemoria gentile. La sovrapposizione copre l'80% dello schermo e puoi saltare la pausa
+
+■ Altamente personalizzabile
+Crea profili personalizzati partendo da qualsiasi livello integrato e regola ogni opzione: numero di rinvii, possibilità di uscire o saltare le pause, modalità urgente, copertura della sovrapposizione (10%–100%), possibilità di spostarla e rilevamento delle app per riunioni. Salva più profili e passa dall'uno all'altro quando vuoi.
+
+■ Non ti disturba quando conta
+• Rilevamento delle riunioni: quando Zoom, Microsoft Teams, Webex o Tencent Meeting è in primo piano, o il microfono è in uso, la pausa aspetta la fine della riunione. Durante una pausa puoi anche fare clic su "Sono in una riunione" per un nuovo promemoria tra 15 minuti
+• Rilevamento dell'inattività: 5 minuti senza tastiera né mouse contano come assenza e il conto alla rovescia del lavoro si mette in pausa; se resti lontano quanto dura una pausa, conta come pausa fatta
+
+■ Non perdere la fine della pausa, anche lontano dalla scrivania
+• Alla fine della pausa viene riprodotto un suono: scegli un suono integrato o un tuo file audio
+• Notifiche sul telefono: ricevi un avviso su Android o iOS tramite ntfy, così sai quando tornare anche lontano dal computer; su Android può continuare a suonare come una sveglia finché non la chiudi
+• Smartwatch: le notifiche del telefono arrivano anche su Apple Watch, Wear OS, Galaxy Watch e su orologi e smartband Xiaomi, Huawei, Garmin e altri
+
+■ Piccolo e leggero
+Realizzato con Rust + Tauri, usa il WebView integrato nel sistema e in background non consuma quasi risorse.
+
+■ Inoltre
+• Menu nell'area di notifica: tempo rimanente, pausa anticipata, impostazioni, avvio automatico, cambio del profilo di rigore
+• 13 lingue: italiano, inglese, cinese semplificato, hindi, spagnolo, arabo, francese, bengalese, portoghese, tedesco, giapponese, coreano e indonesiano
+• Gratuito e open source, con doppia licenza MIT / Apache-2.0
+• Privacy prima di tutto: nessuna raccolta di dati, nessun account, nessuna analisi o telemetria; si connette a Internet solo se attivi le notifiche sul telefono

@@ -1,0 +1,36 @@
+RestGuard es un recordatorio de descansos que de verdad te hace descansar.
+
+A diferencia de otros recordatorios, RestGuard tiene tres niveles de rigor. Puede recordártelo con suavidad o detenerte en seco cuando quieras seguir "solo cinco minutos más".
+
+■ Descansos que se cumplen de verdad
+• Cada 60 minutos de trabajo, un descanso obligatorio de 10 minutos (ambas duraciones son ajustables)
+• Varios monitores: se cubren todas las pantallas
+• Durante el descanso no se puede cerrar la superposición (Alt+F4 no funciona) ni salir desde la bandeja del sistema
+• Puedes posponer 5 minutos, hasta 3 veces; el contador se reinicia tras un descanso completo
+• Modo urgente: si surge algo que no puede esperar, reduce temporalmente la superposición para guardar tu trabajo mientras la cuenta atrás sigue corriendo
+
+■ Tres niveles de rigor para distintas situaciones
+• Rigor alto: para quienes son exigentes consigo mismos, pero siempre quieren "cinco minutos más". La superposición ocupa toda la pantalla y no se puede mover, solo puedes posponer una vez y no hay modo urgente
+• Rigor medio (predeterminado): para el trabajo diario. Hasta 3 aplazamientos, con modo urgente y detección de reuniones. Puedes seguir trabajando, pero resulta bastante más incómodo, para animarte a tomar el descanso
+• Rigor bajo: para quienes solo quieren un recordatorio amable. La superposición cubre el 80 % de la pantalla y puedes saltarte el descanso
+
+■ Muy personalizable
+Crea perfiles personalizados a partir de cualquier nivel integrado y ajusta cada opción: número de aplazamientos, si se permite salir o saltar descansos, modo urgente, cobertura de la superposición (10 %–100 %), si se puede mover y detección de apps de reuniones. Guarda varios perfiles y cambia entre ellos cuando quieras.
+
+■ No interrumpe lo importante
+• Detección de reuniones: cuando Zoom, Microsoft Teams, Webex o Tencent Meeting están en primer plano, o el micrófono está en uso, el descanso espera a que termine la reunión. Durante un descanso también puedes pulsar "Estoy en una reunión" para que te lo recuerde en 15 minutos
+• Detección de inactividad: 5 minutos sin usar el teclado ni el ratón cuentan como ausencia y la cuenta atrás de trabajo se pausa; si te ausentas tanto como dura un descanso, cuenta como descanso
+
+■ No te pierdas el final del descanso, aunque estés lejos
+• Al terminar el descanso suena un aviso: elige un sonido integrado o tu propio archivo de audio
+• Notificaciones en el móvil: recibe avisos en Android o iOS mediante ntfy para saber cuándo volver aunque no estés frente al ordenador; en Android puede seguir sonando como una alarma hasta que la descartes
+• Relojes inteligentes: las notificaciones del móvil llegan a Apple Watch, Wear OS, Galaxy Watch y a relojes y pulseras de Xiaomi, Huawei, Garmin y otras marcas
+
+■ Pequeño y ligero
+Creado con Rust + Tauri, usa el WebView integrado en el sistema y apenas consume recursos en segundo plano.
+
+■ Y además
+• Menú de la bandeja: consulta el tiempo restante, descansa antes, abre la configuración, inicia con el sistema y cambia de perfil de rigor
+• 13 idiomas: español, inglés, chino simplificado, hindi, árabe, francés, bengalí, portugués, alemán, japonés, italiano, coreano e indonesio
+• Gratuito y de código abierto, con doble licencia MIT / Apache-2.0
+• Privacidad ante todo: no recopila datos, sin cuentas, análisis ni telemetría; solo se conecta a internet si activas las notificaciones en el móvil

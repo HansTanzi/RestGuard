@@ -3,6 +3,7 @@
 use std::{
     collections::HashMap,
     sync::{LazyLock, Mutex},
+    time::{Duration, Instant},
 };
 use tauri::{
     AppHandle, LogicalPosition, LogicalSize, Manager, Monitor, PhysicalPosition, PhysicalSize,
@@ -69,6 +70,10 @@ struct Layout {
     /// Current coverage fraction; when not draggable, windows are pinned to the centered position it implies
     coverage: f64,
     movable: bool,
+    /// Urgent mode: when the overlays were shrunk, None when not shrunk. The user is dealing with something urgent, so auto-lock waits
+    shrunk_since: Option<Instant>,
+    /// Time already spent shrunk in this break, not counting the current stretch
+    urgent_used: Duration,
 }
 
 static LAYOUT: LazyLock<Mutex<Layout>> = LazyLock::new(Default::default);
@@ -102,6 +107,8 @@ pub fn open_all(app: &AppHandle, coverage: f64, forced: bool, movable: bool) {
         let mut layout = LAYOUT.lock().unwrap();
         layout.coverage = coverage;
         layout.movable = movable;
+        layout.shrunk_since = None;
+        layout.urgent_used = Duration::ZERO;
     }
 
     for (i, monitor) in monitors.iter().enumerate() {
@@ -187,16 +194,26 @@ pub fn close_all(app: &AppHandle) {
             let _ = window.destroy();
         }
     }
-    LAYOUT.lock().unwrap().homes.clear();
+    let mut layout = LAYOUT.lock().unwrap();
+    layout.homes.clear();
+    layout.shrunk_since = None;
+    layout.urgent_used = Duration::ZERO;
 }
 
 /// Scales all overlays to a fraction (still centered and on top). Urgent mode passes a smaller fraction, exposing the edges for saving files etc.;
 /// leaving it passes the normal fraction back, restoring the original size and centering
-pub fn set_coverage(app: &AppHandle, coverage: f64) {
+pub fn set_coverage(app: &AppHandle, coverage: f64, shrunk: bool) {
     // Update the fraction before moving windows so the resulting Moved events are constrained to the new position
     let homes = {
         let mut layout = LAYOUT.lock().unwrap();
         layout.coverage = coverage;
+        if !shrunk {
+            if let Some(since) = layout.shrunk_since.take() {
+                layout.urgent_used += since.elapsed();
+            }
+        } else if layout.shrunk_since.is_none() {
+            layout.shrunk_since = Some(Instant::now());
+        }
         layout.homes.clone()
     };
     for (label, window) in app.webview_windows() {
@@ -206,6 +223,18 @@ pub fn set_coverage(app: &AppHandle, coverage: f64) {
             let _ = window.set_position(position(area.x, area.y));
         }
     }
+}
+
+/// Whether the overlays are shrunk for urgent mode
+pub fn is_shrunk() -> bool {
+    LAYOUT.lock().unwrap().shrunk_since.is_some()
+}
+
+/// How much of `limit` is left for urgent mode in this break; time spent shrunk adds up across shrinks
+pub fn urgent_left(limit: Duration) -> Duration {
+    let layout = LAYOUT.lock().unwrap();
+    let current = layout.shrunk_since.map_or(Duration::ZERO, |since| since.elapsed());
+    limit.saturating_sub(layout.urgent_used + current)
 }
 
 /// Called after a window moves: if it was dragged (or moved with Win+Shift+arrow) off its screen, pulls it back;

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/HansTanzi/RestGuard/security/advisories/new
+    about: Please report security problems privately, not as an issue.
+  - name: Install and configuration guide
+    url: https://github.com/HansTanzi/RestGuard#install
+    about: Installing, updating, config.toml and phone notifications are covered in the README.

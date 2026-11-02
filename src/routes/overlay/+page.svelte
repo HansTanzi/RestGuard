@@ -4,7 +4,7 @@
   import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
   import { onMount } from "svelte";
   import { fade, fly } from "svelte/transition";
-  import { STATE_EVENT, formatClock, type Snapshot } from "$lib/timer";
+  import { STATE_EVENT, formatClock, type Snapshot } from "#lib/timer.ts";
   import {
     LANG_EVENT,
     LANG_NAMES,
@@ -13,7 +13,7 @@
     strings,
     type Strings,
     type UiLang,
-  } from "$lib/i18n";
+  } from "#lib/i18n.ts";
 
   const win = getCurrentWebviewWindow();
   // Matches SHRINK_EVENT in src-tauri/src/lib.rs; payload is whether the overlay is shrunk

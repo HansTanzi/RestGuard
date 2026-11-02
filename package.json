@@ -4,6 +4,10 @@
   "description": "Cross-platform break reminder that actually makes you rest",
   "private": true,
   "type": "module",
+  "imports": {
+    "#lib": "./src/lib",
+    "#lib/*": "./src/lib/*"
+  },
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
@@ -20,8 +24,8 @@
     "@tauri-apps/api": "^2"
   },
   "devDependencies": {
-    "@sveltejs/adapter-static": "^3.0.10",
-    "@sveltejs/kit": "^2.65.1",
+    "@sveltejs/adapter-static": "^4.0.0",
+    "@sveltejs/kit": "^3.1.0",
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "svelte": "^5.56.3",
     "svelte-check": "^4.6.0",

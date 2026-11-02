@@ -4,6 +4,10 @@
   "description": "Cross-platform break reminder that actually makes you rest",
   "private": true,
   "type": "module",
+  "imports": {
+    "#lib": "./src/lib",
+    "#lib/*": "./src/lib/*"
+  },
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",

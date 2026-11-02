@@ -1,4 +1,4 @@
-import { initTheme } from "$lib/theme";
+import { initTheme } from "#lib/theme.ts";
 
 // Tauri doesn't have a Node.js server to do proper SSR, so render everything on the client
 // See: https://svelte.dev/docs/kit/single-page-apps

@@ -3,14 +3,14 @@
   import { invoke } from "@tauri-apps/api/core";
   import { listen } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
-  import { STATE_EVENT, type Snapshot } from "$lib/timer";
+  import { STATE_EVENT, type Snapshot } from "#lib/timer.ts";
   import {
     LANG_EVENT,
     aboutStrings,
     applyDocumentLang,
     type AboutStrings,
     type UiLang,
-  } from "$lib/i18n";
+  } from "#lib/i18n.ts";
   // Use the app icon directly; static/favicon.png is only 32px and blurs when scaled up
   import icon from "../../../src-tauri/icons/128x128.png";
 

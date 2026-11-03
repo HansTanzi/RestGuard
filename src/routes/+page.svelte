@@ -3,7 +3,7 @@
   import { invoke } from "@tauri-apps/api/core";
   import { listen } from "@tauri-apps/api/event";
   import { onMount } from "svelte";
-  import { STATE_EVENT, type Snapshot } from "$lib/timer";
+  import { STATE_EVENT, type Snapshot } from "#lib/timer.ts";
   import {
     LANG_EVENT,
     LANG_NAMES,
@@ -12,7 +12,7 @@
     settingsStrings,
     type SettingsStrings,
     type UiLang,
-  } from "$lib/i18n";
+  } from "#lib/i18n.ts";
   import {
     AUTOSTART_EVENT,
     CONFIG_EVENT,
@@ -29,8 +29,8 @@
     type Config,
     type LangId,
     type Profile,
-  } from "$lib/config";
-  import { THEMES, getTheme, setTheme, type Theme } from "$lib/theme";
+  } from "#lib/config.ts";
+  import { THEMES, getTheme, setTheme, type Theme } from "#lib/theme.ts";
 
   let s = $state<SettingsStrings | null>(null);
   let lang = $state<LangId>("auto");

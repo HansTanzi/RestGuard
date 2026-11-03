@@ -1,6 +1,6 @@
 [package]
 name = "restguard"
-version = "0.1.19"
+version = "0.1.20"
 description = "Cross-platform break reminder that actually makes you rest"
 authors = ["Tanzi"]
 license = "MIT OR Apache-2.0"
@@ -26,7 +26,7 @@ tauri-plugin-dialog = "2"
 tauri-plugin-single-instance = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-toml = "0.9"
+toml = "1.1"
 sys-locale = "0.3"
 # Local time of day, for holding off breaks just before the end of the working day
 chrono = { version = "0.4", default-features = false, features = ["clock"] }

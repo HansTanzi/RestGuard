@@ -674,17 +674,24 @@ function t(key, vars = {}) {
   return raw.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "");
 }
 
+// Maps a language tag to a site language, or null if the site doesn't have it.
+// Also takes the app's language ids, which the About window passes as ?lang= (Lang::id in src-tauri/src/i18n.rs)
+function matchLang(tag) {
+  const base = (tag || "").toLowerCase().split("-")[0];
+  if (base === "pt") return "pt-BR"; // The only Portuguese translation
+  return base === "en" || Object.hasOwn(TEXT, base) ? base : null;
+}
+
 function detectLang() {
-  const param = new URLSearchParams(location.search).get("lang");
-  if (param && (param === "en" || TEXT[param])) return param;
+  const param = matchLang(new URLSearchParams(location.search).get("lang"));
+  if (param) return param;
   try {
-    const saved = localStorage.getItem("lang");
-    if (saved && (saved === "en" || TEXT[saved])) return saved;
+    const saved = matchLang(localStorage.getItem("lang"));
+    if (saved) return saved;
   } catch {}
   for (const tag of navigator.languages || [navigator.language]) {
-    const base = (tag || "").toLowerCase().split("-")[0];
-    if (base === "en" || TEXT[base]) return base;
-    if (base === "pt") return "pt-BR"; // The only Portuguese translation
+    const match = matchLang(tag);
+    if (match) return match;
   }
   return "en";
 }
@@ -828,6 +835,10 @@ function init() {
     try {
       localStorage.setItem("lang", lang);
     } catch {}
+    // ?lang= wins over the saved choice, so keep it in step or a reload would undo the switch
+    const url = new URL(location.href);
+    url.searchParams.set("lang", lang);
+    history.replaceState(null, "", url);
     applyLang();
   });
   applyLang();

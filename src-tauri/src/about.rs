@@ -1,6 +1,6 @@
 //! About window: opened from the tray menu, loads the frontend /about route (src/routes/about/+page.svelte).
 
-use crate::i18n::{t, text};
+use crate::i18n::{self, t, text};
 use serde::Serialize;
 use std::process::Command;
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
@@ -38,6 +38,12 @@ fn issues_url() -> String {
     format!("{REPO_URL}/issues")
 }
 
+/// The website opened in the current UI language. The site reads ?lang= (site/app.js detectLang)
+/// and falls back to the browser language for languages it doesn't have, so every language can be passed as is
+fn localized_homepage_url() -> String {
+    format!("{HOMEPAGE_URL}?lang={}", i18n::resolved().id())
+}
+
 fn privacy_url() -> String {
     format!("{}/privacy.html", HOMEPAGE_URL.trim_end_matches('/'))
 }
@@ -45,7 +51,7 @@ fn privacy_url() -> String {
 /// Opens a link in the system default browser. Only a fixed set of links is accepted, so the page can't open arbitrary URLs
 pub fn open_link(link: &str) -> Result<(), String> {
     let url = match link {
-        "website" => HOMEPAGE_URL.to_string(),
+        "website" => localized_homepage_url(),
         "repo" => REPO_URL.to_string(),
         "issues" => issues_url(),
         "privacy" => privacy_url(),

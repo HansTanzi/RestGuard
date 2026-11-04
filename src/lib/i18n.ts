@@ -1,6 +1,6 @@
 // The UI language is decided by the backend (src-tauri/src/i18n.rs), consistent with the tray
 
-import type { BuiltinFixedBreak, BuiltinLevel, SoundId } from "./config";
+import { isBuiltinFixedBreak, type BuiltinFixedBreak, type BuiltinLevel, type SoundId } from "./config";
 import type { Theme } from "./theme";
 
 // Broadcast when the tray or a page switches language; payload is the language actually displayed (UiLang)
@@ -51,6 +51,9 @@ export function applyDocumentLang(lang: UiLang) {
 // Break overlay (src/routes/overlay/+page.svelte)
 export interface Strings {
   title: string;
+  // Title during a fixed break; the built-in ones read better written out than with their name filled in
+  builtinFixedTitles: Record<BuiltinFixedBreak, string>;
+  fixedTitle: (name: string) => string;
   tip: string;
   restOver: string;
   startWork: string;
@@ -67,7 +70,9 @@ export interface Strings {
 
 const overlay: Record<UiLang, Strings> = {
   zh: {
-    title: "保护眼睛，小心猝死！",
+    title: "休息时间到！",
+    builtinFixedTitles: { work_end: "下班时间到！", lunch: "午休时间到！" },
+    fixedTitle: (name) => `${name}时间到！`,
     tip: "起来走走，看看远处，喝口水。",
     restOver: "休息结束",
     startWork: "开始工作",
@@ -80,6 +85,8 @@ const overlay: Record<UiLang, Strings> = {
   },
   en: {
     title: "Time for a break!",
+    builtinFixedTitles: { work_end: "Time to call it a day!", lunch: "Time for lunch!" },
+    fixedTitle: (name) => `Time for ${name}!`,
     tip: "Stand up, look into the distance, drink some water.",
     restOver: "Break over",
     startWork: "Back to work",
@@ -92,6 +99,8 @@ const overlay: Record<UiLang, Strings> = {
   },
   hi: {
     title: "ब्रेक का समय!",
+    builtinFixedTitles: { work_end: "छुट्टी का समय!", lunch: "लंच का समय!" },
+    fixedTitle: (name) => `${name} का समय!`,
     tip: "उठिए, थोड़ा टहलिए, दूर देखिए और पानी पीजिए।",
     restOver: "ब्रेक समाप्त",
     startWork: "काम पर लौटें",
@@ -104,6 +113,8 @@ const overlay: Record<UiLang, Strings> = {
   },
   es: {
     title: "¡Hora de descansar!",
+    builtinFixedTitles: { work_end: "¡Hora de terminar la jornada!", lunch: "¡Hora de comer!" },
+    fixedTitle: (name) => `¡Hora de ${name}!`,
     tip: "Levántate, mira a lo lejos y bebe agua.",
     restOver: "Descanso terminado",
     startWork: "Volver al trabajo",
@@ -116,6 +127,8 @@ const overlay: Record<UiLang, Strings> = {
   },
   ar: {
     title: "حان وقت الاستراحة!",
+    builtinFixedTitles: { work_end: "حان وقت انتهاء الدوام!", lunch: "حان وقت الغداء!" },
+    fixedTitle: (name) => `حان وقت ${name}!`,
     tip: "قم وتمشَّ قليلًا، وانظر إلى البعيد، واشرب بعض الماء.",
     restOver: "انتهت الاستراحة",
     startWork: "العودة إلى العمل",
@@ -128,6 +141,8 @@ const overlay: Record<UiLang, Strings> = {
   },
   fr: {
     title: "C'est l'heure de la pause !",
+    builtinFixedTitles: { work_end: "C'est la fin de la journée !", lunch: "C'est l'heure de déjeuner !" },
+    fixedTitle: (name) => `C'est l'heure : ${name} !`,
     tip: "Levez-vous, regardez au loin, buvez un peu d'eau.",
     restOver: "Pause terminée",
     startWork: "Retour au travail",
@@ -140,6 +155,8 @@ const overlay: Record<UiLang, Strings> = {
   },
   bn: {
     title: "বিরতির সময় হয়েছে!",
+    builtinFixedTitles: { work_end: "ছুটির সময় হয়েছে!", lunch: "দুপুরের খাবারের সময় হয়েছে!" },
+    fixedTitle: (name) => `${name}-এর সময় হয়েছে!`,
     tip: "উঠে একটু হাঁটুন, দূরে তাকান, একটু পানি খান।",
     restOver: "বিরতি শেষ",
     startWork: "কাজে ফিরুন",
@@ -152,6 +169,8 @@ const overlay: Record<UiLang, Strings> = {
   },
   pt: {
     title: "Hora da pausa!",
+    builtinFixedTitles: { work_end: "Hora de encerrar o expediente!", lunch: "Hora do almoço!" },
+    fixedTitle: (name) => `Hora de ${name}!`,
     tip: "Levante-se, olhe para longe, beba um pouco de água.",
     restOver: "Pausa encerrada",
     startWork: "Voltar ao trabalho",
@@ -164,6 +183,8 @@ const overlay: Record<UiLang, Strings> = {
   },
   de: {
     title: "Zeit für eine Pause!",
+    builtinFixedTitles: { work_end: "Zeit für den Feierabend!", lunch: "Zeit für die Mittagspause!" },
+    fixedTitle: (name) => `Zeit für ${name}!`,
     tip: "Steh auf, schau in die Ferne, trink etwas Wasser.",
     restOver: "Pause vorbei",
     startWork: "Zurück an die Arbeit",
@@ -176,6 +197,8 @@ const overlay: Record<UiLang, Strings> = {
   },
   ja: {
     title: "休憩の時間です！",
+    builtinFixedTitles: { work_end: "終業の時間です！", lunch: "昼休みの時間です！" },
+    fixedTitle: (name) => `${name}の時間です！`,
     tip: "立ち上がって、遠くを眺めて、水を飲みましょう。",
     restOver: "休憩終了",
     startWork: "仕事に戻る",
@@ -188,6 +211,8 @@ const overlay: Record<UiLang, Strings> = {
   },
   it: {
     title: "È ora di una pausa!",
+    builtinFixedTitles: { work_end: "È ora di staccare!", lunch: "È ora di pranzo!" },
+    fixedTitle: (name) => `È ora di ${name}!`,
     tip: "Alzati, guarda lontano, bevi un po' d'acqua.",
     restOver: "Pausa terminata",
     startWork: "Torna al lavoro",
@@ -200,6 +225,8 @@ const overlay: Record<UiLang, Strings> = {
   },
   ko: {
     title: "휴식 시간입니다!",
+    builtinFixedTitles: { work_end: "퇴근 시간입니다!", lunch: "점심 시간입니다!" },
+    fixedTitle: (name) => `${name} 시간입니다!`,
     tip: "일어나서 먼 곳을 바라보고 물을 마시세요.",
     restOver: "휴식 종료",
     startWork: "업무로 돌아가기",
@@ -212,6 +239,8 @@ const overlay: Record<UiLang, Strings> = {
   },
   id: {
     title: "Waktunya istirahat!",
+    builtinFixedTitles: { work_end: "Waktunya pulang!", lunch: "Waktunya makan siang!" },
+    fixedTitle: (name) => `Waktunya ${name}!`,
     tip: "Berdiri, lihat ke kejauhan, dan minum air.",
     restOver: "Istirahat selesai",
     startWork: "Kembali bekerja",
@@ -226,6 +255,12 @@ const overlay: Record<UiLang, Strings> = {
 
 export function strings(lang: UiLang): Strings {
   return overlay[lang] ?? overlay.en;
+}
+
+// Overlay title: names the fixed break this break is for, if any
+export function overlayTitle(s: Strings, fixedBreak: string | null): string {
+  if (fixedBreak === null) return s.title;
+  return isBuiltinFixedBreak(fixedBreak) ? s.builtinFixedTitles[fixedBreak] : s.fixedTitle(fixedBreak);
 }
 
 // Settings panel (src/routes/+page.svelte)

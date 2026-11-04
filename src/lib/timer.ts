@@ -15,6 +15,8 @@ export interface Snapshot {
   deferredUntil: string | null;
   /** Name of that fixed break: a built-in one or the user's own */
   deferredFor: string | null;
+  /** Name of the fixed break this break is for, named in the overlay's title: a built-in one or the user's own */
+  fixedBreak: string | null;
   /** Meeting software running when the break started; the overlay then offers "I'm in a meeting" */
   meetingApp: string | null;
   /** Forced break; when false the overlay can be closed */

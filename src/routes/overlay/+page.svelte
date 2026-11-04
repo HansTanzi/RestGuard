@@ -10,6 +10,7 @@
     LANG_NAMES,
     UI_LANGS,
     applyDocumentLang,
+    overlayTitle,
     strings,
     type Strings,
     type UiLang,
@@ -113,7 +114,7 @@
         <option value={id}>{LANG_NAMES[id]}</option>
       {/each}
     </select>
-    <h1 in:fly={{ y: -20, duration: 600 }}>{s.title}</h1>
+    <h1 in:fly={{ y: -20, duration: 600 }}>{overlayTitle(s, snap.fixedBreak)}</h1>
     <p class="tip">{s.tip}</p>
 
     <div class="ring">

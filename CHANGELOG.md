@@ -13,6 +13,8 @@ Downloads for every version are on the [Releases](https://github.com/HansTanzi/R
 ### Changed
 
 - Fixed breaks: only a regular break's length is forced; after that, "Keep using the computer" closes the overlay, and work time starts counting when the fixed break ends, which the sound and phone notification still announce
+- Break overlay: the title names the fixed break under way, such as "Time for lunch!"
+- Break overlay: the Chinese title is now a plain translation of the English one
 
 ## [0.1.19] - 2026-11-01
 

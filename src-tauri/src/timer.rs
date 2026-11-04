@@ -42,6 +42,8 @@ pub struct Snapshot {
     pub deferred_until: Option<String>,
     /// Name of that fixed break: a built-in one (see config::BUILTIN_FIXED_BREAKS) or the user's own
     pub deferred_for: Option<String>,
+    /// Name of the fixed break this break is for, named in the overlay's title: a built-in one or the user's own
+    pub fixed_break: Option<String>,
     /// Meeting software running when the break started; the overlay then offers "I'm in a meeting"
     pub meeting_app: Option<String>,
     /// Forced break; when false the overlay can be closed
@@ -88,6 +90,9 @@ pub struct Timer {
     fixed_due: Option<(FixedTime, Duration)>,
     /// This break is a fixed break; it can't be postponed, as postponing would end it early
     fixed_rest: bool,
+    /// The fixed break this break is for. Also set while a break that waited for one is about to start,
+    /// which at the end of the day is a regular break, not a fixed one
+    rest_for: Option<String>,
     /// When the fixed break the user went back to the computer during ends; that time isn't work
     free_until: Option<Instant>,
     /// Away from the computer past the idle threshold; a fixed break then doesn't start, the time away is the break
@@ -119,6 +124,7 @@ impl Timer {
             last_clock: None,
             fixed_due: None,
             fixed_rest: false,
+            rest_for: None,
             free_until: None,
             away: false,
             meeting_app: None,
@@ -180,6 +186,9 @@ impl Timer {
             if let Some(f) = self.fixed_times.iter().find(|f| f.rest.is_some() && f.reached(prev, clock)) {
                 self.fixed_due = Some((f.clone(), Duration::ZERO));
             }
+            if let Some(f) = self.deferred.as_ref().filter(|f| f.reached(prev, clock)) {
+                self.rest_for = Some(f.name.clone());
+            }
         }
         // Stays due until it would have ended, e.g. while a meeting app holds it off
         self.fixed_due = self
@@ -188,13 +197,14 @@ impl Timer {
             .filter(|_| !self.away)
             .and_then(|(f, _)| f.rest_left(clock).map(|left| (f, left)));
         // Already on a break: it lasts until the fixed break ends, even if it was over and waiting for "Start working"
-        if let (Phase::Resting | Phase::RestOver, Some((_, left))) = (self.phase, &self.fixed_due) {
+        if let (Phase::Resting | Phase::RestOver, Some((f, left))) = (self.phase, &self.fixed_due) {
             if self.phase == Phase::RestOver {
                 self.phase = Phase::Resting;
                 self.started = now;
             }
             self.deadline = self.deadline.max(now + *left);
             self.fixed_rest = true;
+            self.rest_for = Some(f.name.clone());
             self.fixed_due = None;
         }
         self.deferred = if self.rest_due(now) && self.fixed_due.is_none() {
@@ -218,10 +228,13 @@ impl Timer {
             Phase::Working if !self.rest_due(now) || self.held_by.is_some() || self.deferred.is_some() => None,
             Phase::Working => {
                 let fixed = self.fixed_due.take();
+                let waited_for = self.rest_for.take();
                 self.begin_rest(now, false);
-                if let Some((_, left)) = fixed {
+                self.rest_for = waited_for;
+                if let Some((f, left)) = fixed {
                     self.deadline = now + left;
                     self.fixed_rest = true;
+                    self.rest_for = Some(f.name);
                 }
                 Some(TimerEvent::RestStarted)
             }
@@ -372,6 +385,7 @@ impl Timer {
             held_by: self.held_by.clone(),
             deferred_until: self.deferred.as_ref().map(|f| f.at.format("%H:%M").to_string()),
             deferred_for: self.deferred.as_ref().map(|f| f.name.clone()),
+            fixed_break: (self.phase != Phase::Working).then(|| self.rest_for.clone()).flatten(),
             meeting_app: self
                 .can_claim_meeting()
                 .then(|| self.meeting_app.clone())
@@ -425,6 +439,7 @@ impl Timer {
         self.deferred = None;
         self.fixed_due = None;
         self.fixed_rest = false;
+        self.rest_for = None;
         self.free_until = None;
         self.away = false;
         self.meeting_app = None;
@@ -441,6 +456,7 @@ impl Timer {
         self.held_by = None;
         self.deferred = None;
         self.fixed_rest = false;
+        self.rest_for = None;
         self.meeting_app = None;
         self.away_remaining = None;
         self.paused_at = None;
@@ -609,12 +625,16 @@ mod tests {
         t.defer(now, at(18, 0));
         assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
         assert_eq!(t.snapshot(now).deferred_until, None);
+        assert_eq!(t.snapshot(now).fixed_break.as_deref(), Some("work_end"));
 
         // Voluntary breaks aren't affected
         assert_eq!(t.tick(now + 10 * MIN), Some(TimerEvent::RestFinished));
+        assert_eq!(t.snapshot(now + 10 * MIN).fixed_break.as_deref(), Some("work_end"));
         assert!(t.start_work(now + 10 * MIN));
+        assert_eq!(t.snapshot(now + 10 * MIN).fixed_break, None);
         t.defer(now + 11 * MIN, at(17, 50));
         assert!(t.rest_now(now + 11 * MIN));
+        assert_eq!(t.snapshot(now + 11 * MIN).fixed_break, None);
     }
 
     #[test]
@@ -645,6 +665,7 @@ mod tests {
         t.defer(now + 5 * MIN, at(12, 10));
         assert_eq!(t.tick(now + 5 * MIN), Some(TimerEvent::RestStarted));
         assert_eq!(t.snapshot(now + 5 * MIN).remaining_secs, 15 * 60);
+        assert_eq!(t.snapshot(now + 5 * MIN).fixed_break.as_deref(), Some("Tea"));
     }
 
     #[test]
@@ -702,6 +723,7 @@ mod tests {
         assert!(t.rest_now(t0));
         t.defer(t0 + 5 * MIN, at(12, 0));
         assert_eq!(t.snapshot(t0 + 5 * MIN).remaining_secs, 30 * 60);
+        assert_eq!(t.snapshot(t0 + 5 * MIN).fixed_break.as_deref(), Some("lunch"));
 
         // Break over at 11:50, not back at work yet: at 12:00 it's a break again until lunch ends
         let mut t = Timer::new(&with_fixed(30.0, vec![]), t0);

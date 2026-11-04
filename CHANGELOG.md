@@ -9,6 +9,7 @@ Downloads for every version are on the [Releases](https://github.com/HansTanzi/R
 ### Added
 
 - Light theme alongside the existing dark one (the break overlay always stays dark)
+- README and website in French, Italian, Indonesian, Hindi, Bengali and Arabic, so both now cover all 13 UI languages; the website lays out right to left in Arabic
 
 ### Changed
 

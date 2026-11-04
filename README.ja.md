@@ -276,7 +276,7 @@ name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # 休憩の長さ（昼休みと自分で追加した固定休憩）
+rest_minutes = 30.0      # 休憩の長さ（昼休みと自分で追加した固定休憩）。通常の休憩の長さを過ぎるとパソコンを使い続けられます
 
 [[fixed_breaks]]         # 自分で追加する場合（例：ティーブレイク）、1 つにつき [[fixed_breaks]] を 1 つ
 name = "Tea break"

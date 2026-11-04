@@ -23,6 +23,8 @@ export interface Snapshot {
   canSkip: boolean;
   /** Offer "Urgent? Shrink it" on the overlay */
   canShrink: boolean;
+  /** On a fixed break longer than a regular one: how long until "Keep using the computer" can be clicked, 0 once it can */
+  keepUsingInSecs: number | null;
   /** While shrunk, how long until the overlay restores itself */
   urgentLeftSecs: number | null;
   /** The overlay can be dragged within its screen when it doesn't fill it */

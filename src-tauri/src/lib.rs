@@ -250,6 +250,12 @@ fn in_meeting(app: AppHandle) -> Result<(), String> {
     end_rest(&app, Timer::in_meeting)
 }
 
+/// "Keep using the computer" on the overlay: leaves a long fixed break once a regular break's length has passed
+#[tauri::command]
+fn keep_using(app: AppHandle) -> Result<(), String> {
+    end_rest(&app, Timer::keep_using)
+}
+
 /// "Skip this break" on the overlay; refused when the enforcement level doesn't allow skipping
 #[tauri::command]
 fn dismiss_break(app: AppHandle) -> Result<(), String> {
@@ -516,6 +522,7 @@ pub fn run() {
             start_work,
             postpone,
             in_meeting,
+            keep_using,
             dismiss_break,
             set_overlay_shrunk,
             dev_skip_rest

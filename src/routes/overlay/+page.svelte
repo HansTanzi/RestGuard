@@ -83,7 +83,9 @@
     };
   });
 
-  async function run(command: "start_work" | "postpone" | "in_meeting" | "dismiss_break") {
+  async function run(
+    command: "start_work" | "postpone" | "in_meeting" | "keep_using" | "dismiss_break",
+  ) {
     busy = true;
     try {
       await invoke(command);
@@ -147,7 +149,18 @@
           {s.inMeeting(snap.meetingApp)}
         </button>
       {/if}
-      {#if resting && snap.canSkip}
+      {#if resting && snap.keepUsingInSecs !== null}
+        <button
+          class="ghost"
+          disabled={busy || snap.keepUsingInSecs > 0}
+          onclick={() => run("keep_using")}
+        >
+          {s.keepUsing}
+          {#if snap.keepUsingInSecs > 0}{formatClock(snap.keepUsingInSecs)}{/if}
+        </button>
+      {/if}
+      <!-- Once the computer is free to use, skipping would only start the work countdown early -->
+      {#if resting && snap.canSkip && snap.keepUsingInSecs !== 0}
         <button class="ghost" disabled={busy} onclick={() => run("dismiss_break")}>
           {s.skipBreak}
         </button>

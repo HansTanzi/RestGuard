@@ -276,7 +276,7 @@ name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # duração da pausa (almoço e suas próprias pausas fixas)
+rest_minutes = 30.0      # duração da pausa (almoço e suas próprias pausas fixas); passada a duração de uma pausa normal, você pode continuar usando o computador
 
 [[fixed_breaks]]         # adicione as suas, p. ex. uma pausa para o café, com um [[fixed_breaks]] cada
 name = "Tea break"

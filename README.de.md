@@ -276,7 +276,7 @@ name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # wie lange die Pause dauert (Mittagspause und eigene feste Pausen)
+rest_minutes = 30.0      # wie lange die Pause dauert (Mittagspause und eigene feste Pausen); nach der Länge einer normalen Pause können Sie den Computer weiter nutzen
 
 [[fixed_breaks]]         # eigene hinzufügen, z. B. eine Kaffeepause, je ein [[fixed_breaks]]
 name = "Kaffeepause"

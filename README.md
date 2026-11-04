@@ -276,7 +276,7 @@ name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # how long the break lasts (lunch and your own fixed breaks)
+rest_minutes = 30.0      # how long the break lasts (lunch and your own fixed breaks); past a regular break's length you can keep using the computer
 
 [[fixed_breaks]]         # add your own, e.g. a tea break, with one [[fixed_breaks]] each
 name = "Tea break"

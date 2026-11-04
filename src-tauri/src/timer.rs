@@ -50,6 +50,8 @@ pub struct Snapshot {
     pub can_skip: bool,
     /// Offer "Urgent? Shrink it" on the overlay
     pub can_shrink: bool,
+    /// On a fixed break longer than a regular one: how long until "Keep using the computer" can be clicked, 0 once it can
+    pub keep_using_in_secs: Option<u64>,
     /// While shrunk, how long until the overlay restores itself; filled in by lib.rs, which tracks urgent mode
     pub urgent_left_secs: Option<u64>,
     /// The overlay can be dragged within its screen when it doesn't fill it
@@ -86,6 +88,8 @@ pub struct Timer {
     fixed_due: Option<(FixedTime, Duration)>,
     /// This break is a fixed break; it can't be postponed, as postponing would end it early
     fixed_rest: bool,
+    /// When the fixed break the user went back to the computer during ends; that time isn't work
+    free_until: Option<Instant>,
     /// Away from the computer past the idle threshold; a fixed break then doesn't start, the time away is the break
     away: bool,
     meeting_app: Option<String>,
@@ -115,6 +119,7 @@ impl Timer {
             last_clock: None,
             fixed_due: None,
             fixed_rest: false,
+            free_until: None,
             away: false,
             meeting_app: None,
             away_remaining: None,
@@ -135,6 +140,10 @@ impl Timer {
             return;
         };
         self.away = idle >= threshold;
+        // Not working yet, and watching a video looks like being away
+        if !self.free_left(now).is_zero() {
+            return;
+        }
         if idle < threshold {
             // Back: continue from the frozen remaining time
             self.away_remaining = None;
@@ -200,6 +209,11 @@ impl Timer {
     }
 
     pub fn tick(&mut self, now: Instant) -> Option<TimerEvent> {
+        // Back at the computer during a fixed break: its end is still announced, as it is from the overlay
+        if self.free_until.is_some_and(|end| now >= end) {
+            self.free_until = None;
+            return Some(TimerEvent::RestFinished);
+        }
         match self.phase {
             Phase::Working if !self.rest_due(now) || self.held_by.is_some() || self.deferred.is_some() => None,
             Phase::Working => {
@@ -258,6 +272,19 @@ impl Timer {
         true
     }
 
+    /// "Keep using the computer" clicked once the regular break length of a longer fixed break has passed.
+    /// The rest of the fixed break is free time, so the work countdown only starts when it ends
+    pub fn keep_using(&mut self, now: Instant) -> bool {
+        if self.keep_using_in(now) != Some(Duration::ZERO) {
+            return false;
+        }
+        let end = self.deadline;
+        self.postpones_used = 0;
+        self.begin_work(now, end.saturating_duration_since(now) + self.work);
+        self.free_until = Some(end);
+        true
+    }
+
     /// Records meeting software running when the break starts. Whether a meeting is on can't be determined, so the user decides
     pub fn set_meeting_app(&mut self, app: Option<String>) {
         self.meeting_app = app;
@@ -286,6 +313,9 @@ impl Timer {
     pub fn dismiss(&mut self, now: Instant) -> bool {
         if self.phase == Phase::Working || self.profile.force_rest {
             return false;
+        }
+        if self.keep_using(now) {
+            return true;
         }
         self.postpones_used = 0;
         self.begin_work(now, self.work);
@@ -324,7 +354,7 @@ impl Timer {
         self.fixed_times = cfg.fixed_times();
         // Before postponements are reset, postpones_used > 0 means we're in a post-postponement countdown
         if self.phase == Phase::Working && self.postpones_used == 0 && work_changed {
-            self.begin_work(now, self.work);
+            self.begin_work(now, self.free_left(now) + self.work);
         }
     }
 
@@ -348,9 +378,12 @@ impl Timer {
                 .flatten(),
             forced: self.profile.force_rest,
             can_skip: self.phase != Phase::Working && self.profile.can_skip(),
+            // Not needed once the computer is free to use
             can_shrink: self.phase != Phase::Working
                 && self.profile.force_rest
-                && self.profile.urgent_mode,
+                && self.profile.urgent_mode
+                && self.keep_using_in(now) != Some(Duration::ZERO),
+            keep_using_in_secs: self.keep_using_in(now).map(ceil_secs),
             urgent_left_secs: None,
             movable: self.profile.movable,
             full_screen: self.profile.overlay_coverage >= 1.0,
@@ -372,6 +405,19 @@ impl Timer {
         self.phase == Phase::Resting && !self.voluntary && self.meeting_app.is_some()
     }
 
+    /// How long until the user can go back to the computer during a fixed break, which takes a regular break's length.
+    /// None when the break ends first. While shrunk the break is on hold, so this doesn't count down
+    fn keep_using_in(&self, now: Instant) -> Option<Duration> {
+        let free_from = self.started + self.rest;
+        (self.phase == Phase::Resting && self.fixed_rest && free_from < self.deadline)
+            .then(|| free_from.saturating_duration_since(self.paused_at.unwrap_or(now)))
+    }
+
+    /// What's left of the fixed break the user went back to the computer during
+    fn free_left(&self, now: Instant) -> Duration {
+        self.free_until.map_or(Duration::ZERO, |end| end.saturating_duration_since(now))
+    }
+
     fn begin_rest(&mut self, now: Instant, voluntary: bool) {
         self.phase = Phase::Resting;
         self.voluntary = voluntary;
@@ -379,6 +425,7 @@ impl Timer {
         self.deferred = None;
         self.fixed_due = None;
         self.fixed_rest = false;
+        self.free_until = None;
         self.away = false;
         self.meeting_app = None;
         self.away_remaining = None;
@@ -665,6 +712,180 @@ mod tests {
         let snap = t.snapshot(t0 + 20 * MIN);
         assert_eq!(snap.phase, Phase::Resting);
         assert_eq!(snap.remaining_secs, 30 * 60);
+    }
+
+    /// A 60-minute lunch with regular 10-minute breaks, started at 12:00
+    fn on_long_lunch(cfg: Config, t0: Instant) -> Timer {
+        let lunch = FixedBreak {
+            enabled: true,
+            rest_minutes: 60.0,
+            ..FixedBreak::builtin("lunch").unwrap()
+        };
+        let cfg = Config {
+            fixed_breaks: vec![lunch],
+            ..cfg
+        }
+        .sanitized();
+        let mut t = Timer::new(&cfg, t0);
+        t.defer(t0, at(11, 59));
+        t.defer(t0, at(12, 0));
+        assert_eq!(t.tick(t0), Some(TimerEvent::RestStarted));
+        t
+    }
+
+    #[test]
+    fn computer_is_free_after_a_regular_break_length_of_a_fixed_break() {
+        let t0 = Instant::now();
+        let mut t = on_long_lunch(Config::default(), t0);
+
+        let snap = t.snapshot(t0 + 4 * MIN);
+        assert_eq!(snap.keep_using_in_secs, Some(6 * 60));
+        assert!(snap.can_shrink);
+        assert!(!t.keep_using(t0 + 4 * MIN), "The regular break length is forced");
+
+        let now = t0 + 10 * MIN;
+        let snap = t.snapshot(now);
+        assert_eq!(snap.keep_using_in_secs, Some(0));
+        assert_eq!(snap.remaining_secs, 50 * 60, "The overlay stays until clicked");
+        assert!(!snap.can_shrink);
+        assert_eq!(t.tick(now), None);
+        assert!(t.keep_using(now));
+
+        // Work only starts when lunch ends
+        let snap = t.snapshot(now);
+        assert_eq!(snap.phase, Phase::Working);
+        assert_eq!(snap.remaining_secs, 50 * 60 + 60 * 60);
+        assert_eq!(snap.keep_using_in_secs, None);
+
+        // Watching a video: no input for long enough to count as away, or even as a full break
+        let now = t0 + 40 * MIN;
+        t.idle(now, 7 * MIN);
+        assert_eq!(t.snapshot(now).remaining_secs, 20 * 60 + 60 * 60);
+        t.idle(now, 25 * MIN);
+        assert_eq!(t.snapshot(now).remaining_secs, 20 * 60 + 60 * 60);
+
+        let now = t0 + 60 * MIN;
+        t.idle(now, Duration::ZERO);
+        assert_eq!(t.tick(now - MIN), None);
+        assert_eq!(t.tick(now), Some(TimerEvent::RestFinished), "The end of lunch is still announced");
+        assert_eq!(t.snapshot(now).phase, Phase::Working);
+        assert_eq!(t.tick(now + MIN), None, "Announced only once");
+        assert_eq!(t.tick(t0 + 119 * MIN), None);
+        assert_eq!(t.tick(t0 + 120 * MIN), Some(TimerEvent::RestStarted));
+    }
+
+    #[test]
+    fn end_of_fixed_break_is_announced_while_away() {
+        let t0 = Instant::now();
+        let mut t = on_long_lunch(Config::default(), t0);
+        assert!(t.keep_using(t0 + 10 * MIN));
+        let now = t0 + 60 * MIN;
+        t.idle(now, 20 * MIN);
+        assert_eq!(t.tick(now), Some(TimerEvent::RestFinished));
+    }
+
+    #[test]
+    fn end_of_fixed_break_is_not_announced_after_another_break_took_over() {
+        let t0 = Instant::now();
+        let mut t = on_long_lunch(Config::default(), t0);
+        assert!(t.keep_using(t0 + 10 * MIN));
+        assert!(t.rest_now(t0 + 55 * MIN));
+        assert_eq!(t.tick(t0 + 60 * MIN), None);
+        assert_eq!(t.tick(t0 + 65 * MIN), Some(TimerEvent::RestFinished), "Only that break's own end");
+    }
+
+    #[test]
+    fn fixed_break_not_left_runs_to_its_end() {
+        let t0 = Instant::now();
+        let mut t = on_long_lunch(Config::default(), t0);
+        assert_eq!(t.tick(t0 + 59 * MIN), None);
+        assert_eq!(t.tick(t0 + 60 * MIN), Some(TimerEvent::RestFinished));
+        assert_eq!(t.snapshot(t0 + 60 * MIN).keep_using_in_secs, None);
+        assert!(!t.keep_using(t0 + 60 * MIN));
+    }
+
+    #[test]
+    fn fixed_break_no_longer_than_a_regular_one_stays_forced() {
+        let t0 = Instant::now();
+        let lunch = FixedBreak {
+            enabled: true,
+            rest_minutes: 10.0,
+            ..FixedBreak::builtin("lunch").unwrap()
+        };
+        let cfg = Config {
+            fixed_breaks: vec![lunch],
+            ..Config::default()
+        }
+        .sanitized();
+        let mut t = Timer::new(&cfg, t0);
+        t.defer(t0, at(11, 59));
+        t.defer(t0, at(12, 0));
+        t.tick(t0);
+        assert_eq!(t.snapshot(t0).keep_using_in_secs, None);
+        assert_eq!(t.snapshot(t0 + 10 * MIN).keep_using_in_secs, None);
+
+        // Regular breaks don't offer it either
+        let mut t = timer(t0);
+        t.tick(t0 + 60 * MIN);
+        assert_eq!(t.snapshot(t0 + 65 * MIN).keep_using_in_secs, None);
+    }
+
+    #[test]
+    fn regular_break_extended_by_a_fixed_break_counts_towards_the_forced_part() {
+        let t0 = Instant::now();
+        let mut t = Timer::new(&with_fixed(30.0, vec![]), t0);
+        t.defer(t0, at(11, 55));
+        assert!(t.rest_now(t0));
+        t.defer(t0 + 5 * MIN, at(12, 0));
+        assert_eq!(t.snapshot(t0 + 5 * MIN).keep_using_in_secs, Some(5 * 60));
+    }
+
+    #[test]
+    fn shrinking_restarts_the_forced_part_of_a_fixed_break() {
+        let t0 = Instant::now();
+        let mut t = on_long_lunch(Config::default(), t0);
+        t.pause_rest(t0 + 8 * MIN, true);
+        assert_eq!(t.snapshot(t0 + 9 * MIN).keep_using_in_secs, Some(10 * 60));
+        assert!(!t.keep_using(t0 + 20 * MIN), "Shrunk time doesn't count");
+        t.pause_rest(t0 + 9 * MIN, false);
+        assert_eq!(t.snapshot(t0 + 9 * MIN).keep_using_in_secs, Some(10 * 60));
+    }
+
+    #[test]
+    fn closing_the_overlay_keeps_the_rest_of_a_fixed_break_free() {
+        let t0 = Instant::now();
+        let cfg = Config {
+            level: "low".into(),
+            ..Config::default()
+        };
+        let mut t = on_long_lunch(cfg, t0);
+        assert!(t.dismiss(t0 + 15 * MIN));
+        assert_eq!(t.snapshot(t0 + 15 * MIN).remaining_secs, 45 * 60 + 60 * 60);
+    }
+
+    #[test]
+    fn changing_work_length_keeps_the_rest_of_a_fixed_break_free() {
+        let t0 = Instant::now();
+        let mut t = on_long_lunch(Config::default(), t0);
+        assert!(t.keep_using(t0 + 10 * MIN));
+        let cfg = Config {
+            work_minutes: 30.0,
+            ..Config::default()
+        };
+        t.apply_config(&cfg, t0 + 20 * MIN);
+        assert_eq!(t.snapshot(t0 + 20 * MIN).remaining_secs, 40 * 60 + 30 * 60);
+    }
+
+    #[test]
+    fn rest_now_ends_the_free_time() {
+        let t0 = Instant::now();
+        let mut t = on_long_lunch(Config::default(), t0);
+        assert!(t.keep_using(t0 + 10 * MIN));
+        assert!(t.rest_now(t0 + 20 * MIN));
+        assert_eq!(t.tick(t0 + 30 * MIN), Some(TimerEvent::RestFinished));
+        assert!(t.start_work(t0 + 30 * MIN));
+        t.idle(t0 + 36 * MIN, 6 * MIN);
+        assert_eq!(t.snapshot(t0 + 36 * MIN).remaining_secs, 60 * 60, "Being away pauses the countdown again");
     }
 
     #[test]

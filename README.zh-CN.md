@@ -280,7 +280,7 @@ name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # 休息多长（午休和自己添加的固定休息才有）
+rest_minutes = 30.0      # 休息多长（午休和自己添加的固定休息才有），超过普通休息时长的部分可以继续使用电脑
 
 [[fixed_breaks]]         # 也可以自己添加，比如茶歇，每个一个 [[fixed_breaks]]
 name = "茶歇"

@@ -276,7 +276,7 @@ name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # 휴식 시간(점심과 직접 추가한 고정 휴식)
+rest_minutes = 30.0      # 휴식 시간(점심과 직접 추가한 고정 휴식). 일반 휴식 시간이 지나면 컴퓨터를 계속 사용할 수 있음
 
 [[fixed_breaks]]         # 직접 추가(예: 티타임)하려면 하나당 [[fixed_breaks]] 하나
 name = "Tea break"

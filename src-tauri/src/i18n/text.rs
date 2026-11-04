@@ -252,6 +252,57 @@ pub const BREAK_IN: Tr = Tr {
     id: "Istirahat dalam",
 };
 
+/// Tray status line when the next break comes at the end of the working day, followed by the countdown
+pub const BREAK_IN_WORK_END: Tr = Tr {
+    zh: "距离下班",
+    en: "End of day in",
+    hi: "दिन के अंत तक",
+    es: "Fin de la jornada en",
+    ar: "نهاية الدوام بعد",
+    fr: "Fin de journée dans",
+    bn: "দিনের শেষের বাকি",
+    pt: "Fim do expediente em",
+    de: "Feierabend in",
+    ja: "終業まで",
+    it: "Fine giornata tra",
+    ko: "퇴근까지",
+    id: "Akhir jam kerja dalam",
+};
+
+/// Tray status line when the next break is lunch, followed by the countdown
+pub const BREAK_IN_LUNCH: Tr = Tr {
+    zh: "距离午休",
+    en: "Lunch in",
+    hi: "लंच तक",
+    es: "Comida en",
+    ar: "الغداء بعد",
+    fr: "Déjeuner dans",
+    bn: "দুপুরের খাবারের বাকি",
+    pt: "Almoço em",
+    de: "Mittagspause in",
+    ja: "昼休みまで",
+    it: "Pranzo tra",
+    ko: "점심까지",
+    id: "Makan siang dalam",
+};
+
+/// Tray status line when the next break is one of the user's own fixed breaks, followed by the countdown; `{name}` is its name
+pub const BREAK_IN_FIXED: Tr = Tr {
+    zh: "距离{name}",
+    en: "{name} in",
+    hi: "{name} तक",
+    es: "{name} en",
+    ar: "{name} بعد",
+    fr: "{name} dans",
+    bn: "{name}-এর বাকি",
+    pt: "{name} em",
+    de: "{name} in",
+    ja: "{name}まで",
+    it: "{name} tra",
+    ko: "{name}까지",
+    id: "{name} dalam",
+};
+
 /// Tray status line, followed by the countdown
 pub const RESTING: Tr = Tr {
     zh: "休息中",

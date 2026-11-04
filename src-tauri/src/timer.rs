@@ -42,6 +42,8 @@ pub struct Snapshot {
     pub deferred_until: Option<String>,
     /// Name of that fixed break: a built-in one (see config::BUILTIN_FIXED_BREAKS) or the user's own
     pub deferred_for: Option<String>,
+    /// Name of the fixed break the next break will be, which remaining_secs then counts down to: a built-in one or the user's own
+    pub next_fixed: Option<String>,
     /// Name of the fixed break this break is for, named in the overlay's title: a built-in one or the user's own
     pub fixed_break: Option<String>,
     /// Meeting software running when the break started; the overlay then offers "I'm in a meeting"
@@ -375,9 +377,10 @@ impl Timer {
         // A paused break shows the time left when it was paused
         let now = self.paused_at.unwrap_or(now);
         let remaining = self.deadline.saturating_duration_since(now);
+        let next_fixed = self.next_fixed(now);
         Snapshot {
             phase: self.phase,
-            remaining_secs: ceil_secs(remaining),
+            remaining_secs: ceil_secs(next_fixed.as_ref().map_or(remaining, |(left, _)| *left)),
             total_secs: ceil_secs(self.deadline - self.started),
             can_postpone: self.can_postpone(),
             postpones_left: self.profile.max_postpones.saturating_sub(self.postpones_used),
@@ -385,6 +388,7 @@ impl Timer {
             held_by: self.held_by.clone(),
             deferred_until: self.deferred.as_ref().map(|f| f.at.format("%H:%M").to_string()),
             deferred_for: self.deferred.as_ref().map(|f| f.name.clone()),
+            next_fixed: next_fixed.map(|(_, f)| f.name.clone()),
             fixed_break: (self.phase != Phase::Working).then(|| self.rest_for.clone()).flatten(),
             meeting_app: self
                 .can_claim_meeting()
@@ -406,6 +410,20 @@ impl Timer {
 
     pub fn profile(&self) -> &Profile {
         &self.profile
+    }
+
+    /// The fixed break the next break will be and the time left until it: one that starts before the work countdown ends,
+    /// or one the countdown's break will wait for
+    fn next_fixed(&self, now: Instant) -> Option<(Duration, &FixedTime)> {
+        if self.phase != Phase::Working || self.rest_due(now) {
+            return None;
+        }
+        let clock = self.last_clock?;
+        let work_left = self.deadline.saturating_duration_since(now);
+        self.fixed_times
+            .iter()
+            .filter_map(|f| Some((f.next(clock, work_left)?, f)))
+            .min_by_key(|(left, _)| *left)
     }
 
     fn can_postpone(&self) -> bool {
@@ -666,6 +684,44 @@ mod tests {
         assert_eq!(t.tick(now + 5 * MIN), Some(TimerEvent::RestStarted));
         assert_eq!(t.snapshot(now + 5 * MIN).remaining_secs, 15 * 60);
         assert_eq!(t.snapshot(now + 5 * MIN).fixed_break.as_deref(), Some("Tea"));
+    }
+
+    #[test]
+    fn countdown_shows_the_fixed_break_that_comes_first() {
+        let t0 = Instant::now();
+        let mut t = Timer::new(&with_fixed(5.0, vec![]), t0);
+
+        // Lunch comes before the work countdown ends
+        t.defer(t0, at(11, 50));
+        let snap = t.snapshot(t0);
+        assert_eq!(snap.next_fixed.as_deref(), Some("lunch"));
+        assert_eq!(snap.remaining_secs, 10 * 60);
+
+        // The work countdown ends well before lunch
+        t.defer(t0, at(10, 0));
+        let snap = t.snapshot(t0);
+        assert_eq!(snap.next_fixed, None);
+        assert_eq!(snap.remaining_secs, t.work.as_secs());
+
+        // work_end starts no break of its own, so a countdown ending after it comes first
+        t.defer(t0, at(17, 50));
+        assert_eq!(t.snapshot(t0).next_fixed, None);
+
+        // The countdown ends in the quiet window before lunch, so that's when the break comes
+        let work = t.work;
+        t.defer(t0, at(12, 0) - chrono::Duration::from_std(work + 3 * MIN).unwrap());
+        let snap = t.snapshot(t0);
+        assert_eq!(snap.next_fixed.as_deref(), Some("lunch"));
+        assert_eq!(snap.remaining_secs, (work + 3 * MIN).as_secs());
+
+        // Likewise at the end of the day, though it's a regular break that then starts
+        t.defer(t0, at(18, 0) - chrono::Duration::from_std(work + 3 * MIN).unwrap());
+        assert_eq!(t.snapshot(t0).next_fixed.as_deref(), Some("work_end"));
+
+        // Not during a break
+        t.defer(t0, at(11, 50));
+        t.rest_now(t0);
+        assert_eq!(t.snapshot(t0).next_fixed, None);
     }
 
     #[test]

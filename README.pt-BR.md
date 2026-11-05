@@ -20,7 +20,7 @@
   Instalar no <a href="#windows"><b>Windows</b></a> · <a href="#macos"><b>macOS</b></a> · <a href="#linux"><b>Linux</b></a> · <a href="https://hanstanzi.github.io/RestGuard/">Site</a>
 </p>
 
-<p align="center"><a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ja.md">日本語</a> | <a href="README.es.md">Español</a> | Português (Brasil) | <a href="README.ko.md">한국어</a></p>
+<p align="center"><a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ja.md">日本語</a> | <a href="README.es.md">Español</a> | Português (Brasil) | <a href="README.ko.md">한국어</a> | <a href="README.fr.md">Français</a> | <a href="README.it.md">Italiano</a> | <a href="README.id.md">Bahasa Indonesia</a> | <a href="README.hi.md">हिन्दी</a> | <a href="README.bn.md">বাংলা</a> | <a href="README.ar.md">العربية</a></p>
 
 ![A sobreposição de pausa (Alto)](./docs/images/PT-BR/HighEnforcement.webp)
 
@@ -276,7 +276,7 @@ name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # duração da pausa (almoço e suas próprias pausas fixas)
+rest_minutes = 30.0      # duração da pausa (almoço e suas próprias pausas fixas); passada a duração de uma pausa normal, você pode continuar usando o computador
 
 [[fixed_breaks]]         # adicione as suas, p. ex. uma pausa para o café, com um [[fixed_breaks]] cada
 name = "Tea break"

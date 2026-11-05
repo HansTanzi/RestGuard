@@ -1,6 +1,6 @@
 // The UI language is decided by the backend (src-tauri/src/i18n.rs), consistent with the tray
 
-import type { BuiltinFixedBreak, BuiltinLevel, SoundId } from "./config";
+import { isBuiltinFixedBreak, type BuiltinFixedBreak, type BuiltinLevel, type SoundId } from "./config";
 import type { Theme } from "./theme";
 
 // Broadcast when the tray or a page switches language; payload is the language actually displayed (UiLang)
@@ -51,6 +51,9 @@ export function applyDocumentLang(lang: UiLang) {
 // Break overlay (src/routes/overlay/+page.svelte)
 export interface Strings {
   title: string;
+  // Title during a fixed break; the built-in ones read better written out than with their name filled in
+  builtinFixedTitles: Record<BuiltinFixedBreak, string>;
+  fixedTitle: (name: string) => string;
   tip: string;
   restOver: string;
   startWork: string;
@@ -59,13 +62,17 @@ export interface Strings {
   inMeeting: (app: string) => string;
   shrink: string;
   unshrink: string;
+  // Button on the overlay during a fixed break longer than a regular one
+  keepUsing: string;
   // Button on the overlay when the break isn't forced
   skipBreak: string;
 }
 
 const overlay: Record<UiLang, Strings> = {
   zh: {
-    title: "保护眼睛，小心猝死！",
+    title: "休息时间到！",
+    builtinFixedTitles: { work_end: "下班时间到！", lunch: "午休时间到！" },
+    fixedTitle: (name) => `${name}时间到！`,
     tip: "起来走走，看看远处，喝口水。",
     restOver: "休息结束",
     startWork: "开始工作",
@@ -73,10 +80,13 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `我在开 ${app} 会议，15 分钟后再提醒`,
     shrink: "有急事，缩小一下",
     unshrink: "恢复大小",
+    keepUsing: "继续使用电脑",
     skipBreak: "跳过这次休息",
   },
   en: {
     title: "Time for a break!",
+    builtinFixedTitles: { work_end: "Time to call it a day!", lunch: "Time for lunch!" },
+    fixedTitle: (name) => `Time for ${name}!`,
     tip: "Stand up, look into the distance, drink some water.",
     restOver: "Break over",
     startWork: "Back to work",
@@ -84,10 +94,13 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `I'm in a ${app} meeting, remind me in 15 min`,
     shrink: "Urgent? Shrink",
     unshrink: "Restore size",
+    keepUsing: "Keep using the computer",
     skipBreak: "Skip this break",
   },
   hi: {
     title: "ब्रेक का समय!",
+    builtinFixedTitles: { work_end: "छुट्टी का समय!", lunch: "लंच का समय!" },
+    fixedTitle: (name) => `${name} का समय!`,
     tip: "उठिए, थोड़ा टहलिए, दूर देखिए और पानी पीजिए।",
     restOver: "ब्रेक समाप्त",
     startWork: "काम पर लौटें",
@@ -95,10 +108,13 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `मैं ${app} मीटिंग में हूँ, 15 मिनट बाद याद दिलाएँ`,
     shrink: "ज़रूरी काम? छोटा करें",
     unshrink: "पूरा आकार",
+    keepUsing: "कंप्यूटर का उपयोग जारी रखें",
     skipBreak: "यह ब्रेक छोड़ें",
   },
   es: {
     title: "¡Hora de descansar!",
+    builtinFixedTitles: { work_end: "¡Hora de terminar la jornada!", lunch: "¡Hora de comer!" },
+    fixedTitle: (name) => `¡Hora de ${name}!`,
     tip: "Levántate, mira a lo lejos y bebe agua.",
     restOver: "Descanso terminado",
     startWork: "Volver al trabajo",
@@ -106,10 +122,13 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `Estoy en una reunión de ${app}, recuérdamelo en 15 min`,
     shrink: "¿Urgente? Reducir",
     unshrink: "Restaurar tamaño",
+    keepUsing: "Seguir usando el ordenador",
     skipBreak: "Saltar este descanso",
   },
   ar: {
     title: "حان وقت الاستراحة!",
+    builtinFixedTitles: { work_end: "حان وقت انتهاء الدوام!", lunch: "حان وقت الغداء!" },
+    fixedTitle: (name) => `حان وقت ${name}!`,
     tip: "قم وتمشَّ قليلًا، وانظر إلى البعيد، واشرب بعض الماء.",
     restOver: "انتهت الاستراحة",
     startWork: "العودة إلى العمل",
@@ -117,10 +136,13 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `أنا في اجتماع على ${app}، ذكّرني بعد 15 دقيقة`,
     shrink: "أمر عاجل؟ تصغير",
     unshrink: "استعادة الحجم",
+    keepUsing: "متابعة استخدام الحاسوب",
     skipBreak: "تخطَّ هذه الاستراحة",
   },
   fr: {
     title: "C'est l'heure de la pause !",
+    builtinFixedTitles: { work_end: "C'est la fin de la journée !", lunch: "C'est l'heure de déjeuner !" },
+    fixedTitle: (name) => `C'est l'heure : ${name} !`,
     tip: "Levez-vous, regardez au loin, buvez un peu d'eau.",
     restOver: "Pause terminée",
     startWork: "Retour au travail",
@@ -128,10 +150,13 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `Je suis en réunion ${app}, rappel dans 15 min`,
     shrink: "Urgent ? Réduire",
     unshrink: "Taille normale",
+    keepUsing: "Continuer à utiliser l'ordinateur",
     skipBreak: "Passer cette pause",
   },
   bn: {
     title: "বিরতির সময় হয়েছে!",
+    builtinFixedTitles: { work_end: "ছুটির সময় হয়েছে!", lunch: "দুপুরের খাবারের সময় হয়েছে!" },
+    fixedTitle: (name) => `${name}-এর সময় হয়েছে!`,
     tip: "উঠে একটু হাঁটুন, দূরে তাকান, একটু পানি খান।",
     restOver: "বিরতি শেষ",
     startWork: "কাজে ফিরুন",
@@ -139,10 +164,13 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `আমি ${app} মিটিংয়ে আছি, 15 মিনিট পরে মনে করিয়ে দিন`,
     shrink: "জরুরি? ছোট করুন",
     unshrink: "আগের আকারে ফেরান",
+    keepUsing: "কম্পিউটার ব্যবহার চালিয়ে যান",
     skipBreak: "এই বিরতি বাদ দিন",
   },
   pt: {
     title: "Hora da pausa!",
+    builtinFixedTitles: { work_end: "Hora de encerrar o expediente!", lunch: "Hora do almoço!" },
+    fixedTitle: (name) => `Hora de ${name}!`,
     tip: "Levante-se, olhe para longe, beba um pouco de água.",
     restOver: "Pausa encerrada",
     startWork: "Voltar ao trabalho",
@@ -150,10 +178,13 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `Estou em uma reunião do ${app}, lembre-me em 15 min`,
     shrink: "Urgente? Reduzir",
     unshrink: "Restaurar tamanho",
+    keepUsing: "Continuar usando o computador",
     skipBreak: "Pular esta pausa",
   },
   de: {
     title: "Zeit für eine Pause!",
+    builtinFixedTitles: { work_end: "Zeit für den Feierabend!", lunch: "Zeit für die Mittagspause!" },
+    fixedTitle: (name) => `Zeit für ${name}!`,
     tip: "Steh auf, schau in die Ferne, trink etwas Wasser.",
     restOver: "Pause vorbei",
     startWork: "Zurück an die Arbeit",
@@ -161,10 +192,13 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `Ich bin in einem ${app}-Meeting, in 15 Min. erinnern`,
     shrink: "Dringend? Verkleinern",
     unshrink: "Originalgröße",
+    keepUsing: "Computer weiter nutzen",
     skipBreak: "Diese Pause überspringen",
   },
   ja: {
     title: "休憩の時間です！",
+    builtinFixedTitles: { work_end: "終業の時間です！", lunch: "昼休みの時間です！" },
+    fixedTitle: (name) => `${name}の時間です！`,
     tip: "立ち上がって、遠くを眺めて、水を飲みましょう。",
     restOver: "休憩終了",
     startWork: "仕事に戻る",
@@ -172,10 +206,13 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `${app} で会議中です。15 分後に通知`,
     shrink: "急用？縮小する",
     unshrink: "元のサイズに戻す",
+    keepUsing: "パソコンを使い続ける",
     skipBreak: "今回の休憩をスキップ",
   },
   it: {
     title: "È ora di una pausa!",
+    builtinFixedTitles: { work_end: "È ora di staccare!", lunch: "È ora di pranzo!" },
+    fixedTitle: (name) => `È ora di ${name}!`,
     tip: "Alzati, guarda lontano, bevi un po' d'acqua.",
     restOver: "Pausa terminata",
     startWork: "Torna al lavoro",
@@ -183,10 +220,13 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `Sono in una riunione ${app}, ricordamelo tra 15 min`,
     shrink: "Urgente? Riduci",
     unshrink: "Ripristina dimensioni",
+    keepUsing: "Continua a usare il computer",
     skipBreak: "Salta questa pausa",
   },
   ko: {
     title: "휴식 시간입니다!",
+    builtinFixedTitles: { work_end: "퇴근 시간입니다!", lunch: "점심 시간입니다!" },
+    fixedTitle: (name) => `${name} 시간입니다!`,
     tip: "일어나서 먼 곳을 바라보고 물을 마시세요.",
     restOver: "휴식 종료",
     startWork: "업무로 돌아가기",
@@ -194,10 +234,13 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `${app} 회의 중이에요. 15분 후에 다시 알림`,
     shrink: "급한 일? 축소",
     unshrink: "원래 크기로",
+    keepUsing: "컴퓨터 계속 사용",
     skipBreak: "이번 휴식 건너뛰기",
   },
   id: {
     title: "Waktunya istirahat!",
+    builtinFixedTitles: { work_end: "Waktunya pulang!", lunch: "Waktunya makan siang!" },
+    fixedTitle: (name) => `Waktunya ${name}!`,
     tip: "Berdiri, lihat ke kejauhan, dan minum air.",
     restOver: "Istirahat selesai",
     startWork: "Kembali bekerja",
@@ -205,12 +248,19 @@ const overlay: Record<UiLang, Strings> = {
     inMeeting: (app) => `Saya sedang rapat ${app}, ingatkan 15 menit lagi`,
     shrink: "Mendesak? Perkecil",
     unshrink: "Kembalikan ukuran",
+    keepUsing: "Lanjut memakai komputer",
     skipBreak: "Lewati istirahat ini",
   },
 };
 
 export function strings(lang: UiLang): Strings {
   return overlay[lang] ?? overlay.en;
+}
+
+// Overlay title: names the fixed break this break is for, if any
+export function overlayTitle(s: Strings, fixedBreak: string | null): string {
+  if (fixedBreak === null) return s.title;
+  return isBuiltinFixedBreak(fixedBreak) ? s.builtinFixedTitles[fixedBreak] : s.fixedTitle(fixedBreak);
 }
 
 // Settings panel (src/routes/+page.svelte)
@@ -306,7 +356,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     fixedBreakNames: { work_end: "下班", lunch: "午休" },
     fixedBreakName: "名称",
     quietMinutes: "提前多久（分钟）",
-    fixedBreaksHint: "固定休息之前这段时间内到点的休息会推迟到那个时间。午休和自己添加的休息到时会开始一次相应时长的休息；到了下班时间如果还在用电脑，被推迟的休息照常提醒",
+    fixedBreaksHint: "固定休息之前这段时间内到点的休息会推迟到那个时间。午休和自己添加的休息到时会开始一次相应时长的休息；到了下班时间如果还在用电脑，被推迟的休息照常提醒。比普通休息长的固定休息，过了普通休息时长就可以点按钮继续使用电脑，工作计时等固定休息结束才开始",
     addFixedBreak: "添加固定休息",
     removeFixedBreak: "删除",
     defaultFixedBreakName: (n) => `休息 ${n}`,
@@ -381,7 +431,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     fixedBreakNames: { work_end: "End of day", lunch: "Lunch" },
     fixedBreakName: "Name",
     quietMinutes: "Quiet window (minutes)",
-    fixedBreaksHint: "A break that falls due within the quiet window before a fixed break waits until then. Lunch and your own fixed breaks then start a break of their own length; at the end of the day, if you're still at the computer, the held-off break goes ahead as usual",
+    fixedBreaksHint: "A break that falls due within the quiet window before a fixed break waits until then. Lunch and your own fixed breaks then start a break of their own length; at the end of the day, if you're still at the computer, the held-off break goes ahead as usual. If a fixed break is longer than a regular break, a button lets you keep using the computer once the regular length has passed; work time only starts counting when the fixed break ends",
     addFixedBreak: "Add fixed break",
     removeFixedBreak: "Remove",
     defaultFixedBreakName: (n) => `Break ${n}`,
@@ -456,7 +506,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     fixedBreakNames: { work_end: "दिन का अंत", lunch: "लंच" },
     fixedBreakName: "नाम",
     quietMinutes: "शांत अवधि (मिनट)",
-    fixedBreaksHint: "किसी तय ब्रेक से पहले शांत अवधि में होने वाला ब्रेक तब तक रुकता है। लंच और आपके अपने तय ब्रेक उस समय अपनी अवधि का ब्रेक शुरू करते हैं; दिन के अंत में भी कंप्यूटर पर हों तो रुका हुआ ब्रेक सामान्य रूप से होगा",
+    fixedBreaksHint: "किसी तय ब्रेक से पहले शांत अवधि में होने वाला ब्रेक तब तक रुकता है। लंच और आपके अपने तय ब्रेक उस समय अपनी अवधि का ब्रेक शुरू करते हैं; दिन के अंत में भी कंप्यूटर पर हों तो रुका हुआ ब्रेक सामान्य रूप से होगा। अगर कोई तय ब्रेक सामान्य ब्रेक से लंबा है, तो सामान्य अवधि बीतने पर एक बटन से आप कंप्यूटर का उपयोग जारी रख सकते हैं; काम का समय तय ब्रेक खत्म होने पर ही गिना जाता है",
     addFixedBreak: "तय ब्रेक जोड़ें",
     removeFixedBreak: "हटाएँ",
     defaultFixedBreakName: (n) => `ब्रेक ${n}`,
@@ -531,7 +581,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     fixedBreakNames: { work_end: "Fin de la jornada", lunch: "Comida" },
     fixedBreakName: "Nombre",
     quietMinutes: "Margen previo (minutos)",
-    fixedBreaksHint: "Un descanso que toque dentro del margen previo a una pausa fija espera hasta entonces. La comida y tus propias pausas fijas empiezan en ese momento un descanso de su duración; al final de la jornada, si sigues en el ordenador, el descanso aplazado se hace como siempre",
+    fixedBreaksHint: "Un descanso que toque dentro del margen previo a una pausa fija espera hasta entonces. La comida y tus propias pausas fijas empiezan en ese momento un descanso de su duración; al final de la jornada, si sigues en el ordenador, el descanso aplazado se hace como siempre. Si una pausa fija dura más que un descanso normal, pasada esa duración un botón te deja seguir usando el ordenador; el tiempo de trabajo solo empieza a contar cuando acaba la pausa fija",
     addFixedBreak: "Añadir pausa fija",
     removeFixedBreak: "Quitar",
     defaultFixedBreakName: (n) => `Pausa ${n}`,
@@ -606,7 +656,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     fixedBreakNames: { work_end: "نهاية الدوام", lunch: "الغداء" },
     fixedBreakName: "الاسم",
     quietMinutes: "المهلة السابقة (بالدقائق)",
-    fixedBreaksHint: "الاستراحة المستحقة خلال المهلة السابقة لاستراحة ثابتة تنتظر حتى موعدها. يبدأ الغداء واستراحاتك الثابتة عندها استراحة بمدتها؛ وفي نهاية الدوام، إن بقيت أمام الحاسوب، تبدأ الاستراحة المؤجلة كالمعتاد",
+    fixedBreaksHint: "الاستراحة المستحقة خلال المهلة السابقة لاستراحة ثابتة تنتظر حتى موعدها. يبدأ الغداء واستراحاتك الثابتة عندها استراحة بمدتها؛ وفي نهاية الدوام، إن بقيت أمام الحاسوب، تبدأ الاستراحة المؤجلة كالمعتاد. إذا كانت الاستراحة الثابتة أطول من الاستراحة العادية، فبعد انقضاء المدة العادية يتيح لك زر متابعة استخدام الحاسوب؛ ولا يبدأ احتساب وقت العمل إلا عند انتهاء الاستراحة الثابتة",
     addFixedBreak: "إضافة استراحة ثابتة",
     removeFixedBreak: "إزالة",
     defaultFixedBreakName: (n) => `استراحة ${n}`,
@@ -681,7 +731,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     fixedBreakNames: { work_end: "Fin de journée", lunch: "Déjeuner" },
     fixedBreakName: "Nom",
     quietMinutes: "Marge avant (minutes)",
-    fixedBreaksHint: "Une pause prévue dans la marge avant une pause fixe attend jusque-là. Le déjeuner et vos propres pauses fixes lancent alors une pause de leur durée ; en fin de journée, si vous êtes encore à l'ordinateur, la pause reportée a lieu normalement",
+    fixedBreaksHint: "Une pause prévue dans la marge avant une pause fixe attend jusque-là. Le déjeuner et vos propres pauses fixes lancent alors une pause de leur durée ; en fin de journée, si vous êtes encore à l'ordinateur, la pause reportée a lieu normalement. Si une pause fixe dure plus longtemps qu'une pause normale, un bouton vous permet de continuer à utiliser l'ordinateur une fois cette durée écoulée ; le temps de travail ne compte qu'à la fin de la pause fixe",
     addFixedBreak: "Ajouter une pause fixe",
     removeFixedBreak: "Supprimer",
     defaultFixedBreakName: (n) => `Pause ${n}`,
@@ -756,7 +806,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     fixedBreakNames: { work_end: "দিনের শেষ", lunch: "দুপুরের খাবার" },
     fixedBreakName: "নাম",
     quietMinutes: "শান্ত সময়সীমা (মিনিট)",
-    fixedBreaksHint: "কোনো নির্দিষ্ট বিরতির আগে শান্ত সময়সীমার মধ্যে পড়া বিরতি তখন পর্যন্ত অপেক্ষা করে। দুপুরের খাবার ও আপনার নিজের নির্দিষ্ট বিরতি তখন নিজের দৈর্ঘ্যের একটি বিরতি শুরু করে; দিনের শেষে এখনও কম্পিউটারে থাকলে স্থগিত বিরতি স্বাভাবিকভাবে হবে",
+    fixedBreaksHint: "কোনো নির্দিষ্ট বিরতির আগে শান্ত সময়সীমার মধ্যে পড়া বিরতি তখন পর্যন্ত অপেক্ষা করে। দুপুরের খাবার ও আপনার নিজের নির্দিষ্ট বিরতি তখন নিজের দৈর্ঘ্যের একটি বিরতি শুরু করে; দিনের শেষে এখনও কম্পিউটারে থাকলে স্থগিত বিরতি স্বাভাবিকভাবে হবে। কোনো নির্দিষ্ট বিরতি সাধারণ বিরতির চেয়ে লম্বা হলে সাধারণ দৈর্ঘ্য পেরোনোর পর একটি বোতাম দিয়ে কম্পিউটার ব্যবহার চালিয়ে যেতে পারবেন; কাজের সময় গোনা শুরু হয় নির্দিষ্ট বিরতি শেষ হলে",
     addFixedBreak: "নির্দিষ্ট বিরতি যোগ করুন",
     removeFixedBreak: "সরান",
     defaultFixedBreakName: (n) => `বিরতি ${n}`,
@@ -831,7 +881,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     fixedBreakNames: { work_end: "Fim do expediente", lunch: "Almoço" },
     fixedBreakName: "Nome",
     quietMinutes: "Margem antes (minutos)",
-    fixedBreaksHint: "Uma pausa prevista na margem antes de uma pausa fixa espera até lá. O almoço e as suas próprias pausas fixas então começam uma pausa com a duração delas; no fim do expediente, se você ainda estiver no computador, a pausa adiada acontece normalmente",
+    fixedBreaksHint: "Uma pausa prevista na margem antes de uma pausa fixa espera até lá. O almoço e as suas próprias pausas fixas então começam uma pausa com a duração delas; no fim do expediente, se você ainda estiver no computador, a pausa adiada acontece normalmente. Se uma pausa fixa for mais longa que uma pausa normal, depois dessa duração um botão permite continuar usando o computador; o tempo de trabalho só começa a contar quando a pausa fixa termina",
     addFixedBreak: "Adicionar pausa fixa",
     removeFixedBreak: "Remover",
     defaultFixedBreakName: (n) => `Pausa ${n}`,
@@ -906,7 +956,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     fixedBreakNames: { work_end: "Feierabend", lunch: "Mittagspause" },
     fixedBreakName: "Name",
     quietMinutes: "Ruhezeit davor (Minuten)",
-    fixedBreaksHint: "Eine Pause, die in der Ruhezeit vor einer festen Pause fällig wird, wartet bis dahin. Mittagspause und eigene feste Pausen beginnen dann eine Pause ihrer Länge; sitzen Sie bei Feierabend noch am Computer, kommt die aufgeschobene Pause wie gewohnt",
+    fixedBreaksHint: "Eine Pause, die in der Ruhezeit vor einer festen Pause fällig wird, wartet bis dahin. Mittagspause und eigene feste Pausen beginnen dann eine Pause ihrer Länge; sitzen Sie bei Feierabend noch am Computer, kommt die aufgeschobene Pause wie gewohnt. Ist eine feste Pause länger als eine normale Pause, können Sie nach deren Länge per Knopf den Computer weiter nutzen; die Arbeitszeit zählt erst ab dem Ende der festen Pause",
     addFixedBreak: "Feste Pause hinzufügen",
     removeFixedBreak: "Entfernen",
     defaultFixedBreakName: (n) => `Pause ${n}`,
@@ -982,7 +1032,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     fixedBreakNames: { work_end: "終業", lunch: "昼休み" },
     fixedBreakName: "名前",
     quietMinutes: "何分前から（分）",
-    fixedBreaksHint: "固定の休憩の前のこの時間内に来る休憩は、その時刻まで延期します。昼休みと自分で追加した休憩は、その時刻に設定した長さの休憩を始めます。終業時刻にまだパソコンを使っていれば、延期した休憩は通常どおり始まります",
+    fixedBreaksHint: "固定の休憩の前のこの時間内に来る休憩は、その時刻まで延期します。昼休みと自分で追加した休憩は、その時刻に設定した長さの休憩を始めます。終業時刻にまだパソコンを使っていれば、延期した休憩は通常どおり始まります。通常の休憩より長い固定の休憩では、通常の休憩の長さが過ぎるとボタンでパソコンを使い続けられます。作業時間は固定の休憩が終わってから数え始めます",
     addFixedBreak: "固定の休憩を追加",
     removeFixedBreak: "削除",
     defaultFixedBreakName: (n) => `休憩 ${n}`,
@@ -1057,7 +1107,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     fixedBreakNames: { work_end: "Fine giornata", lunch: "Pranzo" },
     fixedBreakName: "Nome",
     quietMinutes: "Margine prima (minuti)",
-    fixedBreaksHint: "Una pausa prevista nel margine prima di una pausa fissa aspetta fino ad allora. Il pranzo e le tue pause fisse avviano allora una pausa della loro durata; a fine giornata, se sei ancora al computer, la pausa rinviata si svolge normalmente",
+    fixedBreaksHint: "Una pausa prevista nel margine prima di una pausa fissa aspetta fino ad allora. Il pranzo e le tue pause fisse avviano allora una pausa della loro durata; a fine giornata, se sei ancora al computer, la pausa rinviata si svolge normalmente. Se una pausa fissa dura più di una pausa normale, trascorsa quella durata un pulsante ti permette di continuare a usare il computer; il tempo di lavoro inizia a contare solo alla fine della pausa fissa",
     addFixedBreak: "Aggiungi pausa fissa",
     removeFixedBreak: "Rimuovi",
     defaultFixedBreakName: (n) => `Pausa ${n}`,
@@ -1132,7 +1182,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     fixedBreakNames: { work_end: "퇴근", lunch: "점심" },
     fixedBreakName: "이름",
     quietMinutes: "몇 분 전부터(분)",
-    fixedBreaksHint: "고정 휴식 전 이 시간 안에 돌아오는 휴식은 그 시간까지 미룹니다. 점심과 직접 추가한 휴식은 그 시간에 정해진 길이의 휴식을 시작합니다. 퇴근 시간에도 컴퓨터를 쓰고 있으면 미룬 휴식은 평소처럼 시작합니다",
+    fixedBreaksHint: "고정 휴식 전 이 시간 안에 돌아오는 휴식은 그 시간까지 미룹니다. 점심과 직접 추가한 휴식은 그 시간에 정해진 길이의 휴식을 시작합니다. 퇴근 시간에도 컴퓨터를 쓰고 있으면 미룬 휴식은 평소처럼 시작합니다. 고정 휴식이 일반 휴식보다 길면 일반 휴식 시간이 지난 뒤 버튼으로 컴퓨터를 계속 사용할 수 있습니다. 작업 시간은 고정 휴식이 끝나야 계산됩니다",
     addFixedBreak: "고정 휴식 추가",
     removeFixedBreak: "삭제",
     defaultFixedBreakName: (n) => `휴식 ${n}`,
@@ -1207,7 +1257,7 @@ const settings: Record<UiLang, SettingsStrings> = {
     fixedBreakNames: { work_end: "Akhir jam kerja", lunch: "Makan siang" },
     fixedBreakName: "Nama",
     quietMinutes: "Rentang tenang (menit)",
-    fixedBreaksHint: "Istirahat yang jatuh dalam rentang tenang sebelum istirahat tetap menunggu sampai saat itu. Makan siang dan istirahat tetap Anda sendiri lalu memulai istirahat sepanjang durasinya; di akhir jam kerja, jika Anda masih di komputer, istirahat yang ditunda berjalan seperti biasa",
+    fixedBreaksHint: "Istirahat yang jatuh dalam rentang tenang sebelum istirahat tetap menunggu sampai saat itu. Makan siang dan istirahat tetap Anda sendiri lalu memulai istirahat sepanjang durasinya; di akhir jam kerja, jika Anda masih di komputer, istirahat yang ditunda berjalan seperti biasa. Jika istirahat tetap lebih lama dari istirahat biasa, setelah durasi itu lewat sebuah tombol memungkinkan Anda lanjut memakai komputer; waktu kerja baru dihitung saat istirahat tetap berakhir",
     addFixedBreak: "Tambah istirahat tetap",
     removeFixedBreak: "Hapus",
     defaultFixedBreakName: (n) => `Istirahat ${n}`,

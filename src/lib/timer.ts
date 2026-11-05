@@ -15,6 +15,10 @@ export interface Snapshot {
   deferredUntil: string | null;
   /** Name of that fixed break: a built-in one or the user's own */
   deferredFor: string | null;
+  /** Name of the fixed break the next break will be, which remainingSecs then counts down to */
+  nextFixed: string | null;
+  /** Name of the fixed break this break is for, named in the overlay's title: a built-in one or the user's own */
+  fixedBreak: string | null;
   /** Meeting software running when the break started; the overlay then offers "I'm in a meeting" */
   meetingApp: string | null;
   /** Forced break; when false the overlay can be closed */
@@ -23,6 +27,8 @@ export interface Snapshot {
   canSkip: boolean;
   /** Offer "Urgent? Shrink it" on the overlay */
   canShrink: boolean;
+  /** On a fixed break longer than a regular one: how long until "Keep using the computer" can be clicked, 0 once it can */
+  keepUsingInSecs: number | null;
   /** While shrunk, how long until the overlay restores itself */
   urgentLeftSecs: number | null;
   /** The overlay can be dragged within its screen when it doesn't fill it */

@@ -292,7 +292,15 @@ pub fn update(app: &AppHandle, snap: &Snapshot) {
             let app = snap.held_by.as_deref().unwrap_or_default();
             t(&text::BREAK_HELD).replace("{app}", app)
         }
-        Phase::Working => format!("{} {}", t(&text::BREAK_IN), mm_ss(snap.remaining_secs)),
+        Phase::Working => {
+            let label = match snap.next_fixed.as_deref() {
+                None => t(&text::BREAK_IN).to_string(),
+                Some("work_end") => t(&text::BREAK_IN_WORK_END).to_string(),
+                Some("lunch") => t(&text::BREAK_IN_LUNCH).to_string(),
+                Some(name) => t(&text::BREAK_IN_FIXED).replace("{name}", name),
+            };
+            format!("{label} {}", mm_ss(snap.remaining_secs))
+        }
         Phase::Resting => format!("{} {}", t(&text::RESTING), mm_ss(snap.remaining_secs)),
         Phase::RestOver => t(&text::BREAK_OVER).to_string(),
     };

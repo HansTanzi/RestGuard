@@ -487,6 +487,15 @@ impl FixedTime {
         !ahead.is_zero() && ahead <= until(now, prev)
     }
 
+    /// Time left until `at` if the next break comes then, given the time left of the work countdown: this break starts
+    /// before the countdown ends, or the countdown ends in its quiet window. Otherwise None
+    pub fn next(&self, now: NaiveTime, work_left: Duration) -> Option<Duration> {
+        let left = until(self.at, now);
+        let comes_first = self.rest.is_some() && left <= work_left;
+        let waited_for = left.checked_sub(work_left).is_some_and(|gap| gap <= self.window);
+        (!left.is_zero() && (comes_first || waited_for)).then_some(left)
+    }
+
     /// Time left until `at` if `now` falls in the quiet window before it, otherwise None.
     /// The window may cross midnight
     pub fn wait(&self, now: NaiveTime) -> Option<Duration> {

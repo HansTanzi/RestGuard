@@ -20,7 +20,7 @@
   Installieren unter <a href="#windows"><b>Windows</b></a> · <a href="#macos"><b>macOS</b></a> · <a href="#linux"><b>Linux</b></a> · <a href="https://hanstanzi.github.io/RestGuard/">Website</a>
 </p>
 
-<p align="center"><a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | Deutsch | <a href="README.ja.md">日本語</a> | <a href="README.es.md">Español</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.ko.md">한국어</a></p>
+<p align="center"><a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | Deutsch | <a href="README.ja.md">日本語</a> | <a href="README.es.md">Español</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.ko.md">한국어</a> | <a href="README.fr.md">Français</a> | <a href="README.it.md">Italiano</a> | <a href="README.id.md">Bahasa Indonesia</a> | <a href="README.hi.md">हिन्दी</a> | <a href="README.bn.md">বাংলা</a> | <a href="README.ar.md">العربية</a></p>
 
 ![Das Pausen-Overlay (Hoch)](./docs/images/DE/HighEnforcement.webp)
 
@@ -276,7 +276,7 @@ name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # wie lange die Pause dauert (Mittagspause und eigene feste Pausen)
+rest_minutes = 30.0      # wie lange die Pause dauert (Mittagspause und eigene feste Pausen); nach der Länge einer normalen Pause können Sie den Computer weiter nutzen
 
 [[fixed_breaks]]         # eigene hinzufügen, z. B. eine Kaffeepause, je ein [[fixed_breaks]]
 name = "Kaffeepause"

@@ -20,7 +20,7 @@
   설치: <a href="#windows"><b>Windows</b></a> · <a href="#macos"><b>macOS</b></a> · <a href="#linux"><b>Linux</b></a> · <a href="https://hanstanzi.github.io/RestGuard/">웹사이트</a>
 </p>
 
-<p align="center"><a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ja.md">日本語</a> | <a href="README.es.md">Español</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | 한국어</p>
+<p align="center"><a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.de.md">Deutsch</a> | <a href="README.ja.md">日本語</a> | <a href="README.es.md">Español</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | 한국어 | <a href="README.fr.md">Français</a> | <a href="README.it.md">Italiano</a> | <a href="README.id.md">Bahasa Indonesia</a> | <a href="README.hi.md">हिन्दी</a> | <a href="README.bn.md">বাংলা</a> | <a href="README.ar.md">العربية</a></p>
 
 ![휴식 오버레이(높음)](./docs/images/KO/HighEnforcement.webp)
 
@@ -276,7 +276,7 @@ name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # 휴식 시간(점심과 직접 추가한 고정 휴식)
+rest_minutes = 30.0      # 휴식 시간(점심과 직접 추가한 고정 휴식). 일반 휴식 시간이 지나면 컴퓨터를 계속 사용할 수 있음
 
 [[fixed_breaks]]         # 직접 추가(예: 티타임)하려면 하나당 [[fixed_breaks]] 하나
 name = "Tea break"

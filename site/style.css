@@ -123,11 +123,13 @@ section { padding: 56px 0; }
 
 h2 { font-size: 30px; margin: 0 0 8px; letter-spacing: -0.01em; }
 h3 { font-size: 17px; margin: 0 0 6px; }
+/* Negative tracking pulls apart joined letters in these scripts */
+:is(:lang(ar), :lang(hi), :lang(bn)) h2 { letter-spacing: 0; }
 .section-lead { color: var(--muted); margin: 0 0 28px; max-width: 680px; }
 
 .levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .level {
-  text-align: left;
+  text-align: start;
   font: inherit;
   color: var(--text);
   background: var(--surface);
@@ -147,7 +149,7 @@ h3 { font-size: 17px; margin: 0 0 6px; }
 .table-scroll { overflow-x: auto; margin-top: 32px; }
 .compare { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 12px; overflow: hidden; font-size: 15px; }
 .compare th, .compare td { padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: center; }
-.compare th:first-child, .compare td:first-child { text-align: left; }
+.compare th:first-child, .compare td:first-child { text-align: start; }
 .compare tbody tr:last-child td { border-bottom: none; }
 .compare thead th { background: var(--accent-soft); }
 .yes { color: var(--yes); font-weight: 700; }
@@ -180,6 +182,8 @@ h3 { font-size: 17px; margin: 0 0 6px; }
 
 pre {
   position: relative;
+  direction: ltr;
+  text-align: left;
   background: var(--code-bg);
   color: var(--code-text);
   border-radius: 8px;
@@ -233,6 +237,8 @@ code { font-family: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace; }
 .cmp-note { margin-top: 12px; max-width: 760px; }
 
 :not(pre) > code {
+  direction: ltr;
+  unicode-bidi: isolate;
   font-size: 0.9em;
   background: var(--accent-soft);
   border-radius: 4px;

@@ -20,7 +20,7 @@
   安装： <a href="#windows"><b>Windows</b></a> · <a href="#macos"><b>macOS</b></a> · <a href="#linux"><b>Linux</b></a> · <a href="https://hanstanzi.github.io/RestGuard/">官网</a>
 </p>
 
-<p align="center"><a href="README.md">English</a> | 简体中文 | <a href="README.de.md">Deutsch</a> | <a href="README.ja.md">日本語</a> | <a href="README.es.md">Español</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.ko.md">한국어</a></p>
+<p align="center"><a href="README.md">English</a> | 简体中文 | <a href="README.de.md">Deutsch</a> | <a href="README.ja.md">日本語</a> | <a href="README.es.md">Español</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.ko.md">한국어</a> | <a href="README.fr.md">Français</a> | <a href="README.it.md">Italiano</a> | <a href="README.id.md">Bahasa Indonesia</a> | <a href="README.hi.md">हिन्दी</a> | <a href="README.bn.md">বাংলা</a> | <a href="README.ar.md">العربية</a></p>
 
 ![休息遮罩-高等强制](./docs/images/CN/HighEnforcement.webp)
 
@@ -280,7 +280,7 @@ name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # 休息多长（午休和自己添加的固定休息才有）
+rest_minutes = 30.0      # 休息多长（午休和自己添加的固定休息才有），超过普通休息时长的部分可以继续使用电脑
 
 [[fixed_breaks]]         # 也可以自己添加，比如茶歇，每个一个 [[fixed_breaks]]
 name = "茶歇"

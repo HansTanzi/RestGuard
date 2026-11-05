@@ -20,7 +20,7 @@
   インストール： <a href="#windows"><b>Windows</b></a> · <a href="#macos"><b>macOS</b></a> · <a href="#linux"><b>Linux</b></a> · <a href="https://hanstanzi.github.io/RestGuard/">ウェブサイト</a>
 </p>
 
-<p align="center"><a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.de.md">Deutsch</a> | 日本語 | <a href="README.es.md">Español</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.ko.md">한국어</a></p>
+<p align="center"><a href="README.md">English</a> | <a href="README.zh-CN.md">简体中文</a> | <a href="README.de.md">Deutsch</a> | 日本語 | <a href="README.es.md">Español</a> | <a href="README.pt-BR.md">Português (Brasil)</a> | <a href="README.ko.md">한국어</a> | <a href="README.fr.md">Français</a> | <a href="README.it.md">Italiano</a> | <a href="README.id.md">Bahasa Indonesia</a> | <a href="README.hi.md">हिन्दी</a> | <a href="README.bn.md">বাংলা</a> | <a href="README.ar.md">العربية</a></p>
 
 ![休憩オーバーレイ（高）](./docs/images/JA/HighEnforcement.webp)
 
@@ -276,7 +276,7 @@ name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # 休憩の長さ（昼休みと自分で追加した固定休憩）
+rest_minutes = 30.0      # 休憩の長さ（昼休みと自分で追加した固定休憩）。通常の休憩の長さを過ぎるとパソコンを使い続けられます
 
 [[fixed_breaks]]         # 自分で追加する場合（例：ティーブレイク）、1 つにつき [[fixed_breaks]] を 1 つ
 name = "Tea break"

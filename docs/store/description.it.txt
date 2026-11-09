@@ -7,12 +7,18 @@ A differenza dei soliti promemoria, RestGuard offre tre livelli di rigore. Può 
 • Più monitor: ogni schermo viene coperto
 • Durante la pausa non puoi chiudere la sovrapposizione (Alt+F4 non funziona) né uscire dall'area di notifica
 • Puoi rimandare di 5 minuti, fino a 3 volte; il conteggio si azzera dopo una pausa completa
-• Modalità urgente: se c'è qualcosa che non può aspettare, riduci temporaneamente la sovrapposizione per salvare il lavoro, mentre il conto alla rovescia continua
+• Modalità urgente: se c'è qualcosa che non può aspettare, riduci temporaneamente la sovrapposizione per salvare il lavoro; il tempo con la sovrapposizione ridotta non conta come pausa e dopo 2 minuti torna alle dimensioni normali
+• Blocco automatico: se vuoi, blocca il computer qualche minuto dopo l'inizio della pausa, così ti alzi davvero e i tuoi dati restano protetti; dopo lo sblocco, la sovrapposizione mostra il tempo di pausa rimanente
 
 ■ Tre livelli di rigore per ogni situazione
 • Rigore alto: per chi è esigente con sé stesso ma vuole sempre "altri cinque minuti". La sovrapposizione copre tutto lo schermo e non si può spostare, puoi rimandare una sola volta e non c'è la modalità urgente
 • Rigore medio (predefinito): per il lavoro di tutti i giorni. Fino a 3 rinvii, con modalità urgente e rilevamento delle riunioni. Puoi continuare a lavorare, ma diventa decisamente più scomodo, così sei spinto a fare la pausa
 • Rigore basso: per chi vuole solo un promemoria gentile. La sovrapposizione copre l'80% dello schermo e puoi saltare la pausa
+
+■ Al ritmo della tua giornata
+• Pausa pranzo: all'ora di pranzo ti allontana dallo schermo, per tutto il tempo che vuoi. Pranzo lungo e vuoi guardare un video mentre mangi? Dopo l'equivalente di una pausa normale, il computer torna a tua disposizione
+• Le tue pause fisse: aggiungi una pausa tè, una passeggiata o un po' di stretching agli orari che preferisci, quante ne vuoi. Una pausa normale prevista poco prima la aspetta, così non riposi mai due volte di fila
+• Esci in orario: imposta quando finisce la tua giornata di lavoro e nell'ultima mezz'ora non ti manderà in pausa, così chiudi con calma e torni a casa; se fai tardi, la pausa arriva comunque
 
 ■ Altamente personalizzabile
 Crea profili personalizzati partendo da qualsiasi livello integrato e regola ogni opzione: numero di rinvii, possibilità di uscire o saltare le pause, modalità urgente, copertura della sovrapposizione (10%–100%), possibilità di spostarla e rilevamento delle app per riunioni. Salva più profili e passa dall'uno all'altro quando vuoi.
@@ -30,7 +36,8 @@ Crea profili personalizzati partendo da qualsiasi livello integrato e regola ogn
 Realizzato con Rust + Tauri, usa il WebView integrato nel sistema e in background non consuma quasi risorse.
 
 ■ Inoltre
-• Menu nell'area di notifica: tempo rimanente, pausa anticipata, impostazioni, avvio automatico, cambio del profilo di rigore
+• Menu nell'area di notifica: tempo rimanente (anche quando la prossima è una pausa fissa, come il pranzo), pausa anticipata, impostazioni, avvio automatico, cambio del profilo di rigore
+• Tema chiaro o scuro, a tua scelta
 • 13 lingue: italiano, inglese, cinese semplificato, hindi, spagnolo, arabo, francese, bengalese, portoghese, tedesco, giapponese, coreano e indonesiano
 • Gratuito e open source, con doppia licenza MIT / Apache-2.0
 • Privacy prima di tutto: nessuna raccolta di dati, nessun account, nessuna analisi o telemetria; si connette a Internet solo se attivi le notifiche sul telefono

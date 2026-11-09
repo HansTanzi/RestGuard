@@ -7,12 +7,18 @@ Contrairement aux rappels de pause habituels, RestGuard propose trois niveaux de
 • Plusieurs écrans : chaque écran est recouvert
 • Pendant la pause, impossible de fermer le voile (Alt+F4 ne fonctionne pas) ou de quitter depuis la zone de notification
 • Report de 5 minutes, jusqu'à 3 fois ; le compteur est remis à zéro après une pause complète
-• Mode urgence : en cas d'imprévu, réduisez temporairement le voile pour enregistrer votre travail pendant que le compte à rebours continue
+• Mode urgence : en cas d'imprévu, réduisez temporairement le voile pour enregistrer votre travail ; le temps passé voile réduit ne compte pas comme pause, et il reprend sa taille normale au bout de 2 minutes
+• Verrouillage automatique : si vous le souhaitez, l'ordinateur se verrouille quelques minutes après le début de la pause, pour que vous vous leviez vraiment et que vos données restent protégées ; après le déverrouillage, le voile affiche le temps de pause restant
 
 ■ Trois niveaux de contrainte selon la situation
 • Contrainte élevée : pour celles et ceux qui sont exigeants avec eux-mêmes mais veulent toujours « encore cinq minutes ». Le voile couvre tout l'écran et ne peut pas être déplacé, un seul report est possible et il n'y a pas de mode urgence
 • Contrainte moyenne (par défaut) : pour le travail au quotidien. Jusqu'à 3 reports, avec mode urgence et détection des réunions. Vous pouvez continuer à travailler, mais c'est nettement moins confortable, de quoi vous inciter à faire votre pause
 • Contrainte faible : pour celles et ceux qui veulent simplement un rappel en douceur. Le voile couvre 80 % de l'écran et vous pouvez passer la pause
+
+■ Au rythme de votre journée
+• Pause déjeuner : à l'heure du repas, RestGuard vous éloigne de l'écran, aussi longtemps que vous le souhaitez. Long déjeuner et envie de regarder une vidéo en mangeant ? Une fois l'équivalent d'une pause normale écoulé, l'ordinateur est de nouveau à vous
+• Vos propres pauses fixes : ajoutez une pause thé, une promenade ou des étirements aux heures de votre choix, autant que vous voulez. Une pause normale prévue juste avant l'attend, vous ne faites donc jamais deux pauses d'affilée
+• Partez à l'heure : indiquez l'heure de fin de votre journée de travail, et il ne vous enverra pas en pause pendant la dernière demi-heure : vous terminez tranquillement et rentrez chez vous ; si vous restez tard, la pause arrive quand même
 
 ■ Entièrement personnalisable
 Créez des profils personnalisés à partir de n'importe quel niveau intégré et réglez chaque option : nombre de reports, possibilité de quitter ou de passer une pause, mode urgence, couverture du voile (10 % à 100 %), voile déplaçable ou non, détection des applis de réunion. Enregistrez plusieurs profils et passez de l'un à l'autre à tout moment.
@@ -30,7 +36,8 @@ Créez des profils personnalisés à partir de n'importe quel niveau intégré e
 Conçu avec Rust + Tauri, RestGuard utilise le WebView intégré au système et ne consomme presque aucune ressource en arrière-plan.
 
 ■ Et aussi
-• Menu de la zone de notification : temps restant, pause anticipée, paramètres, lancement au démarrage, changement de profil de contrainte
+• Menu de la zone de notification : temps restant (y compris quand la prochaine pause est une pause fixe, comme le déjeuner), pause anticipée, paramètres, lancement au démarrage, changement de profil de contrainte
+• Thème clair ou sombre, à vous de choisir
 • 13 langues : français, anglais, chinois simplifié, hindi, espagnol, arabe, bengali, portugais, allemand, japonais, italien, coréen et indonésien
 • Gratuit et open source, sous double licence MIT / Apache-2.0
 • Respect de la vie privée : aucune collecte de données, aucun compte, aucune analyse ni télémétrie ; il ne se connecte à Internet que si vous activez les notifications sur téléphone

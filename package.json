@@ -18,7 +18,8 @@
     "tauri": "tauri",
     "release": "pwsh -NoProfile -File scripts/release.ps1",
     "msix": "pwsh -NoProfile -File scripts/msix.ps1",
-    "lint:english": "python scripts/check-english.py"
+    "lint:english": "python scripts/check-english.py",
+    "site": "node scripts/serve-site.js"
   },
   "dependencies": {
     "@tauri-apps/api": "^2"

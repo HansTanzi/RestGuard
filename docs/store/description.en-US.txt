@@ -24,7 +24,7 @@ Unlike typical break reminders, RestGuard has three enforcement levels. It can g
 Create custom profiles based on any built-in level and fine-tune each setting: number of postpones, whether you can exit or skip breaks, urgent mode, overlay coverage (10%–100%), whether the overlay can be moved, and meeting app detection. Save multiple profiles and switch between them anytime.
 
 ■ Stays out of the way of real work
-• Meeting detection: when Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground, or your microphone is in use, the break waits until the meeting is over. During a break you can also click "I'm in a meeting" to be reminded again in 15 minutes
+• Meeting detection: when Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground, or your microphone is in use, the break waits until the meeting is over. During a break you can also click "I'm in a meeting" to be reminded again in an hour
 • Idle detection: 5 minutes without keyboard or mouse activity counts as being away, and the work countdown pauses; if you're away as long as a break, it counts as a break
 
 ■ Never miss the end of a break, even away from your desk

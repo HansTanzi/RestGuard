@@ -92,7 +92,7 @@ Gardez autant de profils personnalisés que vous voulez et changez-en à tout mo
 
 ### Discret quand il le faut
 
-- Détection des réunions (Windows, macOS) : tant que Zoom, Microsoft Teams, Webex ou Tencent Meeting est au premier plan (ou, sous Windows, utilise le micro), la pause attend la fin de la réunion ; pendant une pause, vous pouvez aussi cliquer sur « Je suis en réunion » pour recevoir un rappel dans 15 minutes
+- Détection des réunions (Windows, macOS) : tant que Zoom, Microsoft Teams, Webex ou Tencent Meeting est au premier plan (ou, sous Windows, utilise le micro), la pause attend la fin de la réunion ; pendant une pause, vous pouvez aussi cliquer sur « Je suis en réunion » pour recevoir un rappel dans une heure
 - Détection d'inactivité : après 5 minutes sans clavier ni souris, vous êtes considéré comme absent et le compte à rebours du travail se met en pause ; une absence aussi longue qu'une pause compte comme une pause complète, vous n'êtes donc pas renvoyé en pause juste après votre retour
 
 ### Ne manquez jamais la fin d'une pause
@@ -332,7 +332,7 @@ Remarques :
 Entre deux pauses, oui : choisissez « Quitter » dans le menu de la zone de notification. Pendant une pause, ou tant qu'une pause reportée reste due, « Quitter » est désactivé.
 
 **Et si une pause arrive pendant une réunion ?**
-En contrainte moyenne et faible, la pause attend tant que Zoom, Microsoft Teams, Webex ou Tencent Meeting est au premier plan (Windows, macOS ; sous Windows, aussi tant qu'il utilise le micro). Si une pause a déjà commencé, cliquez sur « Je suis en réunion » pour recevoir un rappel dans 15 minutes. En contrainte élevée, les pauses n'attendent pas.
+En contrainte moyenne et faible, la pause attend tant que Zoom, Microsoft Teams, Webex ou Tencent Meeting est au premier plan (Windows, macOS ; sous Windows, aussi tant qu'il utilise le micro). Si une pause a déjà commencé, cliquez sur « Je suis en réunion » pour recevoir un rappel dans une heure. En contrainte élevée, les pauses n'attendent pas.
 
 **Je suis en plein travail urgent. Vais-je perdre mon travail ?**
 Reportez la pause de 5 minutes (jusqu'à 3 fois en contrainte moyenne et faible, une fois en contrainte élevée), ou, en contrainte moyenne et faible, utilisez le mode urgence pour réduire le voile et enregistrer votre travail pendant que le compte à rebours continue.

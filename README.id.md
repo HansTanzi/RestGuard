@@ -92,7 +92,7 @@ Simpan profil kustom sebanyak yang Anda mau dan ganti kapan saja. Durasi kerja, 
 
 ### Tidak mengganggu saat penting
 
-- Deteksi rapat (Windows, macOS): selama Zoom, Microsoft Teams, Webex, atau Tencent Meeting berada di latar depan (atau, di Windows, memakai mikrofon), istirahat menunggu sampai rapat selesai; saat istirahat Anda juga bisa mengklik “Saya sedang rapat” agar diingatkan 15 menit lagi
+- Deteksi rapat (Windows, macOS): selama Zoom, Microsoft Teams, Webex, atau Tencent Meeting berada di latar depan (atau, di Windows, memakai mikrofon), istirahat menunggu sampai rapat selesai; saat istirahat Anda juga bisa mengklik “Saya sedang rapat” agar diingatkan 1 jam lagi
 - Deteksi menganggur: setelah 5 menit tanpa input keyboard atau mouse, Anda dianggap pergi dan hitung mundur kerja dijeda; pergi selama satu masa istirahat dihitung sebagai istirahat penuh, jadi Anda tidak disuruh beristirahat tepat setelah kembali
 
 ### Jangan lewatkan akhir istirahat
@@ -332,7 +332,7 @@ Catatan:
 Di antara istirahat, bisa: pilih “Keluar” di menu baki sistem. Saat istirahat, atau selama istirahat yang ditunda masih terutang, “Keluar” dinonaktifkan.
 
 **Bagaimana jika waktu istirahat tiba saat rapat?**
-Pada Ketegasan sedang dan rendah, istirahat menunggu selama Zoom, Microsoft Teams, Webex, atau Tencent Meeting berada di latar depan (Windows, macOS; di Windows juga saat memakai mikrofon). Jika istirahat sudah dimulai, klik “Saya sedang rapat” agar diingatkan 15 menit lagi. Pada Ketegasan tinggi, istirahat tidak menunggu.
+Pada Ketegasan sedang dan rendah, istirahat menunggu selama Zoom, Microsoft Teams, Webex, atau Tencent Meeting berada di latar depan (Windows, macOS; di Windows juga saat memakai mikrofon). Jika istirahat sudah dimulai, klik “Saya sedang rapat” agar diingatkan 1 jam lagi. Pada Ketegasan tinggi, istirahat tidak menunggu.
 
 **Saya sedang mengerjakan hal mendesak. Apakah pekerjaan saya akan hilang?**
 Tunda istirahat 5 menit (hingga 3 kali pada Ketegasan sedang dan rendah, sekali pada Ketegasan tinggi), atau pada Ketegasan sedang dan rendah gunakan mode darurat untuk memperkecil lapisan dan menyimpan pekerjaan sementara hitung mundur tetap berjalan.

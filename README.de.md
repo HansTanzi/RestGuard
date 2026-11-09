@@ -92,7 +92,7 @@ Lege beliebig viele eigene Profile an und wechsle jederzeit. Arbeits-, Pausen-, 
 
 ### Hält sich zurück, wenn es darauf ankommt
 
-- Meeting-Erkennung (Windows, macOS): Solange Zoom, Microsoft Teams, Webex oder Tencent Meeting im Vordergrund ist (oder unter Windows das Mikrofon nutzt), wartet die Pause, bis das Meeting vorbei ist; während einer Pause kannst du außerdem auf „Ich bin in einem …-Meeting“ klicken, um in 15 Minuten erneut erinnert zu werden
+- Meeting-Erkennung (Windows, macOS): Solange Zoom, Microsoft Teams, Webex oder Tencent Meeting im Vordergrund ist (oder unter Windows das Mikrofon nutzt), wartet die Pause, bis das Meeting vorbei ist; während einer Pause kannst du außerdem auf „Ich bin in einem …-Meeting“ klicken, um in einer Stunde erneut erinnert zu werden
 - Leerlauferkennung: Nach 5 Minuten ohne Tastatur- oder Mauseingabe giltst du als abwesend und der Arbeits-Countdown pausiert; warst du so lange weg wie eine Pause dauert, zählt das als vollständige Pause, sodass du nach der Rückkehr nicht gleich wieder in die Pause geschickt wirst
 
 ### Das Pausenende nie verpassen
@@ -332,7 +332,7 @@ Hinweise:
 Zwischen den Pausen ja: Wähle „Beenden“ im Tray-Menü. Während einer Pause oder solange eine aufgeschobene Pause noch aussteht, ist „Beenden“ deaktiviert.
 
 **Was, wenn eine Pause mitten in ein Meeting fällt?**
-In den Stufen Mittel und Niedrig wartet die Pause, solange Zoom, Microsoft Teams, Webex oder Tencent Meeting im Vordergrund ist (Windows, macOS; unter Windows auch, solange es das Mikrofon nutzt). Hat die Pause schon begonnen, klicke auf „Ich bin in einem …-Meeting“, um in 15 Minuten erneut erinnert zu werden. In der Stufe Hoch wartet die Pause nicht.
+In den Stufen Mittel und Niedrig wartet die Pause, solange Zoom, Microsoft Teams, Webex oder Tencent Meeting im Vordergrund ist (Windows, macOS; unter Windows auch, solange es das Mikrofon nutzt). Hat die Pause schon begonnen, klicke auf „Ich bin in einem …-Meeting“, um in einer Stunde erneut erinnert zu werden. In der Stufe Hoch wartet die Pause nicht.
 
 **Ich bin mitten in etwas Dringendem. Verliere ich meine Arbeit?**
 Schiebe die Pause um 5 Minuten auf (in Mittel und Niedrig bis zu 3-mal, in Hoch einmal), oder nutze in Mittel und Niedrig den Dringend-Modus, um das Overlay zu verkleinern und deine Arbeit zu speichern, während der Countdown weiterläuft.

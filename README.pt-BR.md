@@ -92,7 +92,7 @@ Crie quantos perfis personalizados quiser e troque a qualquer momento. Os tempos
 
 ### Não atrapalha quando importa
 
-- Detecção de reuniões (Windows, macOS): enquanto Zoom, Microsoft Teams, Webex ou Tencent Meeting estiverem em primeiro plano (ou, no Windows, usando o microfone), a pausa espera a reunião acabar; durante uma pausa, você também pode clicar em "Estou em uma reunião…" para ser lembrado em 15 minutos
+- Detecção de reuniões (Windows, macOS): enquanto Zoom, Microsoft Teams, Webex ou Tencent Meeting estiverem em primeiro plano (ou, no Windows, usando o microfone), a pausa espera a reunião acabar; durante uma pausa, você também pode clicar em "Estou em uma reunião…" para ser lembrado em uma hora
 - Detecção de inatividade: depois de 5 minutos sem usar teclado ou mouse, você é considerado ausente e a contagem do trabalho pausa; ficar fora pelo tempo de uma pausa conta como pausa completa, então você não é mandado descansar logo ao voltar
 
 ### Nunca perca o fim da pausa
@@ -332,7 +332,7 @@ Observações:
 Entre as pausas, sim: escolha "Sair" no menu da bandeja. Durante uma pausa, ou enquanto ainda houver uma pausa adiada pendente, "Sair" fica desativado.
 
 **E se uma pausa chegar no meio de uma reunião?**
-No Médio e no Baixo, a pausa espera enquanto Zoom, Microsoft Teams, Webex ou Tencent Meeting estiverem em primeiro plano (Windows, macOS; no Windows também enquanto usam o microfone). Se a pausa já começou, clique em "Estou em uma reunião…" para ser lembrado em 15 minutos. No Alto, as pausas não esperam.
+No Médio e no Baixo, a pausa espera enquanto Zoom, Microsoft Teams, Webex ou Tencent Meeting estiverem em primeiro plano (Windows, macOS; no Windows também enquanto usam o microfone). Se a pausa já começou, clique em "Estou em uma reunião…" para ser lembrado em uma hora. No Alto, as pausas não esperam.
 
 **Estou no meio de algo urgente. Vou perder meu trabalho?**
 Adie a pausa em 5 minutos (até 3 vezes no Médio e no Baixo, uma vez no Alto), ou no Médio e no Baixo use o modo urgente para reduzir a sobreposição e salvar seu trabalho enquanto a contagem regressiva continua.

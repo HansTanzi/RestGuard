@@ -24,7 +24,7 @@ A differenza dei soliti promemoria, RestGuard offre tre livelli di rigore. Può 
 Crea profili personalizzati partendo da qualsiasi livello integrato e regola ogni opzione: numero di rinvii, possibilità di uscire o saltare le pause, modalità urgente, copertura della sovrapposizione (10%–100%), possibilità di spostarla e rilevamento delle app per riunioni. Salva più profili e passa dall'uno all'altro quando vuoi.
 
 ■ Non ti disturba quando conta
-• Rilevamento delle riunioni: quando Zoom, Microsoft Teams, Webex o Tencent Meeting è in primo piano, o il microfono è in uso, la pausa aspetta la fine della riunione. Durante una pausa puoi anche fare clic su "Sono in una riunione" per un nuovo promemoria tra 15 minuti
+• Rilevamento delle riunioni: quando Zoom, Microsoft Teams, Webex o Tencent Meeting è in primo piano, o il microfono è in uso, la pausa aspetta la fine della riunione. Durante una pausa puoi anche fare clic su "Sono in una riunione" per un nuovo promemoria tra un'ora
 • Rilevamento dell'inattività: 5 minuti senza tastiera né mouse contano come assenza e il conto alla rovescia del lavoro si mette in pausa; se resti lontano quanto dura una pausa, conta come pausa fatta
 
 ■ Non perdere la fine della pausa, anche lontano dalla scrivania

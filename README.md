@@ -92,7 +92,7 @@ Keep as many custom profiles as you like and switch any time. Work, break, postp
 
 ### Stays out of the way when it matters
 
-- Meeting detection (Windows, macOS): while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (or, on Windows, using the microphone), the break waits until the meeting is over; during a break you can also click "I'm in a meeting" to be reminded in 15 minutes
+- Meeting detection (Windows, macOS): while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (or, on Windows, using the microphone), the break waits until the meeting is over; during a break you can also click "I'm in a meeting" to be reminded in an hour
 - Idle detection: after 5 minutes without keyboard or mouse input you count as away and the work countdown pauses; being away as long as a break counts as a full break, so you aren't sent to rest right after coming back
 
 ### Never miss the end of a break
@@ -332,7 +332,7 @@ Notes:
 Between breaks, yes: choose "Quit" in the tray menu. During a break, or while a postponed break is still owed, Quit is disabled.
 
 **What if a break comes up during a meeting?**
-On Medium and Low, the break waits while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (Windows, macOS; on Windows also while it uses the microphone). If a break has already started, click "I'm in a meeting" to be reminded in 15 minutes. On High, breaks don't wait.
+On Medium and Low, the break waits while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (Windows, macOS; on Windows also while it uses the microphone). If a break has already started, click "I'm in a meeting" to be reminded in an hour. On High, breaks don't wait.
 
 **I'm in the middle of something urgent. Will I lose my work?**
 Postpone the break by 5 minutes (up to 3 times on Medium and Low, once on High), or on Medium and Low use urgent mode to shrink the overlay and save your work while the countdown keeps running.

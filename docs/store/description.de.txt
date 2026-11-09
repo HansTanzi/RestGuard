@@ -24,7 +24,7 @@ Anders als übliche Pausenerinnerungen bietet RestGuard drei Strengestufen. Es k
 Lege auf Basis einer beliebigen integrierten Stufe eigene Profile an und stelle jede Option einzeln ein: Anzahl der Aufschübe, ob Beenden oder Überspringen erlaubt ist, Notfallmodus, Abdeckung des Overlays (10 %–100 %), ob sich das Overlay verschieben lässt und Erkennung von Meeting-Apps. Speichere mehrere Profile und wechsle jederzeit zwischen ihnen.
 
 ■ Stört nicht bei wichtiger Arbeit
-• Meeting-Erkennung: Wenn Zoom, Microsoft Teams, Webex oder Tencent Meeting im Vordergrund ist oder dein Mikrofon verwendet wird, wartet die Pause, bis das Meeting vorbei ist. Während einer Pause kannst du außerdem auf „Ich bin in einem Meeting“ klicken und wirst in 15 Minuten erneut erinnert
+• Meeting-Erkennung: Wenn Zoom, Microsoft Teams, Webex oder Tencent Meeting im Vordergrund ist oder dein Mikrofon verwendet wird, wartet die Pause, bis das Meeting vorbei ist. Während einer Pause kannst du außerdem auf „Ich bin in einem Meeting“ klicken und wirst in einer Stunde erneut erinnert
 • Inaktivitätserkennung: 5 Minuten ohne Tastatur- oder Mauseingabe gelten als abwesend, und der Arbeits-Countdown pausiert; warst du so lange weg wie eine Pause dauert, zählt das als Pause
 
 ■ Das Pausenende nie verpassen – auch nicht fern vom Schreibtisch

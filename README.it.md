@@ -92,7 +92,7 @@ Tieni tutti i profili personalizzati che vuoi e cambiali quando vuoi. Le durate 
 
 ### Non ti intralcia quando conta
 
-- Rilevamento delle riunioni (Windows, macOS): mentre Zoom, Microsoft Teams, Webex o Tencent Meeting è in primo piano (o, su Windows, usa il microfono), la pausa aspetta la fine della riunione; durante una pausa puoi anche fare clic su “Sono in una riunione” per ricevere un promemoria tra 15 minuti
+- Rilevamento delle riunioni (Windows, macOS): mentre Zoom, Microsoft Teams, Webex o Tencent Meeting è in primo piano (o, su Windows, usa il microfono), la pausa aspetta la fine della riunione; durante una pausa puoi anche fare clic su “Sono in una riunione” per ricevere un promemoria tra un'ora
 - Rilevamento dell'inattività: dopo 5 minuti senza tastiera o mouse sei considerato assente e il conto alla rovescia del lavoro si ferma; un'assenza lunga quanto una pausa conta come pausa completa, così non vieni mandato a riposare appena torni
 
 ### Non perderti mai la fine di una pausa
@@ -332,7 +332,7 @@ Note:
 Tra una pausa e l'altra sì: scegli “Esci” nel menu dell'area di notifica. Durante una pausa, o finché una pausa rinviata è ancora dovuta, “Esci” è disattivato.
 
 **E se arriva una pausa durante una riunione?**
-Con Rigore medio e basso, la pausa aspetta mentre Zoom, Microsoft Teams, Webex o Tencent Meeting è in primo piano (Windows, macOS; su Windows anche mentre usa il microfono). Se la pausa è già iniziata, fai clic su “Sono in una riunione” per ricevere un promemoria tra 15 minuti. Con Rigore alto le pause non aspettano.
+Con Rigore medio e basso, la pausa aspetta mentre Zoom, Microsoft Teams, Webex o Tencent Meeting è in primo piano (Windows, macOS; su Windows anche mentre usa il microfono). Se la pausa è già iniziata, fai clic su “Sono in una riunione” per ricevere un promemoria tra un'ora. Con Rigore alto le pause non aspettano.
 
 **Sto facendo una cosa urgente. Perderò il lavoro?**
 Rinvia la pausa di 5 minuti (fino a 3 volte con Rigore medio e basso, una volta con Rigore alto), oppure, con Rigore medio e basso, usa la modalità urgente per ridurre la sovrapposizione e salvare il lavoro mentre il conto alla rovescia continua.

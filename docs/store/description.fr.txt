@@ -24,7 +24,7 @@ Contrairement aux rappels de pause habituels, RestGuard propose trois niveaux de
 Créez des profils personnalisés à partir de n'importe quel niveau intégré et réglez chaque option : nombre de reports, possibilité de quitter ou de passer une pause, mode urgence, couverture du voile (10 % à 100 %), voile déplaçable ou non, détection des applis de réunion. Enregistrez plusieurs profils et passez de l'un à l'autre à tout moment.
 
 ■ Ne vous dérange pas quand c'est important
-• Détection des réunions : quand Zoom, Microsoft Teams, Webex ou Tencent Meeting est au premier plan, ou que votre micro est utilisé, la pause attend la fin de la réunion. Pendant une pause, vous pouvez aussi cliquer sur « Je suis en réunion » pour être rappelé dans 15 minutes
+• Détection des réunions : quand Zoom, Microsoft Teams, Webex ou Tencent Meeting est au premier plan, ou que votre micro est utilisé, la pause attend la fin de la réunion. Pendant une pause, vous pouvez aussi cliquer sur « Je suis en réunion » pour être rappelé dans une heure
 • Détection d'inactivité : 5 minutes sans clavier ni souris valent absence, et le compte à rebours de travail se met en pause ; si vous vous absentez aussi longtemps qu'une pause, elle est considérée comme faite
 
 ■ Ne manquez pas la fin de la pause, même loin de votre bureau

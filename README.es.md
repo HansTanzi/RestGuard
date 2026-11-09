@@ -92,7 +92,7 @@ Crea tantos perfiles personalizados como quieras y cambia entre ellos cuando qui
 
 ### No estorba cuando importa
 
-- Detección de reuniones (Windows, macOS): mientras Zoom, Microsoft Teams, Webex o Tencent Meeting están en primer plano (o, en Windows, usan el micrófono), el descanso espera a que termine la reunión; durante un descanso también puedes hacer clic en «Estoy en una reunión…» para que te lo recuerde en 15 minutos
+- Detección de reuniones (Windows, macOS): mientras Zoom, Microsoft Teams, Webex o Tencent Meeting están en primer plano (o, en Windows, usan el micrófono), el descanso espera a que termine la reunión; durante un descanso también puedes hacer clic en «Estoy en una reunión…» para que te lo recuerde en una hora
 - Detección de inactividad: tras 5 minutos sin usar el teclado ni el ratón se considera que no estás y la cuenta atrás del trabajo se pausa; si estuviste fuera tanto como dura un descanso, cuenta como descanso completo, así que no te mandará a descansar nada más volver
 
 ### Nunca te pierdas el final del descanso
@@ -332,7 +332,7 @@ Notas:
 Entre descansos, sí: elige «Salir» en el menú de la bandeja. Durante un descanso, o mientras quede pendiente un descanso aplazado, «Salir» está desactivado.
 
 **¿Y si toca un descanso en mitad de una reunión?**
-En Medio y Bajo, el descanso espera mientras Zoom, Microsoft Teams, Webex o Tencent Meeting están en primer plano (Windows, macOS; en Windows también mientras usan el micrófono). Si el descanso ya empezó, haz clic en «Estoy en una reunión…» para que te lo recuerde en 15 minutos. En Alto, los descansos no esperan.
+En Medio y Bajo, el descanso espera mientras Zoom, Microsoft Teams, Webex o Tencent Meeting están en primer plano (Windows, macOS; en Windows también mientras usan el micrófono). Si el descanso ya empezó, haz clic en «Estoy en una reunión…» para que te lo recuerde en una hora. En Alto, los descansos no esperan.
 
 **Estoy con algo urgente. ¿Perderé mi trabajo?**
 Aplaza el descanso 5 minutos (hasta 3 veces en Medio y Bajo, una vez en Alto), o en Medio y Bajo usa el modo urgente para reducir la superposición y guardar tu trabajo mientras la cuenta atrás sigue.

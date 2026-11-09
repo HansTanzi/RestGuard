@@ -24,7 +24,7 @@ Diferente dos lembretes de pausa comuns, o RestGuard tem três níveis de rigor.
 Crie perfis personalizados com base em qualquer nível integrado e ajuste cada opção: número de adiamentos, se é permitido sair ou pular pausas, modo urgente, cobertura da sobreposição (10%–100%), se ela pode ser movida e detecção de apps de reunião. Salve vários perfis e alterne entre eles quando quiser.
 
 ■ Não atrapalha o que importa
-• Detecção de reuniões: quando Zoom, Microsoft Teams, Webex ou Tencent Meeting estão em primeiro plano, ou o microfone está em uso, a pausa espera a reunião terminar. Durante uma pausa, você também pode clicar em "Estou em uma reunião" para ser lembrado de novo em 15 minutos
+• Detecção de reuniões: quando Zoom, Microsoft Teams, Webex ou Tencent Meeting estão em primeiro plano, ou o microfone está em uso, a pausa espera a reunião terminar. Durante uma pausa, você também pode clicar em "Estou em uma reunião" para ser lembrado de novo em uma hora
 • Detecção de inatividade: 5 minutos sem usar teclado ou mouse contam como ausência, e a contagem do trabalho é pausada; se você ficar ausente pelo tempo de uma pausa, isso conta como pausa
 
 ■ Não perca o fim da pausa, mesmo longe da mesa

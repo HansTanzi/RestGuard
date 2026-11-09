@@ -24,7 +24,7 @@ Berbeda dari pengingat istirahat biasa, RestGuard memiliki tiga tingkat ketegasa
 Buat profil kustom dari tingkat bawaan mana pun dan atur setiap opsi: jumlah penundaan, boleh keluar atau melewati istirahat, mode darurat, cakupan lapisan (10%–100%), lapisan bisa digeser atau tidak, dan deteksi aplikasi rapat. Simpan beberapa profil dan beralih kapan saja.
 
 ■ Tidak mengganggu pekerjaan penting
-• Deteksi rapat: saat Zoom, Microsoft Teams, Webex, atau Tencent Meeting berada di latar depan, atau mikrofon sedang digunakan, istirahat menunggu sampai rapat selesai. Saat istirahat, Anda juga bisa mengeklik "Saya sedang rapat" untuk diingatkan lagi 15 menit kemudian
+• Deteksi rapat: saat Zoom, Microsoft Teams, Webex, atau Tencent Meeting berada di latar depan, atau mikrofon sedang digunakan, istirahat menunggu sampai rapat selesai. Saat istirahat, Anda juga bisa mengeklik "Saya sedang rapat" untuk diingatkan lagi 1 jam kemudian
 • Deteksi tidak aktif: 5 menit tanpa aktivitas keyboard atau mouse dianggap meninggalkan komputer, dan hitung mundur kerja dijeda; jika Anda pergi selama durasi satu istirahat, itu dihitung sebagai istirahat
 
 ■ Tidak ketinggalan meski jauh dari meja

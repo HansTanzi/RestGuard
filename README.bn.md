@@ -214,7 +214,7 @@ brew install --cask hanstanzi/tap/restguard
 
 ### ডাউনলোড যাচাই করুন
 
-v0.1.14-এর পরের Release ফাইলগুলো GitHub Actions দিয়ে তৈরি এবং স্বাক্ষরিত [বিল্ড প্রোভেন্যান্স অ্যাটেস্টেশন](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) বহন করে, যা প্রতিটি ফাইলকে সেটি তৈরি করা ওয়ার্কফ্লো রান ও কমিটের সঙ্গে যুক্ত করে। ডাউনলোড করা ফাইল [GitHub CLI](https://cli.github.com) দিয়ে যাচাই করতে:
+v0.1.14-এর পরের Release ফাইলগুলো GitHub Actions দিয়ে সোর্স কোড থেকে স্বয়ংক্রিয়ভাবে তৈরি এবং স্বাক্ষরিত [বিল্ড প্রোভেন্যান্স অ্যাটেস্টেশন](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) বহন করে, যা প্রতিটি ফাইলকে সেটি তৈরি করা ওয়ার্কফ্লো রান ও কমিটের সঙ্গে যুক্ত করে। ডাউনলোড করা ফাইল [GitHub CLI](https://cli.github.com) দিয়ে যাচাই করতে:
 
 ```sh
 gh attestation verify RestGuard_<version>_x64.exe --repo HansTanzi/RestGuard

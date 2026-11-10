@@ -214,7 +214,7 @@ Das Overlay benötigt X11 (siehe [Plattformeinschränkungen](#plattformeinschrä
 
 ### Downloads überprüfen
 
-Release-Dateien nach v0.1.14 werden von GitHub Actions gebaut und tragen eine signierte [Build-Provenance-Attestierung](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations), die jede Datei mit dem Workflow-Lauf und dem Commit verknüpft, aus dem sie entstanden ist. So prüfst du eine heruntergeladene Datei mit der [GitHub CLI](https://cli.github.com):
+Release-Dateien nach v0.1.14 werden von GitHub Actions automatisch aus dem Quellcode gebaut und tragen eine signierte [Build-Provenance-Attestierung](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations), die jede Datei mit dem Workflow-Lauf und dem Commit verknüpft, aus dem sie entstanden ist. So prüfst du eine heruntergeladene Datei mit der [GitHub CLI](https://cli.github.com):
 
 ```sh
 gh attestation verify RestGuard_<Version>_x64.exe --repo HansTanzi/RestGuard

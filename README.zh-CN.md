@@ -218,7 +218,7 @@ brew install --cask hanstanzi/tap/restguard
 
 ### 校验下载文件
 
-v0.1.14 之后的 Release 文件由 GitHub Actions 构建，并附带签名的[构建来源证明](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)，把每个文件和构建它的 workflow 运行及 commit 对应起来。用 [GitHub CLI](https://cli.github.com) 校验下载的文件：
+v0.1.14 之后的 Release 文件由 GitHub Actions 从源码自动构建，并附带签名的[构建来源证明](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)，把每个文件和构建它的 workflow 运行及 commit 对应起来。用 [GitHub CLI](https://cli.github.com) 校验下载的文件：
 
 ```sh
 gh attestation verify RestGuard_<版本号>_x64.exe --repo HansTanzi/RestGuard

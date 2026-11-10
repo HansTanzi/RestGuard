@@ -307,7 +307,7 @@ sudo pacman -U ./RestGuard_*_x86_64.pkg.tar.zst      # Arch</code></pre>
 
         <details class="verify">
           <summary data-i18n="verify.title">Verify your download</summary>
-          <p data-i18n="verify.attest">Release files are built by GitHub Actions with a signed build provenance attestation. Check one with the GitHub CLI:</p>
+          <p data-i18n="verify.attest">Release files are built automatically from source by GitHub Actions with a signed build provenance attestation. Check one with the GitHub CLI:</p>
           <pre><code>gh attestation verify RestGuard_&lt;version&gt;_x64.exe --repo HansTanzi/RestGuard</code></pre>
           <p data-i18n="verify.sums">Or compare against SHA256SUMS.txt from the Release:</p>
           <pre><code>sha256sum -c SHA256SUMS.txt --ignore-missing          # Linux

@@ -214,7 +214,7 @@ brew install --cask hanstanzi/tap/restguard
 
 ### 다운로드 검증
 
-v0.1.14 이후의 릴리스 파일은 GitHub Actions로 빌드되며, 각 파일을 빌드한 워크플로 실행 및 커밋과 연결하는 서명된 [빌드 출처 증명(build provenance attestation)](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)이 붙어 있습니다. [GitHub CLI](https://cli.github.com)로 내려받은 파일을 확인하려면:
+v0.1.14 이후의 릴리스 파일은 GitHub Actions로 소스 코드에서 자동으로 빌드되며, 각 파일을 빌드한 워크플로 실행 및 커밋과 연결하는 서명된 [빌드 출처 증명(build provenance attestation)](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)이 붙어 있습니다. [GitHub CLI](https://cli.github.com)로 내려받은 파일을 확인하려면:
 
 ```sh
 gh attestation verify RestGuard_<버전>_x64.exe --repo HansTanzi/RestGuard

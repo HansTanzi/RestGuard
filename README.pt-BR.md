@@ -214,7 +214,7 @@ A sobreposição precisa de X11 (veja [Limitações por plataforma](#limitaçõe
 
 ### Verificar os downloads
 
-Os arquivos publicados depois da v0.1.14 são compilados pelo GitHub Actions e trazem uma [atestação de procedência de build](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) assinada, que liga cada arquivo à execução do workflow e ao commit que o gerou. Para verificar um arquivo baixado com o [GitHub CLI](https://cli.github.com):
+Os arquivos publicados depois da v0.1.14 são compilados automaticamente a partir do código-fonte pelo GitHub Actions e trazem uma [atestação de procedência de build](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) assinada, que liga cada arquivo à execução do workflow e ao commit que o gerou. Para verificar um arquivo baixado com o [GitHub CLI](https://cli.github.com):
 
 ```sh
 gh attestation verify RestGuard_<versão>_x64.exe --repo HansTanzi/RestGuard

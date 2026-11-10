@@ -214,7 +214,7 @@ La superposición necesita X11 (consulta [Limitaciones por plataforma](#limitaci
 
 ### Verificar las descargas
 
-Los archivos publicados después de la v0.1.14 se compilan con GitHub Actions y llevan una [atestación de procedencia de compilación](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) firmada que vincula cada archivo con la ejecución del flujo de trabajo y el commit que lo generaron. Para comprobar un archivo descargado con [GitHub CLI](https://cli.github.com):
+Los archivos publicados después de la v0.1.14 se compilan automáticamente desde el código fuente con GitHub Actions y llevan una [atestación de procedencia de compilación](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) firmada que vincula cada archivo con la ejecución del flujo de trabajo y el commit que lo generaron. Para comprobar un archivo descargado con [GitHub CLI](https://cli.github.com):
 
 ```sh
 gh attestation verify RestGuard_<versión>_x64.exe --repo HansTanzi/RestGuard

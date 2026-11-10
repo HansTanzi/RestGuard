@@ -214,7 +214,7 @@ La sovrapposizione richiede X11 (vedi [Limitazioni delle piattaforme](#limitazio
 
 ### Verifica i download
 
-I file delle Release successive a v0.1.14 sono compilati da GitHub Actions e hanno un'[attestazione firmata della provenienza](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) che collega ogni file all'esecuzione del workflow e al commit che lo hanno prodotto. Per controllare un file scaricato con la [GitHub CLI](https://cli.github.com):
+I file delle Release successive a v0.1.14 sono compilati automaticamente dal codice sorgente da GitHub Actions e hanno un'[attestazione firmata della provenienza](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) che collega ogni file all'esecuzione del workflow e al commit che lo hanno prodotto. Per controllare un file scaricato con la [GitHub CLI](https://cli.github.com):
 
 ```sh
 gh attestation verify RestGuard_<version>_x64.exe --repo HansTanzi/RestGuard

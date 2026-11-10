@@ -214,7 +214,7 @@ Lapisan memerlukan X11 (lihat [Keterbatasan platform](#keterbatasan-platform)).
 
 ### Verifikasi unduhan
 
-Berkas Release setelah v0.1.14 dibuat oleh GitHub Actions dan membawa [atestasi asal build](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) yang ditandatangani, yang menautkan setiap berkas ke proses workflow dan commit yang membuatnya. Untuk memeriksa berkas yang diunduh dengan [GitHub CLI](https://cli.github.com):
+Berkas Release setelah v0.1.14 dibuat otomatis dari kode sumber oleh GitHub Actions dan membawa [atestasi asal build](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) yang ditandatangani, yang menautkan setiap berkas ke proses workflow dan commit yang membuatnya. Untuk memeriksa berkas yang diunduh dengan [GitHub CLI](https://cli.github.com):
 
 ```sh
 gh attestation verify RestGuard_<version>_x64.exe --repo HansTanzi/RestGuard

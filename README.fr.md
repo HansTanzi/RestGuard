@@ -214,7 +214,7 @@ Le voile nécessite X11 (voir [Limitations par plateforme](#limitations-par-plat
 
 ### Vérifier les téléchargements
 
-Les fichiers des Releases postérieures à v0.1.14 sont compilés par GitHub Actions et portent une [attestation signée de provenance](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) qui relie chaque fichier à l'exécution du workflow et au commit qui l'ont produit. Pour vérifier un fichier téléchargé avec la [GitHub CLI](https://cli.github.com) :
+Les fichiers des Releases postérieures à v0.1.14 sont compilés automatiquement à partir du code source par GitHub Actions et portent une [attestation signée de provenance](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) qui relie chaque fichier à l'exécution du workflow et au commit qui l'ont produit. Pour vérifier un fichier téléchargé avec la [GitHub CLI](https://cli.github.com) :
 
 ```sh
 gh attestation verify RestGuard_<version>_x64.exe --repo HansTanzi/RestGuard

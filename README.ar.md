@@ -216,7 +216,7 @@ brew install --cask hanstanzi/tap/restguard
 
 ### التحقق من التنزيلات
 
-تُبنى ملفات Release بعد v0.1.14 عبر GitHub Actions وتحمل [شهادة موقّعة لمصدر البناء](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) تربط كل ملف بتشغيل سير العمل والإيداع اللذين بنياه. للتحقق من ملف منزَّل باستخدام [GitHub CLI](https://cli.github.com):
+تُبنى ملفات Release بعد v0.1.14 تلقائيًا من الشيفرة المصدرية عبر GitHub Actions وتحمل [شهادة موقّعة لمصدر البناء](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) تربط كل ملف بتشغيل سير العمل والإيداع اللذين بنياه. للتحقق من ملف منزَّل باستخدام [GitHub CLI](https://cli.github.com):
 
 ```sh
 gh attestation verify RestGuard_<version>_x64.exe --repo HansTanzi/RestGuard

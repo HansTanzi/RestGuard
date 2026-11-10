@@ -214,7 +214,7 @@ brew install --cask hanstanzi/tap/restguard
 
 ### ダウンロードの検証
 
-v0.1.14 より後のリリースファイルは GitHub Actions でビルドされ、各ファイルとそれをビルドしたワークフロー実行・コミットを結び付ける署名付きの[ビルド来歴証明（build provenance attestation）](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)が付いています。[GitHub CLI](https://cli.github.com) でダウンロードしたファイルを検証するには：
+v0.1.14 より後のリリースファイルは GitHub Actions によってソースコードから自動でビルドされ、各ファイルとそれをビルドしたワークフロー実行・コミットを結び付ける署名付きの[ビルド来歴証明（build provenance attestation）](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)が付いています。[GitHub CLI](https://cli.github.com) でダウンロードしたファイルを検証するには：
 
 ```sh
 gh attestation verify RestGuard_<バージョン>_x64.exe --repo HansTanzi/RestGuard

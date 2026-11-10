@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#安装"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#许可证"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT、Scoop、Linux 上的 Homebrew 以及免安装版下载，见[安装](#安装)。
+Microsoft Store、APT、Scoop、Linux 上的 Homebrew 以及免安装版下载，见[安装](#安装)。
 
 ## 为什么选 RestGuard
 
@@ -113,7 +114,7 @@ RestGuard 适合那些知道该休息、却总在拖延的人：
 
 ### 其他
 
-- 跨平台：Windows、macOS、Linux，支持 WinGet、Scoop、Homebrew、APT 等主流包管理器一键安装和更新（见[安装](#安装)）
+- 跨平台：Windows、macOS、Linux，支持 Microsoft Store 以及 WinGet、Scoop、Homebrew、APT 等主流包管理器一键安装和更新（见[安装](#安装)）
 - 托盘菜单：查看剩余时间、提前休息、设置、开机自启、切换强制方案
 - 单实例运行
 - 开源免费，采用宽松的 MIT / Apache-2.0 双许可证（见[许可证](#许可证)）
@@ -141,7 +142,9 @@ RestGuard 适合那些知道该休息、却总在拖延的人：
 
 ### Windows
 
-可通过 [WinGet](https://learn.microsoft.com/windows/package-manager/winget/) 安装：
+可从 [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0) 安装，会自动更新。
+
+或通过 [WinGet](https://learn.microsoft.com/windows/package-manager/winget/) 安装：
 
 ```powershell
 winget install HansTanzi.RestGuard

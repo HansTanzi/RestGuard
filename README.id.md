@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#instalasi"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#lisensi"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT, Scoop, Homebrew di Linux, dan unduhan portabel dibahas di [Instalasi](#instalasi).
+Microsoft Store, APT, Scoop, Homebrew di Linux, dan unduhan portabel dibahas di [Instalasi](#instalasi).
 
 ## Mengapa RestGuard
 
@@ -109,7 +110,7 @@ Simpan profil kustom sebanyak yang Anda mau dan ganti kapan saja. Durasi kerja, 
 
 ### Dan lainnya
 
-- Lintas platform: Windows, macOS, dan Linux, bisa dipasang dan diperbarui melalui WinGet, Scoop, Homebrew, dan APT (lihat [Instalasi](#instalasi))
+- Lintas platform: Windows, macOS, dan Linux, bisa dipasang dan diperbarui melalui Microsoft Store, WinGet, Scoop, Homebrew, dan APT (lihat [Instalasi](#instalasi))
 - Menu baki sistem: sisa waktu, istirahat sekarang, pengaturan, mulai saat masuk, ganti profil ketegasan
 - Satu instans
 - Gratis dan sumber terbuka di bawah lisensi ganda permisif MIT / Apache-2.0 (lihat [Lisensi](#lisensi))
@@ -137,7 +138,9 @@ Simpan profil kustom sebanyak yang Anda mau dan ganti kapan saja. Durasi kerja, 
 
 ### Windows
 
-Pasang dengan [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
+Dapatkan dari [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0); pembaruan berjalan otomatis.
+
+Atau pasang dengan [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
 
 ```powershell
 winget install HansTanzi.RestGuard

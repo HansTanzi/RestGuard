@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#설치"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#라이선스"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT, Scoop, Linux용 Homebrew, 포터블 다운로드는 [설치](#설치)를 참고하세요.
+Microsoft Store, APT, Scoop, Linux용 Homebrew, 포터블 다운로드는 [설치](#설치)를 참고하세요.
 
 ## 왜 RestGuard인가
 
@@ -109,7 +110,7 @@ RestGuard는 쉬어야 한다는 걸 알면서도 자꾸 미루는 사람을 위
 
 ### 그 밖에
 
-- 크로스 플랫폼: Windows, macOS, Linux를 지원하며 WinGet, Scoop, Homebrew, APT로 설치와 업데이트가 가능합니다([설치](#설치) 참고)
+- 크로스 플랫폼: Windows, macOS, Linux를 지원하며 Microsoft Store, WinGet, Scoop, Homebrew, APT로 설치와 업데이트가 가능합니다([설치](#설치) 참고)
 - 트레이 메뉴: 남은 시간, 지금 휴식, 설정, 로그인 시 시작, 강제 프로필 전환
 - 단일 인스턴스
 - 관대한 MIT / Apache-2.0 이중 라이선스의 무료 오픈 소스([라이선스](#라이선스) 참고)
@@ -137,7 +138,9 @@ RestGuard는 쉬어야 한다는 걸 알면서도 자꾸 미루는 사람을 위
 
 ### Windows
 
-[WinGet](https://learn.microsoft.com/windows/package-manager/winget/)으로 설치:
+[Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0)에서 받을 수 있으며 자동으로 업데이트됩니다.
+
+또는 [WinGet](https://learn.microsoft.com/windows/package-manager/winget/)으로 설치:
 
 ```powershell
 winget install HansTanzi.RestGuard

@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#installation"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#lizenz"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT, Scoop, Homebrew unter Linux und portable Downloads findest du unter [Installation](#installation).
+Microsoft Store, APT, Scoop, Homebrew unter Linux und portable Downloads findest du unter [Installation](#installation).
 
 ## Warum RestGuard
 
@@ -109,7 +110,7 @@ Lege beliebig viele eigene Profile an und wechsle jederzeit. Arbeits-, Pausen-, 
 
 ### Und mehr
 
-- Plattformübergreifend: Windows, macOS und Linux, installier- und aktualisierbar über WinGet, Scoop, Homebrew und APT (siehe [Installation](#installation))
+- Plattformübergreifend: Windows, macOS und Linux, installier- und aktualisierbar über den Microsoft Store, WinGet, Scoop, Homebrew und APT (siehe [Installation](#installation))
 - Tray-Menü: verbleibende Zeit, jetzt Pause machen, Einstellungen, beim Anmelden starten, Strenge-Profil wechseln
 - Nur eine Instanz
 - Frei und Open Source unter der freizügigen Doppellizenz MIT / Apache-2.0 (siehe [Lizenz](#lizenz))
@@ -137,7 +138,9 @@ Lege beliebig viele eigene Profile an und wechsle jederzeit. Arbeits-, Pausen-, 
 
 ### Windows
 
-Installation mit [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
+Im [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0) erhältlich; aktualisiert sich automatisch.
+
+Oder mit [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
 
 ```powershell
 winget install HansTanzi.RestGuard

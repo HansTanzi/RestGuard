@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#installation"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#lizenz"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT, Scoop, Homebrew unter Linux und portable Downloads findest du unter [Installation](#installation).
+Microsoft Store, APT, Scoop, Homebrew unter Linux und portable Downloads findest du unter [Installation](#installation).
 
 ## Warum RestGuard
 
@@ -92,7 +93,7 @@ Lege beliebig viele eigene Profile an und wechsle jederzeit. Arbeits-, Pausen-, 
 
 ### Hält sich zurück, wenn es darauf ankommt
 
-- Meeting-Erkennung (Windows, macOS): Solange Zoom, Microsoft Teams, Webex oder Tencent Meeting im Vordergrund ist (oder unter Windows das Mikrofon nutzt), wartet die Pause, bis das Meeting vorbei ist; während einer Pause kannst du außerdem auf „Ich bin in einem …-Meeting“ klicken, um in 15 Minuten erneut erinnert zu werden
+- Meeting-Erkennung (Windows, macOS): Solange Zoom, Microsoft Teams, Webex oder Tencent Meeting im Vordergrund ist (oder unter Windows das Mikrofon nutzt), wartet die Pause, bis das Meeting vorbei ist; während einer Pause kannst du außerdem auf „Ich bin in einem …-Meeting“ klicken, um in einer Stunde erneut erinnert zu werden
 - Leerlauferkennung: Nach 5 Minuten ohne Tastatur- oder Mauseingabe giltst du als abwesend und der Arbeits-Countdown pausiert; warst du so lange weg wie eine Pause dauert, zählt das als vollständige Pause, sodass du nach der Rückkehr nicht gleich wieder in die Pause geschickt wirst
 
 ### Das Pausenende nie verpassen
@@ -109,7 +110,7 @@ Lege beliebig viele eigene Profile an und wechsle jederzeit. Arbeits-, Pausen-, 
 
 ### Und mehr
 
-- Plattformübergreifend: Windows, macOS und Linux, installier- und aktualisierbar über WinGet, Scoop, Homebrew und APT (siehe [Installation](#installation))
+- Plattformübergreifend: Windows, macOS und Linux, installier- und aktualisierbar über den Microsoft Store, WinGet, Scoop, Homebrew und APT (siehe [Installation](#installation))
 - Tray-Menü: verbleibende Zeit, jetzt Pause machen, Einstellungen, beim Anmelden starten, Strenge-Profil wechseln
 - Nur eine Instanz
 - Frei und Open Source unter der freizügigen Doppellizenz MIT / Apache-2.0 (siehe [Lizenz](#lizenz))
@@ -137,7 +138,9 @@ Lege beliebig viele eigene Profile an und wechsle jederzeit. Arbeits-, Pausen-, 
 
 ### Windows
 
-Installation mit [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
+Im [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0) erhältlich; aktualisiert sich automatisch.
+
+Oder mit [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
 
 ```powershell
 winget install HansTanzi.RestGuard
@@ -211,7 +214,7 @@ Das Overlay benötigt X11 (siehe [Plattformeinschränkungen](#plattformeinschrä
 
 ### Downloads überprüfen
 
-Release-Dateien nach v0.1.14 werden von GitHub Actions gebaut und tragen eine signierte [Build-Provenance-Attestierung](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations), die jede Datei mit dem Workflow-Lauf und dem Commit verknüpft, aus dem sie entstanden ist. So prüfst du eine heruntergeladene Datei mit der [GitHub CLI](https://cli.github.com):
+Release-Dateien nach v0.1.14 werden von GitHub Actions automatisch aus dem Quellcode gebaut und tragen eine signierte [Build-Provenance-Attestierung](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations), die jede Datei mit dem Workflow-Lauf und dem Commit verknüpft, aus dem sie entstanden ist. So prüfst du eine heruntergeladene Datei mit der [GitHub CLI](https://cli.github.com):
 
 ```sh
 gh attestation verify RestGuard_<Version>_x64.exe --repo HansTanzi/RestGuard
@@ -332,7 +335,7 @@ Hinweise:
 Zwischen den Pausen ja: Wähle „Beenden“ im Tray-Menü. Während einer Pause oder solange eine aufgeschobene Pause noch aussteht, ist „Beenden“ deaktiviert.
 
 **Was, wenn eine Pause mitten in ein Meeting fällt?**
-In den Stufen Mittel und Niedrig wartet die Pause, solange Zoom, Microsoft Teams, Webex oder Tencent Meeting im Vordergrund ist (Windows, macOS; unter Windows auch, solange es das Mikrofon nutzt). Hat die Pause schon begonnen, klicke auf „Ich bin in einem …-Meeting“, um in 15 Minuten erneut erinnert zu werden. In der Stufe Hoch wartet die Pause nicht.
+In den Stufen Mittel und Niedrig wartet die Pause, solange Zoom, Microsoft Teams, Webex oder Tencent Meeting im Vordergrund ist (Windows, macOS; unter Windows auch, solange es das Mikrofon nutzt). Hat die Pause schon begonnen, klicke auf „Ich bin in einem …-Meeting“, um in einer Stunde erneut erinnert zu werden. In der Stufe Hoch wartet die Pause nicht.
 
 **Ich bin mitten in etwas Dringendem. Verliere ich meine Arbeit?**
 Schiebe die Pause um 5 Minuten auf (in Mittel und Niedrig bis zu 3-mal, in Hoch einmal), oder nutze in Mittel und Niedrig den Dringend-Modus, um das Overlay zu verkleinern und deine Arbeit zu speichern, während der Countdown weiterläuft.

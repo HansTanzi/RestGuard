@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#instalación"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#licencia"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT, Scoop, Homebrew en Linux y las descargas portátiles están en [Instalación](#instalación).
+Microsoft Store, APT, Scoop, Homebrew en Linux y las descargas portátiles están en [Instalación](#instalación).
 
 ## Por qué RestGuard
 
@@ -92,7 +93,7 @@ Crea tantos perfiles personalizados como quieras y cambia entre ellos cuando qui
 
 ### No estorba cuando importa
 
-- Detección de reuniones (Windows, macOS): mientras Zoom, Microsoft Teams, Webex o Tencent Meeting están en primer plano (o, en Windows, usan el micrófono), el descanso espera a que termine la reunión; durante un descanso también puedes hacer clic en «Estoy en una reunión…» para que te lo recuerde en 15 minutos
+- Detección de reuniones (Windows, macOS): mientras Zoom, Microsoft Teams, Webex o Tencent Meeting están en primer plano (o, en Windows, usan el micrófono), el descanso espera a que termine la reunión; durante un descanso también puedes hacer clic en «Estoy en una reunión…» para que te lo recuerde en una hora
 - Detección de inactividad: tras 5 minutos sin usar el teclado ni el ratón se considera que no estás y la cuenta atrás del trabajo se pausa; si estuviste fuera tanto como dura un descanso, cuenta como descanso completo, así que no te mandará a descansar nada más volver
 
 ### Nunca te pierdas el final del descanso
@@ -109,7 +110,7 @@ Crea tantos perfiles personalizados como quieras y cambia entre ellos cuando qui
 
 ### Y más
 
-- Multiplataforma: Windows, macOS y Linux, instalable y actualizable con WinGet, Scoop, Homebrew y APT (consulta [Instalación](#instalación))
+- Multiplataforma: Windows, macOS y Linux, instalable y actualizable con Microsoft Store, WinGet, Scoop, Homebrew y APT (consulta [Instalación](#instalación))
 - Menú de la bandeja: tiempo restante, descansar ahora, ajustes, iniciar con el sistema, cambiar el perfil de rigor
 - Una sola instancia
 - Libre y de código abierto bajo la permisiva licencia dual MIT / Apache-2.0 (consulta [Licencia](#licencia))
@@ -137,7 +138,9 @@ Crea tantos perfiles personalizados como quieras y cambia entre ellos cuando qui
 
 ### Windows
 
-Instálalo con [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
+Consíguelo en [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0); se actualiza automáticamente.
+
+O instálalo con [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
 
 ```powershell
 winget install HansTanzi.RestGuard
@@ -211,7 +214,7 @@ La superposición necesita X11 (consulta [Limitaciones por plataforma](#limitaci
 
 ### Verificar las descargas
 
-Los archivos publicados después de la v0.1.14 se compilan con GitHub Actions y llevan una [atestación de procedencia de compilación](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) firmada que vincula cada archivo con la ejecución del flujo de trabajo y el commit que lo generaron. Para comprobar un archivo descargado con [GitHub CLI](https://cli.github.com):
+Los archivos publicados después de la v0.1.14 se compilan automáticamente desde el código fuente con GitHub Actions y llevan una [atestación de procedencia de compilación](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) firmada que vincula cada archivo con la ejecución del flujo de trabajo y el commit que lo generaron. Para comprobar un archivo descargado con [GitHub CLI](https://cli.github.com):
 
 ```sh
 gh attestation verify RestGuard_<versión>_x64.exe --repo HansTanzi/RestGuard
@@ -332,7 +335,7 @@ Notas:
 Entre descansos, sí: elige «Salir» en el menú de la bandeja. Durante un descanso, o mientras quede pendiente un descanso aplazado, «Salir» está desactivado.
 
 **¿Y si toca un descanso en mitad de una reunión?**
-En Medio y Bajo, el descanso espera mientras Zoom, Microsoft Teams, Webex o Tencent Meeting están en primer plano (Windows, macOS; en Windows también mientras usan el micrófono). Si el descanso ya empezó, haz clic en «Estoy en una reunión…» para que te lo recuerde en 15 minutos. En Alto, los descansos no esperan.
+En Medio y Bajo, el descanso espera mientras Zoom, Microsoft Teams, Webex o Tencent Meeting están en primer plano (Windows, macOS; en Windows también mientras usan el micrófono). Si el descanso ya empezó, haz clic en «Estoy en una reunión…» para que te lo recuerde en una hora. En Alto, los descansos no esperan.
 
 **Estoy con algo urgente. ¿Perderé mi trabajo?**
 Aplaza el descanso 5 minutos (hasta 3 veces en Medio y Bajo, una vez en Alto), o en Medio y Bajo usa el modo urgente para reducir la superposición y guardar tu trabajo mientras la cuenta atrás sigue.

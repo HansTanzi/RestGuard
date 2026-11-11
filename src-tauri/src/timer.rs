@@ -6,7 +6,7 @@ use serde::Serialize;
 use std::time::{Duration, Instant};
 
 /// How long after clicking "I'm in a meeting" to remind again; matches the button text in src/lib/i18n.ts
-pub const MEETING_SNOOZE: Duration = Duration::from_secs(15 * 60);
+pub const MEETING_SNOOZE: Duration = Duration::from_secs(60 * 60);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -1013,8 +1013,8 @@ mod tests {
         assert_eq!(snap.meeting_app, None);
 
         // Must detect again on the next break
-        assert_eq!(t.tick(now + 15 * MIN), Some(TimerEvent::RestStarted));
-        assert!(!t.in_meeting(now + 15 * MIN));
+        assert_eq!(t.tick(now + MEETING_SNOOZE), Some(TimerEvent::RestStarted));
+        assert!(!t.in_meeting(now + MEETING_SNOOZE));
     }
 
     #[test]

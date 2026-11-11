@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#インストール"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#ライセンス"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT、Scoop、Linux での Homebrew、ポータブル版のダウンロードは[インストール](#インストール)を参照してください。
+Microsoft Store、APT、Scoop、Linux での Homebrew、ポータブル版のダウンロードは[インストール](#インストール)を参照してください。
 
 ## RestGuard を選ぶ理由
 
@@ -92,7 +93,7 @@ RestGuard は、休むべきだとわかっていてもつい先延ばしにし�
 
 ### 大事なときは邪魔をしない
 
-- 会議の検出（Windows、macOS）：Zoom、Microsoft Teams、Webex、Tencent Meeting が前面にある間（Windows ではマイクを使用している間も）、休憩は会議が終わるまで待ちます。休憩中に「〇〇 で会議中です」をクリックすると 15 分後に再通知されます
+- 会議の検出（Windows、macOS）：Zoom、Microsoft Teams、Webex、Tencent Meeting が前面にある間（Windows ではマイクを使用している間も）、休憩は会議が終わるまで待ちます。休憩中に「〇〇 で会議中です」をクリックすると 1 時間後に再通知されます
 - アイドル検出：キーボードやマウスの入力が 5 分間ないと離席中とみなし、作業のカウントダウンを一時停止します。休憩時間と同じだけ離れていれば休憩したことになるため、戻ってすぐに休憩させられることはありません
 
 ### 休憩の終わりを見逃さない
@@ -109,7 +110,7 @@ RestGuard は、休むべきだとわかっていてもつい先延ばしにし�
 
 ### その他
 
-- クロスプラットフォーム：Windows、macOS、Linux に対応し、WinGet、Scoop、Homebrew、APT でインストール・アップデートできます（[インストール](#インストール)を参照）
+- クロスプラットフォーム：Windows、macOS、Linux に対応し、Microsoft Store、WinGet、Scoop、Homebrew、APT でインストール・アップデートできます（[インストール](#インストール)を参照）
 - トレイメニュー：残り時間、今すぐ休憩、設定、ログイン時に起動、強制プランの切り替え
 - 単一インスタンス
 - 寛容な MIT / Apache-2.0 デュアルライセンスの無料オープンソース（[ライセンス](#ライセンス)を参照）
@@ -137,7 +138,9 @@ RestGuard は、休むべきだとわかっていてもつい先延ばしにし�
 
 ### Windows
 
-[WinGet](https://learn.microsoft.com/windows/package-manager/winget/) でインストール：
+[Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0) から入手できます（自動アップデート）。
+
+または [WinGet](https://learn.microsoft.com/windows/package-manager/winget/) でインストール：
 
 ```powershell
 winget install HansTanzi.RestGuard
@@ -211,7 +214,7 @@ brew install --cask hanstanzi/tap/restguard
 
 ### ダウンロードの検証
 
-v0.1.14 より後のリリースファイルは GitHub Actions でビルドされ、各ファイルとそれをビルドしたワークフロー実行・コミットを結び付ける署名付きの[ビルド来歴証明（build provenance attestation）](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)が付いています。[GitHub CLI](https://cli.github.com) でダウンロードしたファイルを検証するには：
+v0.1.14 より後のリリースファイルは GitHub Actions によってソースコードから自動でビルドされ、各ファイルとそれをビルドしたワークフロー実行・コミットを結び付ける署名付きの[ビルド来歴証明（build provenance attestation）](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)が付いています。[GitHub CLI](https://cli.github.com) でダウンロードしたファイルを検証するには：
 
 ```sh
 gh attestation verify RestGuard_<バージョン>_x64.exe --repo HansTanzi/RestGuard
@@ -332,7 +335,7 @@ movable = false          # 全画面でないとき、同じ画面内でオー�
 休憩と休憩の間なら、トレイメニューの「終了」で終了できます。休憩中や、延期した休憩がまだ残っている間は「終了」は使えません。
 
 **会議中に休憩の時間になったら？**
-「中」と「低」では、Zoom、Microsoft Teams、Webex、Tencent Meeting が前面にある間（Windows、macOS。Windows ではマイクを使用している間も）休憩は待ちます。すでに休憩が始まっている場合は「… で会議中です」をクリックすると、15 分後に再通知されます。「高」では休憩は待ちません。
+「中」と「低」では、Zoom、Microsoft Teams、Webex、Tencent Meeting が前面にある間（Windows、macOS。Windows ではマイクを使用している間も）休憩は待ちます。すでに休憩が始まっている場合は「… で会議中です」をクリックすると、1 時間後に再通知されます。「高」では休憩は待ちません。
 
 **急ぎの作業中です。作業内容は失われますか？**
 休憩を 5 分延期できます（「中」と「低」は 3 回まで、「高」は 1 回）。「中」と「低」では緊急モードでオーバーレイを縮小し、カウントダウンを続けたまま作業を保存することもできます。

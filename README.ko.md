@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#설치"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#라이선스"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT, Scoop, Linux용 Homebrew, 포터블 다운로드는 [설치](#설치)를 참고하세요.
+Microsoft Store, APT, Scoop, Linux용 Homebrew, 포터블 다운로드는 [설치](#설치)를 참고하세요.
 
 ## 왜 RestGuard인가
 
@@ -92,7 +93,7 @@ RestGuard는 쉬어야 한다는 걸 알면서도 자꾸 미루는 사람을 위
 
 ### 중요한 순간에는 방해하지 않음
 
-- 회의 감지(Windows, macOS): Zoom, Microsoft Teams, Webex, Tencent Meeting이 앞에 떠 있는 동안(Windows에서는 마이크를 사용하는 동안에도) 휴식은 회의가 끝날 때까지 기다립니다. 휴식 중에 "… 회의 중이에요"를 클릭하면 15분 후에 다시 알려 줍니다
+- 회의 감지(Windows, macOS): Zoom, Microsoft Teams, Webex, Tencent Meeting이 앞에 떠 있는 동안(Windows에서는 마이크를 사용하는 동안에도) 휴식은 회의가 끝날 때까지 기다립니다. 휴식 중에 "… 회의 중이에요"를 클릭하면 1시간 후에 다시 알려 줍니다
 - 자리 비움 감지: 키보드나 마우스 입력이 5분 동안 없으면 자리를 비운 것으로 보고 작업 카운트다운을 멈춥니다. 휴식 시간만큼 자리를 비웠다면 휴식을 마친 것으로 치기 때문에, 돌아오자마자 휴식하라고 하지 않습니다
 
 ### 휴식이 끝나는 순간을 놓치지 않음
@@ -109,7 +110,7 @@ RestGuard는 쉬어야 한다는 걸 알면서도 자꾸 미루는 사람을 위
 
 ### 그 밖에
 
-- 크로스 플랫폼: Windows, macOS, Linux를 지원하며 WinGet, Scoop, Homebrew, APT로 설치와 업데이트가 가능합니다([설치](#설치) 참고)
+- 크로스 플랫폼: Windows, macOS, Linux를 지원하며 Microsoft Store, WinGet, Scoop, Homebrew, APT로 설치와 업데이트가 가능합니다([설치](#설치) 참고)
 - 트레이 메뉴: 남은 시간, 지금 휴식, 설정, 로그인 시 시작, 강제 프로필 전환
 - 단일 인스턴스
 - 관대한 MIT / Apache-2.0 이중 라이선스의 무료 오픈 소스([라이선스](#라이선스) 참고)
@@ -137,7 +138,9 @@ RestGuard는 쉬어야 한다는 걸 알면서도 자꾸 미루는 사람을 위
 
 ### Windows
 
-[WinGet](https://learn.microsoft.com/windows/package-manager/winget/)으로 설치:
+[Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0)에서 받을 수 있으며 자동으로 업데이트됩니다.
+
+또는 [WinGet](https://learn.microsoft.com/windows/package-manager/winget/)으로 설치:
 
 ```powershell
 winget install HansTanzi.RestGuard
@@ -211,7 +214,7 @@ brew install --cask hanstanzi/tap/restguard
 
 ### 다운로드 검증
 
-v0.1.14 이후의 릴리스 파일은 GitHub Actions로 빌드되며, 각 파일을 빌드한 워크플로 실행 및 커밋과 연결하는 서명된 [빌드 출처 증명(build provenance attestation)](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)이 붙어 있습니다. [GitHub CLI](https://cli.github.com)로 내려받은 파일을 확인하려면:
+v0.1.14 이후의 릴리스 파일은 GitHub Actions로 소스 코드에서 자동으로 빌드되며, 각 파일을 빌드한 워크플로 실행 및 커밋과 연결하는 서명된 [빌드 출처 증명(build provenance attestation)](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)이 붙어 있습니다. [GitHub CLI](https://cli.github.com)로 내려받은 파일을 확인하려면:
 
 ```sh
 gh attestation verify RestGuard_<버전>_x64.exe --repo HansTanzi/RestGuard
@@ -332,7 +335,7 @@ movable = false          # 전체 화면이 아닐 때 오버레이를 해당 �
 휴식과 휴식 사이에는 가능합니다. 트레이 메뉴에서 "종료"를 선택하세요. 휴식 중이거나 미룬 휴식이 아직 남아 있는 동안에는 "종료"가 비활성화됩니다.
 
 **회의 중에 휴식 시간이 되면요?**
-보통과 낮음에서는 Zoom, Microsoft Teams, Webex, Tencent Meeting이 앞에 떠 있는 동안(Windows, macOS. Windows에서는 마이크를 사용하는 동안에도) 휴식이 기다립니다. 이미 휴식이 시작됐다면 "… 회의 중이에요"를 클릭해 15분 후에 다시 알림을 받으세요. 높음에서는 휴식이 기다리지 않습니다.
+보통과 낮음에서는 Zoom, Microsoft Teams, Webex, Tencent Meeting이 앞에 떠 있는 동안(Windows, macOS. Windows에서는 마이크를 사용하는 동안에도) 휴식이 기다립니다. 이미 휴식이 시작됐다면 "… 회의 중이에요"를 클릭해 1시간 후에 다시 알림을 받으세요. 높음에서는 휴식이 기다리지 않습니다.
 
 **급한 일을 하는 중이에요. 작업을 잃게 되나요?**
 휴식을 5분 미룰 수 있습니다(보통과 낮음은 최대 3번, 높음은 1번). 보통과 낮음에서는 긴급 모드로 오버레이를 줄여, 카운트다운이 계속되는 동안 작업을 저장할 수도 있습니다.

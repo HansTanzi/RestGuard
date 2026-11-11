@@ -24,6 +24,7 @@ struct TrayItems {
     autostart: CheckMenuItem<Wry>,
     /// Enforcement profile submenu; the list changes with the config and is rebuilt wholesale by refresh_levels
     level_menu: Submenu<Wry>,
+    lang_menu: Submenu<Wry>,
     /// Same order as Lang::ALL
     langs: Vec<CheckMenuItem<Wry>>,
     about: MenuItem<Wry>,
@@ -106,6 +107,15 @@ fn lang_text(lang: Lang) -> &'static str {
     match lang {
         Lang::Auto => t(&text::FOLLOW_SYSTEM),
         lang => lang.native_name(),
+    }
+}
+
+/// "Language / <the word in the current language>", or just "Language" when the current language is English
+fn lang_menu_text() -> String {
+    let en = text::LANG_MENU.en;
+    match t(&text::LANG_MENU) {
+        local if local == en => en.to_string(),
+        local => format!("{en} / {local}"),
     }
 }
 
@@ -196,7 +206,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
     let separator = PredefinedMenuItem::separator(app)?;
     let mut lang_entries: Vec<&dyn IsMenuItem<Wry>> = vec![&langs[0], &separator];
     lang_entries.extend(langs[1..].iter().map(|item| item as &dyn IsMenuItem<Wry>));
-    let lang_menu = Submenu::with_items(app, "语言 / Language", true, &lang_entries)?;
+    let lang_menu = Submenu::with_items(app, lang_menu_text(), true, &lang_entries)?;
     let level_menu = Submenu::new(app, level_menu_text(), true)?;
     fill_levels(app, &level_menu)?;
     let about = MenuItem::with_id(app, "about", about_text(), true, None::<&str>)?;
@@ -249,6 +259,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         settings,
         autostart,
         level_menu,
+        lang_menu,
         langs,
         about,
         quit,
@@ -266,6 +277,7 @@ pub fn refresh_language(app: &AppHandle) {
     let _ = items.settings.set_text(settings_text());
     let _ = items.autostart.set_text(autostart_text());
     let _ = items.level_menu.set_text(level_menu_text());
+    let _ = items.lang_menu.set_text(lang_menu_text());
     let _ = items.about.set_text(about_text());
     let _ = items.quit.set_text(quit_text());
     // Clicking a CheckMenuItem toggles its check automatically, so reset all of them to the actual selection here

@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#इंस्टॉल-करें"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#लाइसेंस"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT, Scoop, Linux पर Homebrew और पोर्टेबल डाउनलोड की जानकारी [इंस्टॉल करें](#इंस्टॉल-करें) में है।
+Microsoft Store, APT, Scoop, Linux पर Homebrew और पोर्टेबल डाउनलोड की जानकारी [इंस्टॉल करें](#इंस्टॉल-करें) में है।
 
 ## RestGuard क्यों
 
@@ -92,7 +93,7 @@ RestGuard उन लोगों के लिए है जो जानते 
 
 ### ज़रूरी समय पर बीच में नहीं आता
 
-- मीटिंग पहचान (Windows, macOS): जब Zoom, Microsoft Teams, Webex या Tencent Meeting सामने चल रहा हो (या Windows पर माइक्रोफ़ोन का उपयोग कर रहा हो), ब्रेक मीटिंग खत्म होने तक इंतज़ार करता है; ब्रेक के दौरान आप “मैं मीटिंग में हूँ” पर क्लिक करके 15 मिनट बाद याद दिलवा सकते हैं
+- मीटिंग पहचान (Windows, macOS): जब Zoom, Microsoft Teams, Webex या Tencent Meeting सामने चल रहा हो (या Windows पर माइक्रोफ़ोन का उपयोग कर रहा हो), ब्रेक मीटिंग खत्म होने तक इंतज़ार करता है; ब्रेक के दौरान आप “मैं मीटिंग में हूँ” पर क्लिक करके 1 घंटे बाद याद दिलवा सकते हैं
 - निष्क्रियता पहचान: 5 मिनट तक कीबोर्ड या माउस इनपुट न होने पर आपको दूर माना जाता है और काम की उलटी गिनती रुक जाती है; एक ब्रेक जितनी देर दूर रहना पूरा ब्रेक माना जाता है, इसलिए लौटते ही आपको आराम पर नहीं भेजा जाता
 
 ### ब्रेक का अंत कभी न चूकें
@@ -109,7 +110,7 @@ RestGuard उन लोगों के लिए है जो जानते 
 
 ### और भी बहुत कुछ
 
-- क्रॉस-प्लेटफ़ॉर्म: Windows, macOS और Linux, जिसे WinGet, Scoop, Homebrew और APT से इंस्टॉल और अपडेट किया जा सकता है (देखें [इंस्टॉल करें](#इंस्टॉल-करें))
+- क्रॉस-प्लेटफ़ॉर्म: Windows, macOS और Linux, जिसे Microsoft Store, WinGet, Scoop, Homebrew और APT से इंस्टॉल और अपडेट किया जा सकता है (देखें [इंस्टॉल करें](#इंस्टॉल-करें))
 - ट्रे मेनू: बचा हुआ समय, अभी आराम करें, सेटिंग्स, लॉगिन पर शुरू करें, सख़्ती योजना बदलें
 - सिंगल इंस्टेंस
 - अनुमेय MIT / Apache-2.0 दोहरे लाइसेंस के तहत मुफ़्त और ओपन सोर्स (देखें [लाइसेंस](#लाइसेंस))
@@ -137,7 +138,9 @@ RestGuard उन लोगों के लिए है जो जानते 
 
 ### Windows
 
-[WinGet](https://learn.microsoft.com/windows/package-manager/winget/) से इंस्टॉल करें:
+[Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0) से पाएँ; यह अपने आप अपडेट होता है।
+
+या [WinGet](https://learn.microsoft.com/windows/package-manager/winget/) से इंस्टॉल करें:
 
 ```powershell
 winget install HansTanzi.RestGuard
@@ -211,7 +214,7 @@ brew install --cask hanstanzi/tap/restguard
 
 ### डाउनलोड सत्यापित करें
 
-v0.1.14 के बाद की Release फ़ाइलें GitHub Actions से बनती हैं और उनके साथ हस्ताक्षरित [बिल्ड प्रोवेनेंस अटेस्टेशन](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) होता है, जो हर फ़ाइल को उसे बनाने वाले वर्कफ़्लो रन और कमिट से जोड़ता है। डाउनलोड की गई फ़ाइल को [GitHub CLI](https://cli.github.com) से जाँचने के लिए:
+v0.1.14 के बाद की Release फ़ाइलें GitHub Actions द्वारा सोर्स कोड से अपने-आप बनती हैं और उनके साथ हस्ताक्षरित [बिल्ड प्रोवेनेंस अटेस्टेशन](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) होता है, जो हर फ़ाइल को उसे बनाने वाले वर्कफ़्लो रन और कमिट से जोड़ता है। डाउनलोड की गई फ़ाइल को [GitHub CLI](https://cli.github.com) से जाँचने के लिए:
 
 ```sh
 gh attestation verify RestGuard_<version>_x64.exe --repo HansTanzi/RestGuard
@@ -332,7 +335,7 @@ movable = false          # पूरी स्क्रीन पर न हो�
 दो ब्रेक के बीच, हाँ: ट्रे मेनू में “बंद करें” चुनें। ब्रेक के दौरान, या जब तक टाला गया ब्रेक बाकी है, “बंद करें” अक्षम रहता है।
 
 **अगर मीटिंग के दौरान ब्रेक आ जाए तो?**
-मध्यम और निम्न सख़्ती पर, जब तक Zoom, Microsoft Teams, Webex या Tencent Meeting सामने चल रहा हो (Windows, macOS; Windows पर माइक्रोफ़ोन के उपयोग के दौरान भी), ब्रेक इंतज़ार करता है। अगर ब्रेक शुरू हो चुका है, तो “मैं मीटिंग में हूँ” पर क्लिक करें और 15 मिनट बाद फिर याद दिलाया जाएगा। उच्च सख़्ती पर ब्रेक इंतज़ार नहीं करते।
+मध्यम और निम्न सख़्ती पर, जब तक Zoom, Microsoft Teams, Webex या Tencent Meeting सामने चल रहा हो (Windows, macOS; Windows पर माइक्रोफ़ोन के उपयोग के दौरान भी), ब्रेक इंतज़ार करता है। अगर ब्रेक शुरू हो चुका है, तो “मैं मीटिंग में हूँ” पर क्लिक करें और 1 घंटे बाद फिर याद दिलाया जाएगा। उच्च सख़्ती पर ब्रेक इंतज़ार नहीं करते।
 
 **मैं किसी ज़रूरी काम के बीच में हूँ। क्या मेरा काम खो जाएगा?**
 ब्रेक को 5 मिनट टालें (मध्यम और निम्न पर 3 बार तक, उच्च पर एक बार), या मध्यम और निम्न पर आपात मोड से ओवरले छोटा करके काम सहेजें, जबकि उलटी गिनती चलती रहती है।

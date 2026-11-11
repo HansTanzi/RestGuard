@@ -7,18 +7,24 @@ Diferente dos lembretes de pausa comuns, o RestGuard tem três níveis de rigor.
 • Vários monitores: todas as telas são cobertas
 • Durante a pausa não dá para fechar a sobreposição (Alt+F4 não funciona) nem sair pela bandeja do sistema
 • Adie por 5 minutos, até 3 vezes; a contagem é zerada após uma pausa completa
-• Modo urgente: quando algo não pode esperar, reduza temporariamente a sobreposição para salvar seu trabalho enquanto a contagem regressiva continua
+• Modo urgente: quando algo não pode esperar, reduza temporariamente a sobreposição para salvar seu trabalho; o tempo com a sobreposição reduzida não conta como pausa, e depois de 2 minutos ela volta ao tamanho normal
+• Bloqueio automático: se quiser, bloqueia o computador alguns minutos depois do início da pausa, para você se levantar de verdade e manter seus dados protegidos; ao desbloquear, a sobreposição mostra o restante da pausa
 
 ■ Três níveis de rigor para diferentes situações
 • Rigor alto: para quem é exigente consigo mesmo, mas sempre quer "mais cinco minutos". A sobreposição ocupa a tela inteira e não pode ser movida, só é possível adiar uma vez e não há modo urgente
 • Rigor médio (padrão): para o trabalho do dia a dia. Até 3 adiamentos, com modo urgente e detecção de reuniões. Você ainda consegue trabalhar, mas fica bem menos confortável, um incentivo para fazer a pausa
 • Rigor baixo: para quem só quer um lembrete gentil. A sobreposição cobre 80% da tela e você pode pular a pausa
 
+■ Acompanha o ritmo do seu dia
+• Pausa para o almoço: na hora do almoço, tira você da tela pelo tempo que você escolher. Almoço longo e quer assistir a um vídeo enquanto come? Depois de descansar o equivalente a uma pausa normal, o computador volta a ser seu
+• Suas próprias pausas fixas: adicione um café, uma caminhada ou um alongamento nos horários que quiser, quantos quiser. Uma pausa normal que cairia logo antes espera por ela, assim você nunca descansa duas vezes seguidas
+• Saia no horário: defina quando seu expediente termina e ele não manda você para uma pausa na última meia hora, para você fechar tudo e ir para casa; se ficar até mais tarde, a pausa vem mesmo assim
+
 ■ Altamente personalizável
 Crie perfis personalizados com base em qualquer nível integrado e ajuste cada opção: número de adiamentos, se é permitido sair ou pular pausas, modo urgente, cobertura da sobreposição (10%–100%), se ela pode ser movida e detecção de apps de reunião. Salve vários perfis e alterne entre eles quando quiser.
 
 ■ Não atrapalha o que importa
-• Detecção de reuniões: quando Zoom, Microsoft Teams, Webex ou Tencent Meeting estão em primeiro plano, ou o microfone está em uso, a pausa espera a reunião terminar. Durante uma pausa, você também pode clicar em "Estou em uma reunião" para ser lembrado de novo em 15 minutos
+• Detecção de reuniões: quando Zoom, Microsoft Teams, Webex ou Tencent Meeting estão em primeiro plano, ou o microfone está em uso, a pausa espera a reunião terminar. Durante uma pausa, você também pode clicar em "Estou em uma reunião" para ser lembrado de novo em uma hora
 • Detecção de inatividade: 5 minutos sem usar teclado ou mouse contam como ausência, e a contagem do trabalho é pausada; se você ficar ausente pelo tempo de uma pausa, isso conta como pausa
 
 ■ Não perca o fim da pausa, mesmo longe da mesa
@@ -30,7 +36,8 @@ Crie perfis personalizados com base em qualquer nível integrado e ajuste cada o
 Feito com Rust + Tauri, usa o WebView integrado ao sistema e quase não consome recursos em segundo plano.
 
 ■ E mais
-• Menu da bandeja: veja o tempo restante, faça a pausa antes, abra as configurações, inicie com o sistema e troque o perfil de rigor
+• Menu da bandeja: veja o tempo restante (inclusive quando a próxima é uma pausa fixa, como o almoço), faça a pausa antes, abra as configurações, inicie com o sistema e troque o perfil de rigor
+• Tema claro ou escuro, você escolhe
 • 13 idiomas: português, inglês, chinês simplificado, hindi, espanhol, árabe, francês, bengali, alemão, japonês, italiano, coreano e indonésio
 • Gratuito e de código aberto, com licença dupla MIT / Apache-2.0
 • Privacidade em primeiro lugar: não coleta dados, sem contas, análises ou telemetria; só se conecta à internet se você ativar as notificações no celular

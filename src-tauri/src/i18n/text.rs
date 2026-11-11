@@ -150,6 +150,23 @@ pub const LEVEL_LOW: Tr = Tr {
     id: "Ketegasan rendah",
 };
 
+/// The word "Language" in each language; the tray shows it after the English word so the menu stays findable in any language
+pub const LANG_MENU: Tr = Tr {
+    zh: "语言",
+    en: "Language",
+    hi: "भाषा",
+    es: "Idioma",
+    ar: "اللغة",
+    fr: "Langue",
+    bn: "ভাষা",
+    pt: "Idioma",
+    de: "Sprache",
+    ja: "言語",
+    it: "Lingua",
+    ko: "언어",
+    id: "Bahasa",
+};
+
 pub const FOLLOW_SYSTEM: Tr = Tr {
     zh: "跟随系统",
     en: "Follow system",

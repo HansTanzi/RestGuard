@@ -7,18 +7,24 @@ Unlike typical break reminders, RestGuard has three enforcement levels. It can g
 • Multi-monitor support: every screen is covered
 • The overlay can't be closed during a break (Alt+F4 doesn't work), and you can't quit from the tray
 • Postpone for 5 minutes, up to 3 times; the count resets after a full break
-• Urgent mode: when something can't wait, temporarily shrink the overlay to save your work while the countdown keeps running
+• Urgent mode: when something can't wait, temporarily shrink the overlay to save your work; time with the overlay shrunk doesn't count as rest, and it returns to full size after 2 minutes
+• Auto-lock: optionally lock the computer a few minutes into a break, so you really get up and your data stays protected; after unlocking, the overlay shows the rest of the break
 
 ■ Three enforcement levels for different situations
 • High enforcement: for people who are strict with themselves but always want "five more minutes". The overlay is full-screen and can't be moved, you can postpone only once, and there's no urgent mode
 • Medium enforcement (default): for everyday work. Postpone up to 3 times, with urgent mode and meeting detection. You can still work, but it gets noticeably less pleasant, nudging you to take your break
 • Low enforcement: for people who just want a gentle reminder. The overlay covers 80% of the screen, and you can skip a break
 
+■ Fits the rhythm of your day
+• Lunch break: at lunchtime it sends you away from the screen, for as long as you choose. Long lunch and want to watch a video while you eat? Once you've rested as long as a regular break, the computer is yours again
+• Your own fixed breaks: add a tea break, a walk or some stretching at times you pick, as many as you like. A regular break due just before one waits for it, so you never rest twice in a row
+• Leave on time: set when your workday ends, and it won't send you on a break in the last half hour, so you can wrap up and go home; working late? Then the break still comes
+
 ■ Highly customizable
 Create custom profiles based on any built-in level and fine-tune each setting: number of postpones, whether you can exit or skip breaks, urgent mode, overlay coverage (10%–100%), whether the overlay can be moved, and meeting app detection. Save multiple profiles and switch between them anytime.
 
 ■ Stays out of the way of real work
-• Meeting detection: when Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground, or your microphone is in use, the break waits until the meeting is over. During a break you can also click "I'm in a meeting" to be reminded again in 15 minutes
+• Meeting detection: when Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground, or your microphone is in use, the break waits until the meeting is over. During a break you can also click "I'm in a meeting" to be reminded again in an hour
 • Idle detection: 5 minutes without keyboard or mouse activity counts as being away, and the work countdown pauses; if you're away as long as a break, it counts as a break
 
 ■ Never miss the end of a break, even away from your desk
@@ -30,7 +36,8 @@ Create custom profiles based on any built-in level and fine-tune each setting: n
 Built with Rust + Tauri, RestGuard uses the system's built-in WebView and barely uses any resources while running in the background.
 
 ■ More
-• Tray menu: see the time remaining, take a break early, open settings, launch at startup, switch enforcement profiles
+• Tray menu: see the time remaining (including when the next break is a fixed one such as lunch), take a break early, open settings, launch at startup, switch enforcement profiles
+• Light or dark theme, your choice
 • 13 languages: English, Simplified Chinese, Hindi, Spanish, Arabic, French, Bengali, Portuguese, German, Japanese, Italian, Korean and Indonesian
 • Free and open source, dual-licensed under MIT / Apache-2.0
 • Privacy first: no data collection, no accounts, no analytics or telemetry; it only goes online when phone notifications are turned on

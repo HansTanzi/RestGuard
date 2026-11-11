@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#instalasi"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#lisensi"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT, Scoop, Homebrew di Linux, dan unduhan portabel dibahas di [Instalasi](#instalasi).
+Microsoft Store, APT, Scoop, Homebrew di Linux, dan unduhan portabel dibahas di [Instalasi](#instalasi).
 
 ## Mengapa RestGuard
 
@@ -92,7 +93,7 @@ Simpan profil kustom sebanyak yang Anda mau dan ganti kapan saja. Durasi kerja, 
 
 ### Tidak mengganggu saat penting
 
-- Deteksi rapat (Windows, macOS): selama Zoom, Microsoft Teams, Webex, atau Tencent Meeting berada di latar depan (atau, di Windows, memakai mikrofon), istirahat menunggu sampai rapat selesai; saat istirahat Anda juga bisa mengklik “Saya sedang rapat” agar diingatkan 15 menit lagi
+- Deteksi rapat (Windows, macOS): selama Zoom, Microsoft Teams, Webex, atau Tencent Meeting berada di latar depan (atau, di Windows, memakai mikrofon), istirahat menunggu sampai rapat selesai; saat istirahat Anda juga bisa mengklik “Saya sedang rapat” agar diingatkan 1 jam lagi
 - Deteksi menganggur: setelah 5 menit tanpa input keyboard atau mouse, Anda dianggap pergi dan hitung mundur kerja dijeda; pergi selama satu masa istirahat dihitung sebagai istirahat penuh, jadi Anda tidak disuruh beristirahat tepat setelah kembali
 
 ### Jangan lewatkan akhir istirahat
@@ -109,7 +110,7 @@ Simpan profil kustom sebanyak yang Anda mau dan ganti kapan saja. Durasi kerja, 
 
 ### Dan lainnya
 
-- Lintas platform: Windows, macOS, dan Linux, bisa dipasang dan diperbarui melalui WinGet, Scoop, Homebrew, dan APT (lihat [Instalasi](#instalasi))
+- Lintas platform: Windows, macOS, dan Linux, bisa dipasang dan diperbarui melalui Microsoft Store, WinGet, Scoop, Homebrew, dan APT (lihat [Instalasi](#instalasi))
 - Menu baki sistem: sisa waktu, istirahat sekarang, pengaturan, mulai saat masuk, ganti profil ketegasan
 - Satu instans
 - Gratis dan sumber terbuka di bawah lisensi ganda permisif MIT / Apache-2.0 (lihat [Lisensi](#lisensi))
@@ -137,7 +138,9 @@ Simpan profil kustom sebanyak yang Anda mau dan ganti kapan saja. Durasi kerja, 
 
 ### Windows
 
-Pasang dengan [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
+Dapatkan dari [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0); pembaruan berjalan otomatis.
+
+Atau pasang dengan [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
 
 ```powershell
 winget install HansTanzi.RestGuard
@@ -211,7 +214,7 @@ Lapisan memerlukan X11 (lihat [Keterbatasan platform](#keterbatasan-platform)).
 
 ### Verifikasi unduhan
 
-Berkas Release setelah v0.1.14 dibuat oleh GitHub Actions dan membawa [atestasi asal build](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) yang ditandatangani, yang menautkan setiap berkas ke proses workflow dan commit yang membuatnya. Untuk memeriksa berkas yang diunduh dengan [GitHub CLI](https://cli.github.com):
+Berkas Release setelah v0.1.14 dibuat otomatis dari kode sumber oleh GitHub Actions dan membawa [atestasi asal build](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) yang ditandatangani, yang menautkan setiap berkas ke proses workflow dan commit yang membuatnya. Untuk memeriksa berkas yang diunduh dengan [GitHub CLI](https://cli.github.com):
 
 ```sh
 gh attestation verify RestGuard_<version>_x64.exe --repo HansTanzi/RestGuard
@@ -332,7 +335,7 @@ Catatan:
 Di antara istirahat, bisa: pilih “Keluar” di menu baki sistem. Saat istirahat, atau selama istirahat yang ditunda masih terutang, “Keluar” dinonaktifkan.
 
 **Bagaimana jika waktu istirahat tiba saat rapat?**
-Pada Ketegasan sedang dan rendah, istirahat menunggu selama Zoom, Microsoft Teams, Webex, atau Tencent Meeting berada di latar depan (Windows, macOS; di Windows juga saat memakai mikrofon). Jika istirahat sudah dimulai, klik “Saya sedang rapat” agar diingatkan 15 menit lagi. Pada Ketegasan tinggi, istirahat tidak menunggu.
+Pada Ketegasan sedang dan rendah, istirahat menunggu selama Zoom, Microsoft Teams, Webex, atau Tencent Meeting berada di latar depan (Windows, macOS; di Windows juga saat memakai mikrofon). Jika istirahat sudah dimulai, klik “Saya sedang rapat” agar diingatkan 1 jam lagi. Pada Ketegasan tinggi, istirahat tidak menunggu.
 
 **Saya sedang mengerjakan hal mendesak. Apakah pekerjaan saya akan hilang?**
 Tunda istirahat 5 menit (hingga 3 kali pada Ketegasan sedang dan rendah, sekali pada Ketegasan tinggi), atau pada Ketegasan sedang dan rendah gunakan mode darurat untuk memperkecil lapisan dan menyimpan pekerjaan sementara hitung mundur tetap berjalan.

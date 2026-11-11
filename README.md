@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#install"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#license"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT, Scoop, Homebrew on Linux and portable downloads are covered in [Install](#install).
+The Microsoft Store, APT, Scoop, Homebrew on Linux and portable downloads are covered in [Install](#install).
 
 ## Why RestGuard
 
@@ -92,7 +93,7 @@ Keep as many custom profiles as you like and switch any time. Work, break, postp
 
 ### Stays out of the way when it matters
 
-- Meeting detection (Windows, macOS): while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (or, on Windows, using the microphone), the break waits until the meeting is over; during a break you can also click "I'm in a meeting" to be reminded in 15 minutes
+- Meeting detection (Windows, macOS): while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (or, on Windows, using the microphone), the break waits until the meeting is over; during a break you can also click "I'm in a meeting" to be reminded in an hour
 - Idle detection: after 5 minutes without keyboard or mouse input you count as away and the work countdown pauses; being away as long as a break counts as a full break, so you aren't sent to rest right after coming back
 
 ### Never miss the end of a break
@@ -109,7 +110,7 @@ Keep as many custom profiles as you like and switch any time. Work, break, postp
 
 ### And more
 
-- Cross-platform: Windows, macOS and Linux, installable and updatable through WinGet, Scoop, Homebrew and APT (see [Install](#install))
+- Cross-platform: Windows, macOS and Linux, installable and updatable through the Microsoft Store, WinGet, Scoop, Homebrew and APT (see [Install](#install))
 - Tray menu: time remaining, rest now, settings, start at login, switch enforcement profile
 - Single instance
 - Free and open source under the permissive MIT / Apache-2.0 dual license (see [License](#license))
@@ -137,7 +138,9 @@ Keep as many custom profiles as you like and switch any time. Work, break, postp
 
 ### Windows
 
-Install with [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
+Get it from the [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0); it updates automatically.
+
+Or install with [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
 
 ```powershell
 winget install HansTanzi.RestGuard
@@ -211,7 +214,7 @@ The overlay needs X11 (see [Platform limitations](#platform-limitations)).
 
 ### Verify downloads
 
-Release files after v0.1.14 are built by GitHub Actions and carry a signed [build provenance attestation](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) linking each file to the workflow run and commit that built it. To check a downloaded file with the [GitHub CLI](https://cli.github.com):
+Release files after v0.1.14 are built automatically from source by GitHub Actions and carry a signed [build provenance attestation](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) linking each file to the workflow run and commit that built it. To check a downloaded file with the [GitHub CLI](https://cli.github.com):
 
 ```sh
 gh attestation verify RestGuard_<version>_x64.exe --repo HansTanzi/RestGuard
@@ -332,7 +335,7 @@ Notes:
 Between breaks, yes: choose "Quit" in the tray menu. During a break, or while a postponed break is still owed, Quit is disabled.
 
 **What if a break comes up during a meeting?**
-On Medium and Low, the break waits while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (Windows, macOS; on Windows also while it uses the microphone). If a break has already started, click "I'm in a meeting" to be reminded in 15 minutes. On High, breaks don't wait.
+On Medium and Low, the break waits while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (Windows, macOS; on Windows also while it uses the microphone). If a break has already started, click "I'm in a meeting" to be reminded in an hour. On High, breaks don't wait.
 
 **I'm in the middle of something urgent. Will I lose my work?**
 Postpone the break by 5 minutes (up to 3 times on Medium and Low, once on High), or on Medium and Low use urgent mode to shrink the overlay and save your work while the countdown keeps running.

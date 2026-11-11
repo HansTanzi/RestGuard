@@ -126,17 +126,38 @@
       </div>
     </section>
 
-    <section id="features" class="band">
+    <section id="day" class="band">
+      <div class="wrap">
+        <h2 data-i18n="day.title">Breaks that fit your day</h2>
+        <p class="section-lead" data-i18n="day.lead">Your day already has a rhythm: lunch, an afternoon tea, the time you head home. RestGuard follows it, so breaks come when they make sense.</p>
+        <div class="features">
+          <article>
+            <h3 data-i18n="day.lunch.t">A real lunch break</h3>
+            <p data-i18n="day.lunch.d">Turn on the lunch break and RestGuard sends you away from the screen at lunchtime, for as long as you choose. Need to check something during a long lunch? Once a regular break's worth of rest is done, the computer is yours again.</p>
+          </article>
+          <article>
+            <h3 data-i18n="day.own.t">Breaks of your own</h3>
+            <p data-i18n="day.own.d">Add a tea break, a walk or a stretch at the times you choose, as many as you like. A regular break due just before one waits for it, so you never rest twice in a row.</p>
+          </article>
+          <article>
+            <h3 data-i18n="day.end.t">Leave on time</h3>
+            <p data-i18n="day.end.d">Tell it when your working day ends, and it won't send you on a break in the last half hour, so you can wrap up and go home. Working late? Then the break comes after all.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
       <div class="wrap">
       <h2 data-i18n="features.title">Built to make breaks happen</h2>
       <div class="features">
         <article>
           <h3 data-i18n="f.force.t">Breaks that actually happen</h3>
-          <p data-i18n="f.force.d">A 10-minute break after every 60 minutes of work, on every monitor. Alt+F4 does nothing, and you can't quit from the tray mid-break.</p>
+          <p data-i18n="f.force.d">A 10-minute break after every 60 minutes of work, on every monitor. Alt+F4 does nothing, and you can't quit from the tray mid-break. Want to be sure you get up? It can lock your screen too.</p>
         </article>
         <article>
           <h3 data-i18n="f.custom.t">Highly customizable</h3>
-          <p data-i18n="f.custom.d">Start a custom profile from any level and tune postpones, skipping, urgent mode, coverage and dragging. Keep as many as you like.</p>
+          <p data-i18n="f.custom.d">Start a custom profile from any level and tune postpones, skipping, urgent mode, coverage and dragging. Keep as many as you like. Light or dark theme, your pick.</p>
         </article>
         <article>
           <h3 data-i18n="f.meeting.t">Stays out of the way</h3>
@@ -151,7 +172,7 @@
           <p data-i18n="f.small.d">Rust + Tauri 2 on the system WebView. Downloads are only about 3–6 MB, dozens of times smaller than Electron-based alternatives, and it barely uses any resources in the background.</p>
         </article>
         <article>
-          <h3 data-i18n="f.lang.t">Speaks your language</h3>
+          <h3 data-i18n="f.lang.t">Supports your language</h3>
           <p data-i18n="f.lang.d">13 UI languages, following the system by default. Switch any time from the tray menu.</p>
         </article>
       </div>
@@ -169,7 +190,7 @@
       </div>
     </section>
 
-    <section id="compare">
+    <section id="compare" class="band">
       <div class="wrap">
         <h2 data-i18n="cmp.title">How it compares</h2>
         <div class="table-scroll">
@@ -236,10 +257,10 @@
       </div>
     </section>
 
-    <section id="install" class="band">
+    <section id="install">
       <div class="wrap">
         <h2 data-i18n="install.title">Install</h2>
-        <p class="section-lead" data-i18n="install.lead">Package managers keep RestGuard up to date. Direct downloads are portable and don't update on their own.</p>
+        <p class="section-lead" data-i18n="install.lead">The Microsoft Store and package managers keep RestGuard up to date. Direct downloads are portable and don't update on their own.</p>
 
         <div class="os-tabs" role="tablist">
           <button role="tab" data-os="windows">Windows</button>
@@ -248,6 +269,9 @@
         </div>
 
         <div class="os-panel" data-os="windows">
+          <h3>Microsoft Store</h3>
+          <p><a class="btn" href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0" data-i18n="install.store">Get it from Microsoft Store</a></p>
+          <p class="note" data-i18n="install.storeNote">Installs with one click and updates automatically.</p>
           <h3>WinGet</h3>
           <pre><code>winget install HansTanzi.RestGuard</code></pre>
           <h3>Scoop</h3>
@@ -283,7 +307,7 @@ sudo pacman -U ./RestGuard_*_x86_64.pkg.tar.zst      # Arch</code></pre>
 
         <details class="verify">
           <summary data-i18n="verify.title">Verify your download</summary>
-          <p data-i18n="verify.attest">Release files are built by GitHub Actions with a signed build provenance attestation. Check one with the GitHub CLI:</p>
+          <p data-i18n="verify.attest">Release files are built automatically from source by GitHub Actions with a signed build provenance attestation. Check one with the GitHub CLI:</p>
           <pre><code>gh attestation verify RestGuard_&lt;version&gt;_x64.exe --repo HansTanzi/RestGuard</code></pre>
           <p data-i18n="verify.sums">Or compare against SHA256SUMS.txt from the Release:</p>
           <pre><code>sha256sum -c SHA256SUMS.txt --ignore-missing          # Linux
@@ -293,7 +317,7 @@ Get-FileHash .\RestGuard_*_x64.exe                    # Windows</code></pre>
       </div>
     </section>
 
-    <section id="faq">
+    <section id="faq" class="band">
       <div class="wrap">
         <h2 data-i18n="faq.title">FAQ</h2>
         <div class="faq">
@@ -303,7 +327,7 @@ Get-FileHash .\RestGuard_*_x64.exe                    # Windows</code></pre>
           </details>
           <details>
             <summary data-i18n="faq.q2">What if a break comes up during a meeting?</summary>
-            <p data-i18n="faq.a2">On Medium and Low, the break waits while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (Windows, macOS; on Windows also while it uses the microphone). If a break has already started, click "I'm in a meeting" to be reminded in 15 minutes. On High, breaks don't wait.</p>
+            <p data-i18n="faq.a2">On Medium and Low, the break waits while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (Windows, macOS; on Windows also while it uses the microphone). If a break has already started, click "I'm in a meeting" to be reminded in an hour. On High, breaks don't wait.</p>
           </details>
           <details>
             <summary data-i18n="faq.q3">I'm in the middle of something urgent. Will I lose my work?</summary>
@@ -329,7 +353,7 @@ Get-FileHash .\RestGuard_*_x64.exe                    # Windows</code></pre>
       </div>
     </section>
 
-    <section id="contribute" class="band">
+    <section id="contribute">
       <div class="wrap">
         <h2 data-i18n="contrib.title">Contributing</h2>
         <p class="section-lead" data-i18n-html="contrib.lead">Bug reports, ideas, translations and pull requests are all welcome. <a href="https://github.com/HansTanzi/RestGuard/blob/HEAD/CONTRIBUTING.md">CONTRIBUTING.md</a> covers the development setup, checks and how to improve a translation; changes in each version are in <a href="https://github.com/HansTanzi/RestGuard/blob/HEAD/CHANGELOG.md">CHANGELOG.md</a>. Please report security issues privately as described in <a href="https://github.com/HansTanzi/RestGuard/blob/HEAD/SECURITY.md">SECURITY.md</a>.</p>

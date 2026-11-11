@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#installazione"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#licenza"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT, Scoop, Homebrew su Linux e i download portatili sono descritti in [Installazione](#installazione).
+Microsoft Store, APT, Scoop, Homebrew su Linux e i download portatili sono descritti in [Installazione](#installazione).
 
 ## Perché RestGuard
 
@@ -92,7 +93,7 @@ Tieni tutti i profili personalizzati che vuoi e cambiali quando vuoi. Le durate 
 
 ### Non ti intralcia quando conta
 
-- Rilevamento delle riunioni (Windows, macOS): mentre Zoom, Microsoft Teams, Webex o Tencent Meeting è in primo piano (o, su Windows, usa il microfono), la pausa aspetta la fine della riunione; durante una pausa puoi anche fare clic su “Sono in una riunione” per ricevere un promemoria tra 15 minuti
+- Rilevamento delle riunioni (Windows, macOS): mentre Zoom, Microsoft Teams, Webex o Tencent Meeting è in primo piano (o, su Windows, usa il microfono), la pausa aspetta la fine della riunione; durante una pausa puoi anche fare clic su “Sono in una riunione” per ricevere un promemoria tra un'ora
 - Rilevamento dell'inattività: dopo 5 minuti senza tastiera o mouse sei considerato assente e il conto alla rovescia del lavoro si ferma; un'assenza lunga quanto una pausa conta come pausa completa, così non vieni mandato a riposare appena torni
 
 ### Non perderti mai la fine di una pausa
@@ -109,7 +110,7 @@ Tieni tutti i profili personalizzati che vuoi e cambiali quando vuoi. Le durate 
 
 ### E altro ancora
 
-- Multipiattaforma: Windows, macOS e Linux, da installare e aggiornare tramite WinGet, Scoop, Homebrew e APT (vedi [Installazione](#installazione))
+- Multipiattaforma: Windows, macOS e Linux, da installare e aggiornare tramite Microsoft Store, WinGet, Scoop, Homebrew e APT (vedi [Installazione](#installazione))
 - Menu dell'area di notifica: tempo rimanente, pausa immediata, impostazioni, avvio all'accesso, cambio del profilo di rigore
 - Istanza singola
 - Gratuito e open source con la permissiva doppia licenza MIT / Apache-2.0 (vedi [Licenza](#licenza))
@@ -137,7 +138,9 @@ Tieni tutti i profili personalizzati che vuoi e cambiali quando vuoi. Le durate 
 
 ### Windows
 
-Installa con [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
+Disponibile su [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0), con aggiornamenti automatici.
+
+Oppure installa con [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
 
 ```powershell
 winget install HansTanzi.RestGuard
@@ -211,7 +214,7 @@ La sovrapposizione richiede X11 (vedi [Limitazioni delle piattaforme](#limitazio
 
 ### Verifica i download
 
-I file delle Release successive a v0.1.14 sono compilati da GitHub Actions e hanno un'[attestazione firmata della provenienza](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) che collega ogni file all'esecuzione del workflow e al commit che lo hanno prodotto. Per controllare un file scaricato con la [GitHub CLI](https://cli.github.com):
+I file delle Release successive a v0.1.14 sono compilati automaticamente dal codice sorgente da GitHub Actions e hanno un'[attestazione firmata della provenienza](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) che collega ogni file all'esecuzione del workflow e al commit che lo hanno prodotto. Per controllare un file scaricato con la [GitHub CLI](https://cli.github.com):
 
 ```sh
 gh attestation verify RestGuard_<version>_x64.exe --repo HansTanzi/RestGuard
@@ -332,7 +335,7 @@ Note:
 Tra una pausa e l'altra sì: scegli “Esci” nel menu dell'area di notifica. Durante una pausa, o finché una pausa rinviata è ancora dovuta, “Esci” è disattivato.
 
 **E se arriva una pausa durante una riunione?**
-Con Rigore medio e basso, la pausa aspetta mentre Zoom, Microsoft Teams, Webex o Tencent Meeting è in primo piano (Windows, macOS; su Windows anche mentre usa il microfono). Se la pausa è già iniziata, fai clic su “Sono in una riunione” per ricevere un promemoria tra 15 minuti. Con Rigore alto le pause non aspettano.
+Con Rigore medio e basso, la pausa aspetta mentre Zoom, Microsoft Teams, Webex o Tencent Meeting è in primo piano (Windows, macOS; su Windows anche mentre usa il microfono). Se la pausa è già iniziata, fai clic su “Sono in una riunione” per ricevere un promemoria tra un'ora. Con Rigore alto le pause non aspettano.
 
 **Sto facendo una cosa urgente. Perderò il lavoro?**
 Rinvia la pausa di 5 minuti (fino a 3 volte con Rigore medio e basso, una volta con Rigore alto), oppure, con Rigore medio e basso, usa la modalità urgente per ridurre la sovrapposizione e salvare il lavoro mentre il conto alla rovescia continua.

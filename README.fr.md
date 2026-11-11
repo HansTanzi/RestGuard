@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#installation"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#licence"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT, Scoop, Homebrew sous Linux et les téléchargements portables sont décrits dans [Installation](#installation).
+Le Microsoft Store, APT, Scoop, Homebrew sous Linux et les téléchargements portables sont décrits dans [Installation](#installation).
 
 ## Pourquoi RestGuard
 
@@ -92,7 +93,7 @@ Gardez autant de profils personnalisés que vous voulez et changez-en à tout mo
 
 ### Discret quand il le faut
 
-- Détection des réunions (Windows, macOS) : tant que Zoom, Microsoft Teams, Webex ou Tencent Meeting est au premier plan (ou, sous Windows, utilise le micro), la pause attend la fin de la réunion ; pendant une pause, vous pouvez aussi cliquer sur « Je suis en réunion » pour recevoir un rappel dans 15 minutes
+- Détection des réunions (Windows, macOS) : tant que Zoom, Microsoft Teams, Webex ou Tencent Meeting est au premier plan (ou, sous Windows, utilise le micro), la pause attend la fin de la réunion ; pendant une pause, vous pouvez aussi cliquer sur « Je suis en réunion » pour recevoir un rappel dans une heure
 - Détection d'inactivité : après 5 minutes sans clavier ni souris, vous êtes considéré comme absent et le compte à rebours du travail se met en pause ; une absence aussi longue qu'une pause compte comme une pause complète, vous n'êtes donc pas renvoyé en pause juste après votre retour
 
 ### Ne manquez jamais la fin d'une pause
@@ -109,7 +110,7 @@ Gardez autant de profils personnalisés que vous voulez et changez-en à tout mo
 
 ### Et plus encore
 
-- Multiplateforme : Windows, macOS et Linux, à installer et mettre à jour via WinGet, Scoop, Homebrew et APT (voir [Installation](#installation))
+- Multiplateforme : Windows, macOS et Linux, à installer et mettre à jour via le Microsoft Store, WinGet, Scoop, Homebrew et APT (voir [Installation](#installation))
 - Menu de la zone de notification : temps restant, pause immédiate, paramètres, lancement au démarrage, changement de profil de contrainte
 - Instance unique
 - Libre et gratuit sous la double licence permissive MIT / Apache-2.0 (voir [Licence](#licence))
@@ -137,7 +138,9 @@ Gardez autant de profils personnalisés que vous voulez et changez-en à tout mo
 
 ### Windows
 
-Installez avec [WinGet](https://learn.microsoft.com/windows/package-manager/winget/) :
+Disponible sur le [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0), avec mises à jour automatiques.
+
+Ou installez avec [WinGet](https://learn.microsoft.com/windows/package-manager/winget/) :
 
 ```powershell
 winget install HansTanzi.RestGuard
@@ -211,7 +214,7 @@ Le voile nécessite X11 (voir [Limitations par plateforme](#limitations-par-plat
 
 ### Vérifier les téléchargements
 
-Les fichiers des Releases postérieures à v0.1.14 sont compilés par GitHub Actions et portent une [attestation signée de provenance](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) qui relie chaque fichier à l'exécution du workflow et au commit qui l'ont produit. Pour vérifier un fichier téléchargé avec la [GitHub CLI](https://cli.github.com) :
+Les fichiers des Releases postérieures à v0.1.14 sont compilés automatiquement à partir du code source par GitHub Actions et portent une [attestation signée de provenance](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) qui relie chaque fichier à l'exécution du workflow et au commit qui l'ont produit. Pour vérifier un fichier téléchargé avec la [GitHub CLI](https://cli.github.com) :
 
 ```sh
 gh attestation verify RestGuard_<version>_x64.exe --repo HansTanzi/RestGuard
@@ -332,7 +335,7 @@ Remarques :
 Entre deux pauses, oui : choisissez « Quitter » dans le menu de la zone de notification. Pendant une pause, ou tant qu'une pause reportée reste due, « Quitter » est désactivé.
 
 **Et si une pause arrive pendant une réunion ?**
-En contrainte moyenne et faible, la pause attend tant que Zoom, Microsoft Teams, Webex ou Tencent Meeting est au premier plan (Windows, macOS ; sous Windows, aussi tant qu'il utilise le micro). Si une pause a déjà commencé, cliquez sur « Je suis en réunion » pour recevoir un rappel dans 15 minutes. En contrainte élevée, les pauses n'attendent pas.
+En contrainte moyenne et faible, la pause attend tant que Zoom, Microsoft Teams, Webex ou Tencent Meeting est au premier plan (Windows, macOS ; sous Windows, aussi tant qu'il utilise le micro). Si une pause a déjà commencé, cliquez sur « Je suis en réunion » pour recevoir un rappel dans une heure. En contrainte élevée, les pauses n'attendent pas.
 
 **Je suis en plein travail urgent. Vais-je perdre mon travail ?**
 Reportez la pause de 5 minutes (jusqu'à 3 fois en contrainte moyenne et faible, une fois en contrainte élevée), ou, en contrainte moyenne et faible, utilisez le mode urgence pour réduire le voile et enregistrer votre travail pendant que le compte à rebours continue.

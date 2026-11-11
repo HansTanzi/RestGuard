@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#安装"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#许可证"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT、Scoop、Linux 上的 Homebrew 以及免安装版下载，见[安装](#安装)。
+Microsoft Store、APT、Scoop、Linux 上的 Homebrew 以及免安装版下载，见[安装](#安装)。
 
 ## 为什么选 RestGuard
 
@@ -96,7 +97,7 @@ RestGuard 适合那些知道该休息、却总在拖延的人：
 
 ### 不打扰正事
 
-- 会议检测（Windows、macOS）：Zoom、Microsoft Teams、Webex、腾讯会议在前台（Windows 上还包括正在使用麦克风）时暂缓休息，会后再开始；休息时也可以点「我在开会」，15 分钟后再提醒
+- 会议检测（Windows、macOS）：Zoom、Microsoft Teams、Webex、腾讯会议在前台（Windows 上还包括正在使用麦克风）时暂缓休息，会后再开始；休息时也可以点「我在开会」，1 小时后再提醒
 - 空闲检测：5 分钟没有键盘鼠标操作就算离开电脑，工作倒计时暂停；离开满一次休息的时长就当已经休息过，回来不会立刻被叫去休息
 
 ### 离开电脑也不会错过
@@ -113,7 +114,7 @@ RestGuard 适合那些知道该休息、却总在拖延的人：
 
 ### 其他
 
-- 跨平台：Windows、macOS、Linux，支持 WinGet、Scoop、Homebrew、APT 等主流包管理器一键安装和更新（见[安装](#安装)）
+- 跨平台：Windows、macOS、Linux，支持 Microsoft Store 以及 WinGet、Scoop、Homebrew、APT 等主流包管理器一键安装和更新（见[安装](#安装)）
 - 托盘菜单：查看剩余时间、提前休息、设置、开机自启、切换强制方案
 - 单实例运行
 - 开源免费，采用宽松的 MIT / Apache-2.0 双许可证（见[许可证](#许可证)）
@@ -141,7 +142,9 @@ RestGuard 适合那些知道该休息、却总在拖延的人：
 
 ### Windows
 
-可通过 [WinGet](https://learn.microsoft.com/windows/package-manager/winget/) 安装：
+可从 [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0) 安装，会自动更新。
+
+或通过 [WinGet](https://learn.microsoft.com/windows/package-manager/winget/) 安装：
 
 ```powershell
 winget install HansTanzi.RestGuard
@@ -215,7 +218,7 @@ brew install --cask hanstanzi/tap/restguard
 
 ### 校验下载文件
 
-v0.1.14 之后的 Release 文件由 GitHub Actions 构建，并附带签名的[构建来源证明](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)，把每个文件和构建它的 workflow 运行及 commit 对应起来。用 [GitHub CLI](https://cli.github.com) 校验下载的文件：
+v0.1.14 之后的 Release 文件由 GitHub Actions 从源码自动构建，并附带签名的[构建来源证明](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)，把每个文件和构建它的 workflow 运行及 commit 对应起来。用 [GitHub CLI](https://cli.github.com) 校验下载的文件：
 
 ```sh
 gh attestation verify RestGuard_<版本号>_x64.exe --repo HansTanzi/RestGuard
@@ -336,7 +339,7 @@ movable = false          # 遮罩未占满屏幕时允许在本屏幕内拖动�
 两次休息之间可以，在托盘菜单里点「退出」。休息期间，或推迟后还欠着一次休息时，「退出」不可用。
 
 **休息时间到了，可我正在开会怎么办？**
-中等和低等强制模式下，只要 Zoom、Microsoft Teams、Webex 或腾讯会议在前台（Windows、macOS；Windows 上还包括正在使用麦克风），休息就会暂缓。如果休息已经开始，点「我在开会」，15 分钟后再提醒。高等强制模式下不会暂缓。
+中等和低等强制模式下，只要 Zoom、Microsoft Teams、Webex 或腾讯会议在前台（Windows、macOS；Windows 上还包括正在使用麦克风），休息就会暂缓。如果休息已经开始，点「我在开会」，1 小时后再提醒。高等强制模式下不会暂缓。
 
 **手头有急事，会丢掉没保存的工作吗？**
 可以推迟 5 分钟（中等和低等最多 3 次，高等 1 次）；中等和低等模式下还可以用紧急模式把遮罩缩小，保存工作，倒计时照常进行。

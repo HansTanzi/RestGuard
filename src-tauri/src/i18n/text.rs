@@ -53,6 +53,105 @@ pub const AUTOSTART: Tr = Tr {
     id: "Mulai saat masuk",
 };
 
+/// Tray submenu: no breaks for a while, then work starts over from a full countdown
+pub const PAUSE_MENU: Tr = Tr {
+    zh: "暂停提醒",
+    en: "Pause",
+    hi: "रोकें",
+    es: "Pausar",
+    ar: "إيقاف مؤقت",
+    fr: "Suspendre",
+    bn: "বিরতি দিন",
+    pt: "Pausar",
+    de: "Pausieren",
+    ja: "一時停止",
+    it: "Sospendi",
+    ko: "일시 중지",
+    id: "Jeda",
+};
+
+pub const PAUSE_30M: Tr = Tr {
+    zh: "30 分钟",
+    en: "For 30 minutes",
+    hi: "30 मिनट के लिए",
+    es: "Durante 30 minutos",
+    ar: "لمدة 30 دقيقة",
+    fr: "Pendant 30 minutes",
+    bn: "৩০ মিনিটের জন্য",
+    pt: "Por 30 minutos",
+    de: "Für 30 Minuten",
+    ja: "30 分間",
+    it: "Per 30 minuti",
+    ko: "30분 동안",
+    id: "Selama 30 menit",
+};
+
+pub const PAUSE_1H: Tr = Tr {
+    zh: "1 小时",
+    en: "For 1 hour",
+    hi: "1 घंटे के लिए",
+    es: "Durante 1 hora",
+    ar: "لمدة ساعة",
+    fr: "Pendant 1 heure",
+    bn: "১ ঘণ্টার জন্য",
+    pt: "Por 1 hora",
+    de: "Für 1 Stunde",
+    ja: "1 時間",
+    it: "Per 1 ora",
+    ko: "1시간 동안",
+    id: "Selama 1 jam",
+};
+
+pub const PAUSE_2H: Tr = Tr {
+    zh: "2 小时",
+    en: "For 2 hours",
+    hi: "2 घंटे के लिए",
+    es: "Durante 2 horas",
+    ar: "لمدة ساعتين",
+    fr: "Pendant 2 heures",
+    bn: "২ ঘণ্টার জন্য",
+    pt: "Por 2 horas",
+    de: "Für 2 Stunden",
+    ja: "2 時間",
+    it: "Per 2 ore",
+    ko: "2시간 동안",
+    id: "Selama 2 jam",
+};
+
+/// Pauses until 05:00 the next morning (tray::TOMORROW_AT)
+pub const PAUSE_TOMORROW: Tr = Tr {
+    zh: "直到明天",
+    en: "Until tomorrow",
+    hi: "कल तक",
+    es: "Hasta mañana",
+    ar: "حتى الغد",
+    fr: "Jusqu'à demain",
+    bn: "আগামীকাল পর্যন্ত",
+    pt: "Até amanhã",
+    de: "Bis morgen",
+    ja: "明日まで",
+    it: "Fino a domani",
+    ko: "내일까지",
+    id: "Sampai besok",
+};
+
+/// Ends a pause early
+pub const RESUME: Tr = Tr {
+    zh: "恢复提醒",
+    en: "Resume",
+    hi: "फिर से शुरू करें",
+    es: "Reanudar",
+    ar: "استئناف",
+    fr: "Reprendre",
+    bn: "আবার চালু করুন",
+    pt: "Retomar",
+    de: "Fortsetzen",
+    ja: "再開",
+    it: "Riprendi",
+    ko: "다시 시작",
+    id: "Lanjutkan",
+};
+
 pub const ABOUT_MENU: Tr = Tr {
     zh: "关于 RestGuard…",
     en: "About RestGuard…",
@@ -181,6 +280,23 @@ pub const FOLLOW_SYSTEM: Tr = Tr {
     it: "Segui il sistema",
     ko: "시스템 설정 따르기",
     id: "Ikuti sistem",
+};
+
+/// Tray status line while paused; `{time}` is when it ends (HH:MM)
+pub const PAUSED_UNTIL: Tr = Tr {
+    zh: "已暂停，{time} 恢复",
+    en: "Paused until {time}",
+    hi: "{time} तक रुका हुआ",
+    es: "En pausa hasta las {time}",
+    ar: "متوقف مؤقتًا حتى {time}",
+    fr: "Suspendu jusqu'à {time}",
+    bn: "{time} পর্যন্ত বিরতিতে",
+    pt: "Pausado até {time}",
+    de: "Pausiert bis {time}",
+    ja: "{time} まで一時停止中",
+    it: "Sospeso fino alle {time}",
+    ko: "{time}까지 일시 중지됨",
+    id: "Dijeda hingga {time}",
 };
 
 /// Tray status line: break held off while meeting software etc. is in the foreground; `{app}` is the app name

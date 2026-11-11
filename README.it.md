@@ -111,7 +111,7 @@ Tieni tutti i profili personalizzati che vuoi e cambiali quando vuoi. Le durate 
 ### E altro ancora
 
 - Multipiattaforma: Windows, macOS e Linux, da installare e aggiornare tramite Microsoft Store, WinGet, Scoop, Homebrew e APT (vedi [Installazione](#installazione))
-- Menu dell'area di notifica: tempo rimanente, pausa immediata, impostazioni, avvio all'accesso, cambio del profilo di rigore
+- Menu dell'area di notifica: tempo rimanente, pausa immediata, impostazioni, avvio all'accesso, cambio del profilo di rigore, sospensione
 - Istanza singola
 - Gratuito e open source con la permissiva doppia licenza MIT / Apache-2.0 (vedi [Licenza](#licenza))
 - Disponibile in cinese semplificato, inglese, hindi, spagnolo, arabo, francese, bengalese, portoghese, tedesco, giapponese, italiano, coreano e indonesiano. La lingua dell'interfaccia segue il sistema per impostazione predefinita (inglese se la lingua di sistema non è supportata); cambiala quando vuoi dal sottomenu “语言 / Language” dell'area di notifica
@@ -332,7 +332,7 @@ Note:
 ## FAQ
 
 **Posso uscire da RestGuard?**
-Tra una pausa e l'altra sì: scegli “Esci” nel menu dell'area di notifica. Durante una pausa, o finché una pausa rinviata è ancora dovuta, “Esci” è disattivato.
+Tra una pausa e l'altra sì: scegli “Esci” nel menu dell'area di notifica. Durante una pausa, o finché una pausa rinviata è ancora dovuta, “Esci” è disattivato. Se vuoi fermarti solo per un po', scegli invece “Sospendi”: i promemoria tornano da soli dopo 30 minuti, 1 o 2 ore, o la mattina dopo, così non devi ricordarti di riavviare RestGuard.
 
 **E se arriva una pausa durante una riunione?**
 Con Rigore medio e basso, la pausa aspetta mentre Zoom, Microsoft Teams, Webex o Tencent Meeting è in primo piano (Windows, macOS; su Windows anche mentre usa il microfono). Se la pausa è già iniziata, fai clic su “Sono in una riunione” per ricevere un promemoria tra un'ora. Con Rigore alto le pause non aspettano.

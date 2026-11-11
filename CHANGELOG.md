@@ -11,6 +11,7 @@ Downloads for every version are on the [Releases](https://github.com/HansTanzi/R
 - Light theme alongside the existing dark one (the break overlay always stays dark)
 - README and website in French, Italian, Indonesian, Hindi, Bengali and Arabic, so both now cover all 13 UI languages; the website lays out right to left in Arabic
 - README and website: install from the Microsoft Store on Windows
+- Tray menu: pause reminders for 30 minutes, 1 or 2 hours, or until the next morning, then they resume on their own, so stopping for a while no longer means quitting and forgetting to start RestGuard again. Like Quit, it's unavailable during a break or while a postponed break is owed
 
 ### Changed
 

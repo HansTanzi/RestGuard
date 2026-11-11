@@ -322,6 +322,29 @@ pub(crate) fn rest_now(app: &AppHandle) {
     broadcast(app, &snap);
 }
 
+/// Tray "Pause": no breaks until the given local time; refused when quitting would be
+pub(crate) fn pause(app: &AppHandle, until: chrono::NaiveDateTime) {
+    update_timer(app, |timer, _| timer.pause(until));
+}
+
+/// Tray "Resume": ends a pause early
+pub(crate) fn resume(app: &AppHandle) {
+    update_timer(app, Timer::resume);
+}
+
+fn update_timer(app: &AppHandle, action: impl FnOnce(&mut Timer, Instant) -> bool) {
+    let snap = {
+        let state = app.state::<AppState>();
+        let mut timer = state.timer.lock().unwrap();
+        let now = Instant::now();
+        if !action(&mut timer, now) {
+            return;
+        }
+        timer.snapshot(now)
+    };
+    broadcast(app, &snap);
+}
+
 pub(crate) fn set_language(app: &AppHandle, lang: i18n::Lang) {
     if let Err(e) = i18n::set(lang) {
         eprintln!("Failed to save language setting: {e}");
@@ -385,10 +408,12 @@ fn spawn_ticker(app: AppHandle) {
             let state = app.state::<AppState>();
             let mut timer = state.timer.lock().unwrap();
             let now = Instant::now();
+            let local = chrono::Local::now();
+            timer.wake(now, local.naive_local());
             if let Some(idle) = idle {
                 timer.idle(now, idle);
             }
-            timer.defer(now, chrono::Local::now().time());
+            timer.defer(now, local.time());
             // Only check the foreground app once a break is due; the enforcement level can disable meeting detection
             let detect = timer.profile().meeting_detection;
             let held = if detect && timer.rest_due(now) {

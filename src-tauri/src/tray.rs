@@ -1,6 +1,7 @@
 use crate::config::BUILTIN_LEVELS;
 use crate::i18n::{self, t, text, Lang};
 use crate::timer::{Phase, Snapshot};
+use chrono::{Days, Local, NaiveDateTime, NaiveTime, TimeDelta};
 use std::sync::Mutex;
 use tauri::{
     image::Image,
@@ -15,6 +16,56 @@ const TRAY_ID: &str = "main";
 const LANG_ID_PREFIX: &str = "lang:";
 /// Followed by a built-in level or custom profile name (they never clash, see Config::sanitized)
 const LEVEL_ID_PREFIX: &str = "level:";
+const PAUSE_ID_PREFIX: &str = "pause:";
+/// "Pause until tomorrow" lasts until this time, when the next day is taken to begin
+const TOMORROW_AT: NaiveTime = NaiveTime::from_hms_opt(5, 0, 0).unwrap();
+
+/// Choices in the "Pause" submenu, in menu order
+#[derive(Clone, Copy)]
+enum PauseFor {
+    Minutes(i64),
+    Tomorrow,
+}
+
+const PAUSES: [PauseFor; 4] = [
+    PauseFor::Minutes(30),
+    PauseFor::Minutes(60),
+    PauseFor::Minutes(120),
+    PauseFor::Tomorrow,
+];
+
+impl PauseFor {
+    fn id(self) -> String {
+        match self {
+            PauseFor::Minutes(m) => format!("{PAUSE_ID_PREFIX}{m}"),
+            PauseFor::Tomorrow => format!("{PAUSE_ID_PREFIX}tomorrow"),
+        }
+    }
+
+    fn text(self) -> &'static str {
+        match self {
+            PauseFor::Minutes(30) => t(&text::PAUSE_30M),
+            PauseFor::Minutes(60) => t(&text::PAUSE_1H),
+            PauseFor::Minutes(_) => t(&text::PAUSE_2H),
+            PauseFor::Tomorrow => t(&text::PAUSE_TOMORROW),
+        }
+    }
+
+    /// When the pause ends, in local time
+    fn until(self, now: NaiveDateTime) -> NaiveDateTime {
+        match self {
+            PauseFor::Minutes(m) => now + TimeDelta::minutes(m),
+            PauseFor::Tomorrow => {
+                let today = now.date().and_time(TOMORROW_AT);
+                if today > now {
+                    today
+                } else {
+                    today + Days::new(1)
+                }
+            }
+        }
+    }
+}
 
 /// Menu items that update with state or language
 struct TrayItems {
@@ -22,6 +73,10 @@ struct TrayItems {
     rest_now: MenuItem<Wry>,
     settings: MenuItem<Wry>,
     autostart: CheckMenuItem<Wry>,
+    pause_menu: Submenu<Wry>,
+    /// Same order as PAUSES
+    pauses: Vec<MenuItem<Wry>>,
+    resume: MenuItem<Wry>,
     /// Enforcement profile submenu; the list changes with the config and is rebuilt wholesale by refresh_levels
     level_menu: Submenu<Wry>,
     lang_menu: Submenu<Wry>,
@@ -93,6 +148,14 @@ fn settings_text() -> &'static str {
 
 fn autostart_text() -> &'static str {
     t(&text::AUTOSTART)
+}
+
+fn pause_menu_text() -> &'static str {
+    t(&text::PAUSE_MENU)
+}
+
+fn resume_text() -> &'static str {
+    t(&text::RESUME)
 }
 
 fn about_text() -> &'static str {
@@ -188,6 +251,16 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         autostart_on,
         None::<&str>,
     )?;
+    let pauses = PAUSES
+        .into_iter()
+        .map(|p| MenuItem::with_id(app, p.id(), p.text(), true, None::<&str>))
+        .collect::<tauri::Result<Vec<_>>>()?;
+    let resume = MenuItem::with_id(app, "resume", resume_text(), false, None::<&str>)?;
+    let separator = PredefinedMenuItem::separator(app)?;
+    let mut pause_entries: Vec<&dyn IsMenuItem<Wry>> =
+        pauses.iter().map(|item| item as &dyn IsMenuItem<Wry>).collect();
+    pause_entries.extend([&separator as &dyn IsMenuItem<Wry>, &resume]);
+    let pause_menu = Submenu::with_items(app, pause_menu_text(), true, &pause_entries)?;
     let current = i18n::current();
     let langs = Lang::ALL
         .into_iter()
@@ -224,6 +297,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
             &lang_menu,
             &PredefinedMenuItem::separator(app)?,
             &about,
+            &pause_menu,
             &quit,
         ],
     )?;
@@ -239,6 +313,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
             "rest_now" => crate::rest_now(app),
             "settings" => crate::open_settings(app),
             "about" => crate::open_about(app),
+            "resume" => crate::resume(app),
             "autostart" => {
                 crate::apply_autostart(app, !autostart_enabled(app));
             }
@@ -248,6 +323,8 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
                     crate::set_language(app, lang);
                 } else if let Some(level) = id.strip_prefix(LEVEL_ID_PREFIX) {
                     crate::set_level(app, level);
+                } else if let Some(pause) = PAUSES.into_iter().find(|p| p.id() == id) {
+                    crate::pause(app, pause.until(Local::now().naive_local()));
                 }
             }
         })
@@ -258,6 +335,9 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         rest_now,
         settings,
         autostart,
+        pause_menu,
+        pauses,
+        resume,
         level_menu,
         lang_menu,
         langs,
@@ -276,6 +356,11 @@ pub fn refresh_language(app: &AppHandle) {
     let _ = items.rest_now.set_text(rest_now_text());
     let _ = items.settings.set_text(settings_text());
     let _ = items.autostart.set_text(autostart_text());
+    let _ = items.pause_menu.set_text(pause_menu_text());
+    for (item, pause) in items.pauses.iter().zip(PAUSES) {
+        let _ = item.set_text(pause.text());
+    }
+    let _ = items.resume.set_text(resume_text());
     let _ = items.level_menu.set_text(level_menu_text());
     let _ = items.lang_menu.set_text(lang_menu_text());
     let _ = items.about.set_text(about_text());
@@ -291,6 +376,10 @@ pub fn refresh_language(app: &AppHandle) {
 
 pub fn update(app: &AppHandle, snap: &Snapshot) {
     let text = match snap.phase {
+        Phase::Working if snap.paused_until.is_some() => {
+            let time = snap.paused_until.as_deref().unwrap_or_default();
+            t(&text::PAUSED_UNTIL).replace("{time}", time)
+        }
         Phase::Working if snap.deferred_until.is_some() => {
             let time = snap.deferred_until.as_deref().unwrap_or_default();
             let name = snap.deferred_for.as_deref().unwrap_or_default();
@@ -330,6 +419,9 @@ pub fn update(app: &AppHandle, snap: &Snapshot) {
         let _ = items.level_menu.set_enabled(unlocked);
         let _ = items.about.set_enabled(working);
         let _ = items.quit.set_enabled(unlocked);
+        // Pausing is like quitting for a while, so it's allowed when quitting is
+        let _ = items.pause_menu.set_enabled(unlocked);
+        let _ = items.resume.set_enabled(snap.paused_until.is_some());
 
         // Re-evaluated on every refresh so the icon follows taskbar light/dark changes
         let key = icon_key(snap.phase);

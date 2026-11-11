@@ -111,7 +111,7 @@ Simpan profil kustom sebanyak yang Anda mau dan ganti kapan saja. Durasi kerja, 
 ### Dan lainnya
 
 - Lintas platform: Windows, macOS, dan Linux, bisa dipasang dan diperbarui melalui Microsoft Store, WinGet, Scoop, Homebrew, dan APT (lihat [Instalasi](#instalasi))
-- Menu baki sistem: sisa waktu, istirahat sekarang, pengaturan, mulai saat masuk, ganti profil ketegasan
+- Menu baki sistem: sisa waktu, istirahat sekarang, pengaturan, mulai saat masuk, ganti profil ketegasan, jeda
 - Satu instans
 - Gratis dan sumber terbuka di bawah lisensi ganda permisif MIT / Apache-2.0 (lihat [Lisensi](#lisensi))
 - Tersedia dalam bahasa Tionghoa Sederhana, Inggris, Hindi, Spanyol, Arab, Prancis, Bengali, Portugis, Jerman, Jepang, Italia, Korea, dan Indonesia. Bahasa antarmuka mengikuti sistem secara bawaan (bahasa Inggris jika bahasa sistem tidak didukung); ganti kapan saja dari submenu “语言 / Language” di baki sistem
@@ -332,7 +332,7 @@ Catatan:
 ## FAQ
 
 **Bisakah saya keluar dari RestGuard?**
-Di antara istirahat, bisa: pilih “Keluar” di menu baki sistem. Saat istirahat, atau selama istirahat yang ditunda masih terutang, “Keluar” dinonaktifkan.
+Di antara istirahat, bisa: pilih “Keluar” di menu baki sistem. Saat istirahat, atau selama istirahat yang ditunda masih terutang, “Keluar” dinonaktifkan. Jika hanya ingin berhenti sebentar, pilih “Jeda”: pengingat kembali dengan sendirinya setelah 30 menit, 1 atau 2 jam, atau besok pagi, jadi Anda tidak perlu ingat membuka RestGuard lagi.
 
 **Bagaimana jika waktu istirahat tiba saat rapat?**
 Pada Ketegasan sedang dan rendah, istirahat menunggu selama Zoom, Microsoft Teams, Webex, atau Tencent Meeting berada di latar depan (Windows, macOS; di Windows juga saat memakai mikrofon). Jika istirahat sudah dimulai, klik “Saya sedang rapat” agar diingatkan 1 jam lagi. Pada Ketegasan tinggi, istirahat tidak menunggu.

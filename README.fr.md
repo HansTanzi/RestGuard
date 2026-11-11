@@ -111,7 +111,7 @@ Gardez autant de profils personnalisés que vous voulez et changez-en à tout mo
 ### Et plus encore
 
 - Multiplateforme : Windows, macOS et Linux, à installer et mettre à jour via le Microsoft Store, WinGet, Scoop, Homebrew et APT (voir [Installation](#installation))
-- Menu de la zone de notification : temps restant, pause immédiate, paramètres, lancement au démarrage, changement de profil de contrainte
+- Menu de la zone de notification : temps restant, pause immédiate, paramètres, lancement au démarrage, changement de profil de contrainte, suspension
 - Instance unique
 - Libre et gratuit sous la double licence permissive MIT / Apache-2.0 (voir [Licence](#licence))
 - Disponible en chinois simplifié, anglais, hindi, espagnol, arabe, français, bengali, portugais, allemand, japonais, italien, coréen et indonésien. La langue de l'interface suit le système par défaut (anglais si la langue du système n'est pas prise en charge) ; changez-la à tout moment depuis le sous-menu « 语言 / Language » de la zone de notification
@@ -332,7 +332,7 @@ Remarques :
 ## FAQ
 
 **Puis-je quitter RestGuard ?**
-Entre deux pauses, oui : choisissez « Quitter » dans le menu de la zone de notification. Pendant une pause, ou tant qu'une pause reportée reste due, « Quitter » est désactivé.
+Entre deux pauses, oui : choisissez « Quitter » dans le menu de la zone de notification. Pendant une pause, ou tant qu'une pause reportée reste due, « Quitter » est désactivé. Pour vous arrêter seulement un moment, choisissez plutôt « Suspendre » : les rappels reprennent d'eux-mêmes après 30 minutes, 1 ou 2 heures, ou le lendemain matin, sans avoir à penser à relancer RestGuard.
 
 **Et si une pause arrive pendant une réunion ?**
 En contrainte moyenne et faible, la pause attend tant que Zoom, Microsoft Teams, Webex ou Tencent Meeting est au premier plan (Windows, macOS ; sous Windows, aussi tant qu'il utilise le micro). Si une pause a déjà commencé, cliquez sur « Je suis en réunion » pour recevoir un rappel dans une heure. En contrainte élevée, les pauses n'attendent pas.

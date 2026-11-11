@@ -1,7 +1,7 @@
 //! Work/break state machine. Independent of Tauri; every method takes the current time explicitly, for testability.
 
 use crate::config::{Config, FixedTime, Profile};
-use chrono::NaiveTime;
+use chrono::{NaiveDateTime, NaiveTime};
 use serde::Serialize;
 use std::time::{Duration, Instant};
 
@@ -42,6 +42,8 @@ pub struct Snapshot {
     pub deferred_until: Option<String>,
     /// Name of that fixed break: a built-in one (see config::BUILTIN_FIXED_BREAKS) or the user's own
     pub deferred_for: Option<String>,
+    /// Reminders are paused from the tray until this local time (HH:MM)
+    pub paused_until: Option<String>,
     /// Name of the fixed break the next break will be, which remaining_secs then counts down to: a built-in one or the user's own
     pub next_fixed: Option<String>,
     /// Name of the fixed break this break is for, named in the overlay's title: a built-in one or the user's own
@@ -104,6 +106,9 @@ pub struct Timer {
     away_remaining: Option<Duration>,
     /// When the break was paused for urgent mode (overlay shrunk); the break starts over, and time spent shrunk doesn't count as rest
     paused_at: Option<Instant>,
+    /// Reminders paused from the tray until this local time. Wall-clock time rather than an Instant,
+    /// so a pause that ends while the computer sleeps is over on waking
+    paused_until: Option<NaiveDateTime>,
 }
 
 impl Timer {
@@ -132,6 +137,7 @@ impl Timer {
             meeting_app: None,
             away_remaining: None,
             paused_at: None,
+            paused_until: None,
         }
     }
 
@@ -139,7 +145,7 @@ impl Timer {
     /// While working, pauses the countdown once away past the threshold (the whole time away doesn't count as work);
     /// being away for a full break length counts as a full break, and the timer restarts on return
     pub fn idle(&mut self, now: Instant, idle: Duration) {
-        if self.phase != Phase::Working {
+        if self.phase != Phase::Working || self.paused_until.is_some() {
             return;
         }
         let Some(threshold) = self.idle_threshold else {
@@ -171,7 +177,41 @@ impl Timer {
 
     /// The work countdown has ended, or a fixed break's time has come, and a break is about to start
     pub fn rest_due(&self, now: Instant) -> bool {
-        self.phase == Phase::Working && (now >= self.deadline || self.fixed_due.is_some())
+        self.phase == Phase::Working
+            && self.paused_until.is_none()
+            && (now >= self.deadline || self.fixed_due.is_some())
+    }
+
+    /// Tray "Pause": no breaks until `until`, as if the app had quit and starts again then.
+    /// Allowed whenever quitting is: not during a break, nor while one is postponed
+    pub fn pause(&mut self, until: NaiveDateTime) -> bool {
+        if self.phase != Phase::Working || self.postponed {
+            return false;
+        }
+        self.paused_until = Some(until);
+        true
+    }
+
+    /// Reports the local date and time; ends the pause once its time comes. Must be called first, before idle
+    pub fn wake(&mut self, now: Instant, at: NaiveDateTime) {
+        if self.paused_until.is_some_and(|until| at >= until) {
+            self.resume(now);
+        }
+    }
+
+    /// Tray "Resume", or the pause running out: work starts over from a full countdown, as after a restart
+    pub fn resume(&mut self, now: Instant) -> bool {
+        if self.paused_until.take().is_none() {
+            return false;
+        }
+        // Fixed breaks that came and went during the pause are skipped, as they are when the app starts
+        self.last_clock = None;
+        self.fixed_due = None;
+        self.free_until = None;
+        self.away = false;
+        self.postpones_used = 0;
+        self.begin_work(now, self.work);
+        true
     }
 
     /// Sets the exempt app holding off the break, None for no hold. Must be called before tick
@@ -183,6 +223,9 @@ impl Timer {
     /// waiting for the nearest one when windows overlap, and starts a fixed break once its time comes.
     /// Must be called after idle and before tick
     pub fn defer(&mut self, now: Instant, clock: NaiveTime) {
+        if self.paused_until.is_some() {
+            return;
+        }
         // Not when the clock first comes in (e.g. the app starts during lunch)
         if let Some(prev) = self.last_clock.replace(clock) {
             if let Some(f) = self.fixed_times.iter().find(|f| f.rest.is_some() && f.reached(prev, clock)) {
@@ -221,6 +264,9 @@ impl Timer {
     }
 
     pub fn tick(&mut self, now: Instant) -> Option<TimerEvent> {
+        if self.paused_until.is_some() {
+            return None;
+        }
         // Back at the computer during a fixed break: its end is still announced, as it is from the overlay
         if self.free_until.is_some_and(|end| now >= end) {
             self.free_until = None;
@@ -272,6 +318,8 @@ impl Timer {
         if self.phase != Phase::Working {
             return false;
         }
+        // Resting during a pause ends it
+        self.resume(now);
         self.begin_rest(now, true);
         true
     }
@@ -388,6 +436,7 @@ impl Timer {
             held_by: self.held_by.clone(),
             deferred_until: self.deferred.as_ref().map(|f| f.at.format("%H:%M").to_string()),
             deferred_for: self.deferred.as_ref().map(|f| f.name.clone()),
+            paused_until: self.paused_until.map(|t| t.format("%H:%M").to_string()),
             next_fixed: next_fixed.map(|(_, f)| f.name.clone()),
             fixed_break: (self.phase != Phase::Working).then(|| self.rest_for.clone()).flatten(),
             meeting_app: self
@@ -1249,5 +1298,81 @@ mod tests {
         let snap = t.snapshot(t0 + Duration::from_millis(500));
         assert_eq!(snap.remaining_secs, 3600);
         assert_eq!(snap.total_secs, 3600);
+    }
+
+    fn on(h: u32, m: u32) -> NaiveDateTime {
+        chrono::NaiveDate::from_ymd_opt(2026, 11, 12).unwrap().and_time(at(h, m))
+    }
+
+    #[test]
+    fn pause_holds_off_breaks_until_its_time() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        assert!(t.pause(on(11, 0)));
+        assert_eq!(t.snapshot(t0).paused_until.as_deref(), Some("11:00"));
+
+        let now = t0 + 90 * MIN;
+        t.wake(now, on(10, 59));
+        t.idle(now, Duration::ZERO);
+        assert!(!t.rest_due(now));
+        assert_eq!(t.tick(now), None, "No break while paused");
+
+        // Resumes on time with a full countdown, as after a restart
+        t.wake(now + MIN, on(11, 0));
+        let snap = t.snapshot(now + MIN);
+        assert_eq!(snap.paused_until, None);
+        assert_eq!(snap.remaining_secs, 3600);
+        assert_eq!(t.tick(now + 60 * MIN), None);
+        assert_eq!(t.tick(now + 61 * MIN), Some(TimerEvent::RestStarted));
+    }
+
+    #[test]
+    fn pause_is_refused_when_quitting_is() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        let now = t0 + 60 * MIN;
+        t.tick(now);
+        assert!(!t.pause(on(11, 0)), "Not during a break");
+        assert!(t.postpone(now));
+        assert!(!t.pause(on(11, 0)), "Not while a break is postponed");
+    }
+
+    #[test]
+    fn resume_and_rest_now_end_a_pause() {
+        let t0 = Instant::now();
+        let mut t = timer(t0);
+        assert!(!t.resume(t0), "Nothing to resume");
+        assert!(t.pause(on(11, 0)));
+        assert!(t.resume(t0 + 30 * MIN));
+        assert_eq!(t.snapshot(t0 + 30 * MIN).remaining_secs, 3600);
+
+        assert!(t.pause(on(11, 0)));
+        assert!(t.rest_now(t0 + 40 * MIN));
+        assert_eq!(t.snapshot(t0 + 40 * MIN).paused_until, None);
+        assert_eq!(t.snapshot(t0 + 40 * MIN).phase, Phase::Resting);
+    }
+
+    #[test]
+    fn fixed_break_during_a_pause_is_skipped() {
+        let t0 = Instant::now();
+        let lunch = FixedBreak {
+            enabled: true,
+            rest_minutes: 45.0,
+            ..FixedBreak::builtin("lunch").unwrap()
+        };
+        let cfg = Config {
+            fixed_breaks: vec![lunch],
+            ..Config::default()
+        };
+        let mut t = Timer::new(&cfg, t0);
+        t.defer(t0, at(11, 30));
+        assert!(t.pause(on(12, 10)));
+
+        let now = t0 + 30 * MIN;
+        t.defer(now, at(12, 0));
+        assert_eq!(t.tick(now), None, "Lunch passes during the pause");
+        t.wake(now + 10 * MIN, on(12, 10));
+        t.defer(now + 10 * MIN, at(12, 10));
+        assert_eq!(t.tick(now + 10 * MIN), None, "and doesn't start after it");
     }
 }

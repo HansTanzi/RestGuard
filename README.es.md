@@ -111,7 +111,7 @@ Crea tantos perfiles personalizados como quieras y cambia entre ellos cuando qui
 ### Y más
 
 - Multiplataforma: Windows, macOS y Linux, instalable y actualizable con Microsoft Store, WinGet, Scoop, Homebrew y APT (consulta [Instalación](#instalación))
-- Menú de la bandeja: tiempo restante, descansar ahora, ajustes, iniciar con el sistema, cambiar el perfil de rigor
+- Menú de la bandeja: tiempo restante, descansar ahora, ajustes, iniciar con el sistema, cambiar el perfil de rigor, pausar
 - Una sola instancia
 - Libre y de código abierto bajo la permisiva licencia dual MIT / Apache-2.0 (consulta [Licencia](#licencia))
 - Disponible en chino simplificado, inglés, hindi, español, árabe, francés, bengalí, portugués, alemán, japonés, italiano, coreano e indonesio. El idioma de la interfaz sigue al del sistema por defecto (inglés si el del sistema no está disponible); cámbialo cuando quieras desde el submenú «语言 / Language» de la bandeja
@@ -332,7 +332,7 @@ Notas:
 ## Preguntas frecuentes
 
 **¿Puedo cerrar RestGuard?**
-Entre descansos, sí: elige «Salir» en el menú de la bandeja. Durante un descanso, o mientras quede pendiente un descanso aplazado, «Salir» está desactivado.
+Entre descansos, sí: elige «Salir» en el menú de la bandeja. Durante un descanso, o mientras quede pendiente un descanso aplazado, «Salir» está desactivado. Si solo quieres parar un rato, elige «Pausar»: los recordatorios vuelven solos tras 30 minutos, 1 o 2 horas, o a la mañana siguiente, así que no tienes que acordarte de volver a abrir RestGuard.
 
 **¿Y si toca un descanso en mitad de una reunión?**
 En Medio y Bajo, el descanso espera mientras Zoom, Microsoft Teams, Webex o Tencent Meeting están en primer plano (Windows, macOS; en Windows también mientras usan el micrófono). Si el descanso ya empezó, haz clic en «Estoy en una reunión…» para que te lo recuerde en una hora. En Alto, los descansos no esperan.

@@ -111,7 +111,7 @@ Crie quantos perfis personalizados quiser e troque a qualquer momento. Os tempos
 ### E mais
 
 - Multiplataforma: Windows, macOS e Linux, instalável e atualizável via Microsoft Store, WinGet, Scoop, Homebrew e APT (veja [Instalação](#instalação))
-- Menu da bandeja: tempo restante, descansar agora, configurações, iniciar com o sistema, trocar o perfil de rigor
+- Menu da bandeja: tempo restante, descansar agora, configurações, iniciar com o sistema, trocar o perfil de rigor, pausar
 - Instância única
 - Livre e de código aberto sob a licença dupla permissiva MIT / Apache-2.0 (veja [Licença](#licença))
 - Disponível em chinês simplificado, inglês, hindi, espanhol, árabe, francês, bengali, português, alemão, japonês, italiano, coreano e indonésio. O idioma da interface segue o do sistema por padrão (inglês se o idioma do sistema não for suportado); troque quando quiser no submenu "语言 / Language" da bandeja
@@ -332,7 +332,7 @@ Observações:
 ## Perguntas frequentes
 
 **Posso fechar o RestGuard?**
-Entre as pausas, sim: escolha "Sair" no menu da bandeja. Durante uma pausa, ou enquanto ainda houver uma pausa adiada pendente, "Sair" fica desativado.
+Entre as pausas, sim: escolha "Sair" no menu da bandeja. Durante uma pausa, ou enquanto ainda houver uma pausa adiada pendente, "Sair" fica desativado. Para parar só por um tempo, escolha "Pausar": os lembretes voltam sozinhos após 30 minutos, 1 ou 2 horas, ou na manhã seguinte, então você não precisa lembrar de abrir o RestGuard de novo.
 
 **E se uma pausa chegar no meio de uma reunião?**
 No Médio e no Baixo, a pausa espera enquanto Zoom, Microsoft Teams, Webex ou Tencent Meeting estiverem em primeiro plano (Windows, macOS; no Windows também enquanto usam o microfone). Se a pausa já começou, clique em "Estou em uma reunião…" para ser lembrado em uma hora. No Alto, as pausas não esperam.

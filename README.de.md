@@ -111,7 +111,7 @@ Lege beliebig viele eigene Profile an und wechsle jederzeit. Arbeits-, Pausen-, 
 ### Und mehr
 
 - Plattformübergreifend: Windows, macOS und Linux, installier- und aktualisierbar über den Microsoft Store, WinGet, Scoop, Homebrew und APT (siehe [Installation](#installation))
-- Tray-Menü: verbleibende Zeit, jetzt Pause machen, Einstellungen, beim Anmelden starten, Strenge-Profil wechseln
+- Tray-Menü: verbleibende Zeit, jetzt Pause machen, Einstellungen, beim Anmelden starten, Strenge-Profil wechseln, pausieren
 - Nur eine Instanz
 - Frei und Open Source unter der freizügigen Doppellizenz MIT / Apache-2.0 (siehe [Lizenz](#lizenz))
 - Verfügbar auf Vereinfachtem Chinesisch, Englisch, Hindi, Spanisch, Arabisch, Französisch, Bengalisch, Portugiesisch, Deutsch, Japanisch, Italienisch, Koreanisch und Indonesisch. Die Sprache der Oberfläche folgt standardmäßig dem System (Englisch, wenn die Systemsprache nicht unterstützt wird); du kannst sie jederzeit im Untermenü „语言 / Language“ des Tray-Menüs wechseln
@@ -332,7 +332,7 @@ Hinweise:
 ## Häufige Fragen
 
 **Kann ich RestGuard beenden?**
-Zwischen den Pausen ja: Wähle „Beenden“ im Tray-Menü. Während einer Pause oder solange eine aufgeschobene Pause noch aussteht, ist „Beenden“ deaktiviert.
+Zwischen den Pausen ja: Wähle „Beenden“ im Tray-Menü. Während einer Pause oder solange eine aufgeschobene Pause noch aussteht, ist „Beenden“ deaktiviert. Willst du nur eine Weile Ruhe, wähle stattdessen „Pausieren“: Die Erinnerungen kommen nach 30 Minuten, 1 oder 2 Stunden oder am nächsten Morgen von selbst zurück, du musst also nicht daran denken, RestGuard wieder zu starten.
 
 **Was, wenn eine Pause mitten in ein Meeting fällt?**
 In den Stufen Mittel und Niedrig wartet die Pause, solange Zoom, Microsoft Teams, Webex oder Tencent Meeting im Vordergrund ist (Windows, macOS; unter Windows auch, solange es das Mikrofon nutzt). Hat die Pause schon begonnen, klicke auf „Ich bin in einem …-Meeting“, um in einer Stunde erneut erinnert zu werden. In der Stufe Hoch wartet die Pause nicht.

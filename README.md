@@ -111,7 +111,7 @@ Keep as many custom profiles as you like and switch any time. Work, break, postp
 ### And more
 
 - Cross-platform: Windows, macOS and Linux, installable and updatable through the Microsoft Store, WinGet, Scoop, Homebrew and APT (see [Install](#install))
-- Tray menu: time remaining, rest now, settings, start at login, switch enforcement profile
+- Tray menu: time remaining, rest now, settings, start at login, switch enforcement profile, pause
 - Single instance
 - Free and open source under the permissive MIT / Apache-2.0 dual license (see [License](#license))
 - Available in Simplified Chinese, English, Hindi, Spanish, Arabic, French, Bengali, Portuguese, German, Japanese, Italian, Korean and Indonesian. The UI language follows the system by default (English if the system language isn't supported); switch it any time from the tray menu's "语言 / Language" submenu
@@ -332,7 +332,7 @@ Notes:
 ## FAQ
 
 **Can I quit RestGuard?**
-Between breaks, yes: choose "Quit" in the tray menu. During a break, or while a postponed break is still owed, Quit is disabled.
+Between breaks, yes: choose "Quit" in the tray menu. During a break, or while a postponed break is still owed, Quit is disabled. To stop only for a while, choose "Pause" instead: reminders come back on their own after 30 minutes, 1 or 2 hours, or the next morning, so you don't have to remember to start RestGuard again.
 
 **What if a break comes up during a meeting?**
 On Medium and Low, the break waits while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (Windows, macOS; on Windows also while it uses the microphone). If a break has already started, click "I'm in a meeting" to be reminded in an hour. On High, breaks don't wait.

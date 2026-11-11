@@ -332,7 +332,7 @@ Remarques :
 ## FAQ
 
 **Puis-je quitter RestGuard ?**
-Entre deux pauses, oui : choisissez « Quitter » dans le menu de la zone de notification. Pendant une pause, ou tant qu'une pause reportée reste due, « Quitter » est désactivé. Pour vous arrêter seulement un moment, choisissez plutôt « Suspendre » : les rappels reprennent d'eux-mêmes après 30 minutes, 1 ou 2 heures, ou le lendemain matin, sans avoir à penser à relancer RestGuard.
+Entre deux pauses, oui : choisissez « Quitter » dans le menu de la zone de notification. Pendant une pause, ou tant qu'une pause reportée reste due, « Quitter » est désactivé. Si vous avez quelque chose d'important aujourd'hui, comme une réunion décisive, et ne voulez pas que RestGuard vous interrompe, choisissez « Suspendre » plutôt que « Quitter » : les rappels reprennent d'eux-mêmes après 30 minutes, 1 ou 2 heures, ou le lendemain matin, sans avoir à penser à relancer RestGuard.
 
 **Et si une pause arrive pendant une réunion ?**
 En contrainte moyenne et faible, la pause attend tant que Zoom, Microsoft Teams, Webex ou Tencent Meeting est au premier plan (Windows, macOS ; sous Windows, aussi tant qu'il utilise le micro). Si une pause a déjà commencé, cliquez sur « Je suis en réunion » pour recevoir un rappel dans une heure. En contrainte élevée, les pauses n'attendent pas.

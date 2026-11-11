@@ -332,7 +332,7 @@ Observações:
 ## Perguntas frequentes
 
 **Posso fechar o RestGuard?**
-Entre as pausas, sim: escolha "Sair" no menu da bandeja. Durante uma pausa, ou enquanto ainda houver uma pausa adiada pendente, "Sair" fica desativado. Para parar só por um tempo, escolha "Pausar": os lembretes voltam sozinhos após 30 minutos, 1 ou 2 horas, ou na manhã seguinte, então você não precisa lembrar de abrir o RestGuard de novo.
+Entre as pausas, sim: escolha "Sair" no menu da bandeja. Durante uma pausa, ou enquanto ainda houver uma pausa adiada pendente, "Sair" fica desativado. Se hoje você tem algo importante, como uma reunião decisiva, e não quer que o RestGuard interrompa você, escolha "Pausar" em vez de "Sair": os lembretes voltam sozinhos após 30 minutos, 1 ou 2 horas, ou na manhã seguinte, então você não precisa lembrar de abrir o RestGuard de novo.
 
 **E se uma pausa chegar no meio de uma reunião?**
 No Médio e no Baixo, a pausa espera enquanto Zoom, Microsoft Teams, Webex ou Tencent Meeting estiverem em primeiro plano (Windows, macOS; no Windows também enquanto usam o microfone). Se a pausa já começou, clique em "Estou em uma reunião…" para ser lembrado em uma hora. No Alto, as pausas não esperam.

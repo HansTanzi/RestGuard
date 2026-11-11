@@ -332,7 +332,7 @@ Notas:
 ## Preguntas frecuentes
 
 **¿Puedo cerrar RestGuard?**
-Entre descansos, sí: elige «Salir» en el menú de la bandeja. Durante un descanso, o mientras quede pendiente un descanso aplazado, «Salir» está desactivado. Si solo quieres parar un rato, elige «Pausar»: los recordatorios vuelven solos tras 30 minutos, 1 o 2 horas, o a la mañana siguiente, así que no tienes que acordarte de volver a abrir RestGuard.
+Entre descansos, sí: elige «Salir» en el menú de la bandeja. Durante un descanso, o mientras quede pendiente un descanso aplazado, «Salir» está desactivado. Si hoy tienes algo importante, como una reunión clave, y no quieres que RestGuard te interrumpa, elige «Pausar» en lugar de «Salir»: los recordatorios vuelven solos tras 30 minutos, 1 o 2 horas, o a la mañana siguiente, así que no tienes que acordarte de volver a abrir RestGuard.
 
 **¿Y si toca un descanso en mitad de una reunión?**
 En Medio y Bajo, el descanso espera mientras Zoom, Microsoft Teams, Webex o Tencent Meeting están en primer plano (Windows, macOS; en Windows también mientras usan el micrófono). Si el descanso ya empezó, haz clic en «Estoy en una reunión…» para que te lo recuerde en una hora. En Alto, los descansos no esperan.

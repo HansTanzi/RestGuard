@@ -332,7 +332,7 @@ Note:
 ## FAQ
 
 **Posso uscire da RestGuard?**
-Tra una pausa e l'altra sì: scegli “Esci” nel menu dell'area di notifica. Durante una pausa, o finché una pausa rinviata è ancora dovuta, “Esci” è disattivato. Se vuoi fermarti solo per un po', scegli invece “Sospendi”: i promemoria tornano da soli dopo 30 minuti, 1 o 2 ore, o la mattina dopo, così non devi ricordarti di riavviare RestGuard.
+Tra una pausa e l'altra sì: scegli “Esci” nel menu dell'area di notifica. Durante una pausa, o finché una pausa rinviata è ancora dovuta, “Esci” è disattivato. Se oggi hai un impegno importante, come una riunione decisiva, e non vuoi che RestGuard ti interrompa, scegli “Sospendi” invece di “Esci”: i promemoria tornano da soli dopo 30 minuti, 1 o 2 ore, o la mattina dopo, così non devi ricordarti di riavviare RestGuard.
 
 **E se arriva una pausa durante una riunione?**
 Con Rigore medio e basso, la pausa aspetta mentre Zoom, Microsoft Teams, Webex o Tencent Meeting è in primo piano (Windows, macOS; su Windows anche mentre usa il microfono). Se la pausa è già iniziata, fai clic su “Sono in una riunione” per ricevere un promemoria tra un'ora. Con Rigore alto le pause non aspettano.

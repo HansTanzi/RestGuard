@@ -332,7 +332,7 @@ Hinweise:
 ## Häufige Fragen
 
 **Kann ich RestGuard beenden?**
-Zwischen den Pausen ja: Wähle „Beenden“ im Tray-Menü. Während einer Pause oder solange eine aufgeschobene Pause noch aussteht, ist „Beenden“ deaktiviert. Willst du nur eine Weile Ruhe, wähle stattdessen „Pausieren“: Die Erinnerungen kommen nach 30 Minuten, 1 oder 2 Stunden oder am nächsten Morgen von selbst zurück, du musst also nicht daran denken, RestGuard wieder zu starten.
+Zwischen den Pausen ja: Wähle „Beenden“ im Tray-Menü. Während einer Pause oder solange eine aufgeschobene Pause noch aussteht, ist „Beenden“ deaktiviert. Hast du heute etwas Wichtiges vor, etwa ein wichtiges Meeting, und willst nicht von RestGuard unterbrochen werden, wähle statt „Beenden“ lieber „Pausieren“: Die Erinnerungen kommen nach 30 Minuten, 1 oder 2 Stunden oder am nächsten Morgen von selbst zurück, du musst also nicht daran denken, RestGuard wieder zu starten.
 
 **Was, wenn eine Pause mitten in ein Meeting fällt?**
 In den Stufen Mittel und Niedrig wartet die Pause, solange Zoom, Microsoft Teams, Webex oder Tencent Meeting im Vordergrund ist (Windows, macOS; unter Windows auch, solange es das Mikrofon nutzt). Hat die Pause schon begonnen, klicke auf „Ich bin in einem …-Meeting“, um in einer Stunde erneut erinnert zu werden. In der Stufe Hoch wartet die Pause nicht.

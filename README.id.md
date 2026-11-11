@@ -332,7 +332,7 @@ Catatan:
 ## FAQ
 
 **Bisakah saya keluar dari RestGuard?**
-Di antara istirahat, bisa: pilih “Keluar” di menu baki sistem. Saat istirahat, atau selama istirahat yang ditunda masih terutang, “Keluar” dinonaktifkan. Jika hanya ingin berhenti sebentar, pilih “Jeda”: pengingat kembali dengan sendirinya setelah 30 menit, 1 atau 2 jam, atau besok pagi, jadi Anda tidak perlu ingat membuka RestGuard lagi.
+Di antara istirahat, bisa: pilih “Keluar” di menu baki sistem. Saat istirahat, atau selama istirahat yang ditunda masih terutang, “Keluar” dinonaktifkan. Jika hari ini ada urusan penting, seperti rapat penting, dan Anda tidak ingin diganggu RestGuard, pilih “Jeda” alih-alih “Keluar”: pengingat kembali dengan sendirinya setelah 30 menit, 1 atau 2 jam, atau besok pagi, jadi Anda tidak perlu ingat membuka RestGuard lagi.
 
 **Bagaimana jika waktu istirahat tiba saat rapat?**
 Pada Ketegasan sedang dan rendah, istirahat menunggu selama Zoom, Microsoft Teams, Webex, atau Tencent Meeting berada di latar depan (Windows, macOS; di Windows juga saat memakai mikrofon). Jika istirahat sudah dimulai, klik “Saya sedang rapat” agar diingatkan 1 jam lagi. Pada Ketegasan tinggi, istirahat tidak menunggu.

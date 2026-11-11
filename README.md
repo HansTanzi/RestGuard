@@ -332,7 +332,7 @@ Notes:
 ## FAQ
 
 **Can I quit RestGuard?**
-Between breaks, yes: choose "Quit" in the tray menu. During a break, or while a postponed break is still owed, Quit is disabled. To stop only for a while, choose "Pause" instead: reminders come back on their own after 30 minutes, 1 or 2 hours, or the next morning, so you don't have to remember to start RestGuard again.
+Between breaks, yes: choose "Quit" in the tray menu. During a break, or while a postponed break is still owed, Quit is disabled. If you have something important today, such as a key meeting, and don't want RestGuard to interrupt you, choose "Pause" instead of quitting: reminders come back on their own after 30 minutes, 1 or 2 hours, or the next morning, so you don't have to remember to start RestGuard again.
 
 **What if a break comes up during a meeting?**
 On Medium and Low, the break waits while Zoom, Microsoft Teams, Webex or Tencent Meeting is in the foreground (Windows, macOS; on Windows also while it uses the microphone). If a break has already started, click "I'm in a meeting" to be reminded in an hour. On High, breaks don't wait.

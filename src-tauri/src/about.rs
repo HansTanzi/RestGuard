@@ -11,6 +11,9 @@ pub const LABEL: &str = "about";
 const REPO_URL: &str = env!("CARGO_PKG_REPOSITORY");
 /// Project website (GitHub Pages, built from site/) taken from the homepage field in Cargo.toml
 const HOMEPAGE_URL: &str = env!("CARGO_PKG_HOMEPAGE");
+/// Feedback address for users without a GitHub account
+// TODO: replace with the real feedback address before release
+const FEEDBACK_EMAIL: &str = "restguard@proton.me";
 
 #[derive(Serialize)]
 pub struct AboutInfo {
@@ -20,6 +23,7 @@ pub struct AboutInfo {
     website_url: &'static str,
     repo_url: &'static str,
     issues_url: String,
+    feedback_email: &'static str,
     privacy_url: String,
 }
 
@@ -30,12 +34,43 @@ pub fn info(app: &AppHandle) -> AboutInfo {
         website_url: HOMEPAGE_URL,
         repo_url: REPO_URL,
         issues_url: issues_url(),
+        feedback_email: FEEDBACK_EMAIL,
         privacy_url: privacy_url(),
     }
 }
 
 fn issues_url() -> String {
     format!("{REPO_URL}/issues")
+}
+
+/// A mailto link with the subject and the info needed to diagnose a problem already filled in,
+/// leaving blank lines at the top of the body for the user to write in
+fn feedback_mailto() -> String {
+    let body = format!(
+        "\n\n\n---\nRestGuard {}\nOS: {} {}\nLanguage: {}\n",
+        env!("CARGO_PKG_VERSION"),
+        std::env::consts::OS,
+        std::env::consts::ARCH,
+        i18n::resolved().id(),
+    );
+    format!(
+        "mailto:{FEEDBACK_EMAIL}?subject={}&body={}",
+        percent_encode("RestGuard feedback"),
+        percent_encode(&body.replace('\n', "\r\n")),
+    )
+}
+
+/// Percent-encodes everything except RFC 3986 unreserved characters
+fn percent_encode(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for b in s.bytes() {
+        if b.is_ascii_alphanumeric() || b"-._~".contains(&b) {
+            out.push(b as char);
+        } else {
+            out.push_str(&format!("%{b:02X}"));
+        }
+    }
+    out
 }
 
 /// The website opened in the current UI language. The site reads ?lang= (site/app.js detectLang)
@@ -54,6 +89,7 @@ pub fn open_link(link: &str) -> Result<(), String> {
         "website" => localized_homepage_url(),
         "repo" => REPO_URL.to_string(),
         "issues" => issues_url(),
+        "email" => feedback_mailto(),
         "privacy" => privacy_url(),
         _ => return Err("Unknown link".into()),
     };
@@ -82,7 +118,7 @@ pub fn open(app: &AppHandle) {
     }
     let built = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App("about".into()))
         .title(title())
-        .inner_size(360.0, 420.0)
+        .inner_size(360.0, 455.0)
         .resizable(false)
         .center()
         .maximizable(false)

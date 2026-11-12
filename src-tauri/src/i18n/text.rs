@@ -469,6 +469,23 @@ pub const BREAK_OVER: Tr = Tr {
     id: "Istirahat selesai",
 };
 
+/// Added to BREAK_OVER on the tray's status line, which then starts work when clicked; matches startWork in src/lib/i18n.ts
+pub const START_WORK: Tr = Tr {
+    zh: "开始工作",
+    en: "Back to work",
+    hi: "काम पर लौटें",
+    es: "Volver al trabajo",
+    ar: "العودة إلى العمل",
+    fr: "Retour au travail",
+    bn: "কাজে ফিরুন",
+    pt: "Voltar ao trabalho",
+    de: "Zurück an die Arbeit",
+    ja: "仕事に戻る",
+    it: "Torna al lavoro",
+    ko: "업무로 돌아가기",
+    id: "Kembali bekerja",
+};
+
 /// Body of the phone notification; the title is BREAK_OVER
 pub const PHONE_MESSAGE: Tr = Tr {
     zh: "休息时间到了，回到电脑前开始工作吧",

@@ -310,6 +310,7 @@ pub fn init(app: &AppHandle) -> tauri::Result<()> {
         .menu(&menu)
         .show_menu_on_left_click(true)
         .on_menu_event(|app, event| match event.id().as_ref() {
+            "status" => crate::start_work_now(app),
             "rest_now" => crate::rest_now(app),
             "settings" => crate::open_settings(app),
             "about" => crate::open_about(app),
@@ -409,7 +410,14 @@ pub fn update(app: &AppHandle, snap: &Snapshot) {
     let tray = app.tray_by_id(TRAY_ID);
 
     if let Some(items) = app.try_state::<TrayItems>() {
-        let _ = items.status.set_text(&text);
+        // Once the break is over, the status line also starts work, in case the overlay with that button isn't showing
+        let over = snap.phase == Phase::RestOver;
+        let _ = if over {
+            items.status.set_text(format!("{text} · {}", t(&text::START_WORK)))
+        } else {
+            items.status.set_text(&text)
+        };
+        let _ = items.status.set_enabled(over);
         let _ = items.rest_now.set_enabled(working);
         // During a break, quitting from the tray isn't allowed, nor is opening settings or switching profiles to shorten the break;
         // the About page can open a browser, so it's disabled too

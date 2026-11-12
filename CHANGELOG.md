@@ -9,6 +9,11 @@ Downloads for every version are on the [Releases](https://github.com/HansTanzi/R
 ### Added
 
 - Tray menu: pause reminders for 30 minutes, 1 or 2 hours, or until the next morning, then they resume on their own, so stopping for a while no longer means quitting and forgetting to start RestGuard again. Like Quit, it's unavailable during a break or while a postponed break is owed
+- Tray menu: once a break is over, clicking the status line at the top ("Break over · Back to work") starts work, the same as the button on the overlay
+
+### Fixed
+
+- A break that started while the displays were asleep (such as a lunch break after locking the screen) could get stuck on "Break over" for good: the overlay failed to open and was never tried again, so "Back to work" couldn't be clicked and no more breaks came. The overlay now opens once the displays wake up
 
 ## [0.1.22] - 2026-11-11
 

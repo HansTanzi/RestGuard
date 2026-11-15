@@ -12,7 +12,6 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases/latest"><img src="https://img.shields.io/github/v/release/HansTanzi/RestGuard?label=release" alt="Latest release"></a>
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#安装"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
-  <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
   <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#许可证"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
@@ -36,7 +35,7 @@
 一行命令安装：
 
 ```sh
-winget install HansTanzi.RestGuard            # Windows
+scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket; scoop install hanstanzi/restguard  # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
@@ -114,7 +113,7 @@ RestGuard 适合那些知道该休息、却总在拖延的人：
 
 ### 其他
 
-- 跨平台：Windows、macOS、Linux，支持 Microsoft Store 以及 WinGet、Scoop、Homebrew、APT 等主流包管理器一键安装和更新（见[安装](#安装)）
+- 跨平台：Windows、macOS、Linux，支持 Microsoft Store 以及 Scoop、Homebrew、APT 等主流包管理器一键安装和更新（见[安装](#安装)）
 - 托盘菜单：查看剩余时间、提前休息、设置、开机自启、切换强制方案、暂停提醒
 - 单实例运行
 - 开源免费，采用宽松的 MIT / Apache-2.0 双许可证（见[许可证](#许可证)）
@@ -144,18 +143,14 @@ RestGuard 适合那些知道该休息、却总在拖延的人：
 
 可从 [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0) 安装，会自动更新。
 
-或通过 [WinGet](https://learn.microsoft.com/windows/package-manager/winget/) 安装：
-
-```powershell
-winget install HansTanzi.RestGuard
-```
-
 或通过 [Scoop](https://scoop.sh) 安装：
 
 ```powershell
 scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
 scoop install hanstanzi/restguard
 ```
+
+WinGet：已提交到 WinGet 官方仓库，正在[等待审核](https://github.com/microsoft/winget-pkgs/pull/450018)，通过后即可用 `winget install HansTanzi.RestGuard` 安装。
 
 也可以从 [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) 下载 `RestGuard_<版本>_x64.exe` 直接运行。它是免安装的单个 exe：放在任意位置即可，删除即卸载。不会自动更新，更新时下载新版本替换即可。
 

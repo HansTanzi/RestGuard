@@ -12,7 +12,6 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases/latest"><img src="https://img.shields.io/github/v/release/HansTanzi/RestGuard?label=release" alt="Latest release"></a>
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#installation"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
-  <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
   <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#lizenz"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
@@ -36,7 +35,7 @@ Gebaut mit Rust + Tauri 2 + Svelte. Nachfolger von [ProtectEyes](https://github.
 Installation mit einer Zeile:
 
 ```sh
-winget install HansTanzi.RestGuard            # Windows
+scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket; scoop install hanstanzi/restguard  # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
@@ -110,7 +109,7 @@ Lege beliebig viele eigene Profile an und wechsle jederzeit. Arbeits-, Pausen-, 
 
 ### Und mehr
 
-- Plattformübergreifend: Windows, macOS und Linux, installier- und aktualisierbar über den Microsoft Store, WinGet, Scoop, Homebrew und APT (siehe [Installation](#installation))
+- Plattformübergreifend: Windows, macOS und Linux, installier- und aktualisierbar über den Microsoft Store, Scoop, Homebrew und APT (siehe [Installation](#installation))
 - Tray-Menü: verbleibende Zeit, jetzt Pause machen, Einstellungen, beim Anmelden starten, Strenge-Profil wechseln, pausieren
 - Nur eine Instanz
 - Frei und Open Source unter der freizügigen Doppellizenz MIT / Apache-2.0 (siehe [Lizenz](#lizenz))
@@ -140,18 +139,14 @@ Lege beliebig viele eigene Profile an und wechsle jederzeit. Arbeits-, Pausen-, 
 
 Im [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0) erhältlich; aktualisiert sich automatisch.
 
-Oder mit [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
-
-```powershell
-winget install HansTanzi.RestGuard
-```
-
 Oder mit [Scoop](https://scoop.sh):
 
 ```powershell
 scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
 scoop install hanstanzi/restguard
 ```
+
+WinGet: RestGuard wurde beim offiziellen WinGet-Repository eingereicht und [wartet noch auf die Prüfung](https://github.com/microsoft/winget-pkgs/pull/450018). Sobald es aufgenommen ist, kannst du es mit `winget install HansTanzi.RestGuard` installieren.
 
 Oder lade `RestGuard_<Version>_x64.exe` von den [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) herunter und starte sie. Es ist eine portable Einzeldatei ohne Installer: Lege sie an einen beliebigen Ort und lösche sie zum Deinstallieren. Sie aktualisiert sich nicht selbst; lade für ein Update die neue Version herunter.
 

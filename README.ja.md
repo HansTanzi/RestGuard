@@ -12,7 +12,6 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases/latest"><img src="https://img.shields.io/github/v/release/HansTanzi/RestGuard?label=release" alt="Latest release"></a>
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#インストール"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
-  <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
   <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#ライセンス"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
@@ -36,7 +35,7 @@ Rust + Tauri 2 + Svelte 製。作者が以前オープンソースで公開し�
 1 行でインストール：
 
 ```sh
-winget install HansTanzi.RestGuard            # Windows
+scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket; scoop install hanstanzi/restguard  # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
@@ -110,7 +109,7 @@ RestGuard は、休むべきだとわかっていてもつい先延ばしにし�
 
 ### その他
 
-- クロスプラットフォーム：Windows、macOS、Linux に対応し、Microsoft Store、WinGet、Scoop、Homebrew、APT でインストール・アップデートできます（[インストール](#インストール)を参照）
+- クロスプラットフォーム：Windows、macOS、Linux に対応し、Microsoft Store、Scoop、Homebrew、APT でインストール・アップデートできます（[インストール](#インストール)を参照）
 - トレイメニュー：残り時間、今すぐ休憩、設定、ログイン時に起動、強制プランの切り替え、一時停止
 - 単一インスタンス
 - 寛容な MIT / Apache-2.0 デュアルライセンスの無料オープンソース（[ライセンス](#ライセンス)を参照）
@@ -140,18 +139,14 @@ RestGuard は、休むべきだとわかっていてもつい先延ばしにし�
 
 [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0) から入手できます（自動アップデート）。
 
-または [WinGet](https://learn.microsoft.com/windows/package-manager/winget/) でインストール：
-
-```powershell
-winget install HansTanzi.RestGuard
-```
-
 または [Scoop](https://scoop.sh) で：
 
 ```powershell
 scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
 scoop install hanstanzi/restguard
 ```
+
+WinGet：公式 WinGet リポジトリに登録申請済みで、現在[審査待ち](https://github.com/microsoft/winget-pkgs/pull/450018)です。承認されると `winget install HansTanzi.RestGuard` でインストールできるようになります。
 
 または [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) から `RestGuard_<バージョン>_x64.exe` をダウンロードして実行します。インストーラーのないポータブルな単一 exe なので、好きな場所に置き、削除すればアンインストールできます。自動アップデートはしないため、更新するときは新しいバージョンをダウンロードしてください。
 

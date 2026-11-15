@@ -12,7 +12,6 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases/latest"><img src="https://img.shields.io/github/v/release/HansTanzi/RestGuard?label=release" alt="Latest release"></a>
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#التثبيت"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
-  <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
   <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#الترخيص"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
@@ -38,7 +37,7 @@
 ثبّته بسطر واحد:
 
 ```sh
-winget install HansTanzi.RestGuard            # Windows
+scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket; scoop install hanstanzi/restguard  # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
@@ -112,7 +111,7 @@ RestGuard لمن يعرفون أن عليهم أن يرتاحوا لكنهم ي�
 
 ### والمزيد
 
-- متعدد المنصات: Windows وmacOS وLinux، ويمكن تثبيته وتحديثه عبر Microsoft Store وWinGet وScoop وHomebrew وAPT (راجع [التثبيت](#التثبيت))
+- متعدد المنصات: Windows وmacOS وLinux، ويمكن تثبيته وتحديثه عبر Microsoft Store وScoop وHomebrew وAPT (راجع [التثبيت](#التثبيت))
 - قائمة شريط النظام: الوقت المتبقي، الاستراحة الآن، الإعدادات، التشغيل عند تسجيل الدخول، تبديل نمط الإلزام، الإيقاف المؤقت
 - نسخة واحدة قيد التشغيل
 - مجاني ومفتوح المصدر بترخيص مزدوج متساهل MIT / Apache-2.0 (راجع [الترخيص](#الترخيص))
@@ -142,18 +141,14 @@ RestGuard لمن يعرفون أن عليهم أن يرتاحوا لكنهم ي�
 
 احصل عليه من [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0)، ويُحدَّث تلقائيًا.
 
-أو ثبّته باستخدام [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
-
-```powershell
-winget install HansTanzi.RestGuard
-```
-
 أو باستخدام [Scoop](https://scoop.sh):
 
 ```powershell
 scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
 scoop install hanstanzi/restguard
 ```
+
+WinGet: أُرسل RestGuard إلى مستودع WinGet الرسمي وهو [بانتظار المراجعة](https://github.com/microsoft/winget-pkgs/pull/450018). بعد قبوله يمكنك تثبيته باستخدام `winget install HansTanzi.RestGuard`.
 
 أو نزّل `RestGuard_<version>_x64.exe` من [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) وشغّله. إنه ملف exe واحد محمول بلا مثبّت: ضعه في أي مكان واحذفه لإلغاء التثبيت. لا يُحدَّث تلقائيًا؛ نزّل الإصدار الجديد للتحديث.
 

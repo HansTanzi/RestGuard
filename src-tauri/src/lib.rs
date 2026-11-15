@@ -392,16 +392,21 @@ fn open_overlays(app: &AppHandle) {
     // See overlay::open_all: windows can't be created directly on the event callback thread
     thread::spawn(move || {
         let state = app.state::<AppState>();
-        let profile = {
-            let timer = state.timer.lock().unwrap();
+        let working = || state.timer.lock().unwrap().snapshot(Instant::now()).phase == Phase::Working;
+        // Serialized so a second call (tray "Rest now" racing the ticker's retry) only skips windows that already exist
+        overlay::while_opening(|| {
             // The break may have ended before this thread ran
-            if timer.snapshot(Instant::now()).phase == Phase::Working {
+            if working() {
                 return;
             }
             // Use the timer's profile, since this break was started with it
-            timer.profile().clone()
-        };
-        overlay::open_all(&app, profile.coverage(false), profile.force_rest, profile.movable);
+            let profile = state.timer.lock().unwrap().profile().clone();
+            overlay::open_all(&app, profile.coverage(false), profile.force_rest, profile.movable);
+            // The break may have ended while windows were being created; close_all then missed the ones made after it
+            if working() {
+                overlay::close_all(&app);
+            }
+        });
     });
 }
 

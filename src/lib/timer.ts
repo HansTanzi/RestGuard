@@ -15,6 +15,8 @@ export interface Snapshot {
   deferredUntil: string | null;
   /** Name of that fixed break: a built-in one or the user's own */
   deferredFor: string | null;
+  /** Reminders are paused from the tray until this local time (HH:MM) */
+  pausedUntil: string | null;
   /** Name of the fixed break the next break will be, which remainingSecs then counts down to */
   nextFixed: string | null;
   /** Name of the fixed break this break is for, named in the overlay's title: a built-in one or the user's own */

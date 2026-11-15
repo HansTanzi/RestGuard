@@ -35,7 +35,7 @@ Build with `pnpm tauri build`, not `cargo build`: a plain Cargo build is a dev b
 | `src-tauri/src/i18n/` | Backend text (tray, window titles, errors, config comments) |
 | `src/` | Svelte frontend: overlay, settings and about pages |
 | `src/lib/i18n.ts` | Frontend text |
-| `site/` | The project website on GitHub Pages |
+| `site/` | The project website on GitHub Pages; preview it locally with `pnpm site` |
 | `scripts/` | Release, MSIX packaging, Arch packaging and lint scripts |
 | `docs/` | Screenshots, store listings and [release notes for maintainers](docs/RELEASING.md) |
 

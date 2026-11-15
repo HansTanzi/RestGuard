@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#instalação"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#licença"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT, Scoop, Homebrew no Linux e os downloads portáteis estão em [Instalação](#instalação).
+Microsoft Store, APT, Scoop, Homebrew no Linux e os downloads portáteis estão em [Instalação](#instalação).
 
 ## Por que o RestGuard
 
@@ -92,7 +93,7 @@ Crie quantos perfis personalizados quiser e troque a qualquer momento. Os tempos
 
 ### Não atrapalha quando importa
 
-- Detecção de reuniões (Windows, macOS): enquanto Zoom, Microsoft Teams, Webex ou Tencent Meeting estiverem em primeiro plano (ou, no Windows, usando o microfone), a pausa espera a reunião acabar; durante uma pausa, você também pode clicar em "Estou em uma reunião…" para ser lembrado em 15 minutos
+- Detecção de reuniões (Windows, macOS): enquanto Zoom, Microsoft Teams, Webex ou Tencent Meeting estiverem em primeiro plano (ou, no Windows, usando o microfone), a pausa espera a reunião acabar; durante uma pausa, você também pode clicar em "Estou em uma reunião…" para ser lembrado em uma hora
 - Detecção de inatividade: depois de 5 minutos sem usar teclado ou mouse, você é considerado ausente e a contagem do trabalho pausa; ficar fora pelo tempo de uma pausa conta como pausa completa, então você não é mandado descansar logo ao voltar
 
 ### Nunca perca o fim da pausa
@@ -109,8 +110,8 @@ Crie quantos perfis personalizados quiser e troque a qualquer momento. Os tempos
 
 ### E mais
 
-- Multiplataforma: Windows, macOS e Linux, instalável e atualizável via WinGet, Scoop, Homebrew e APT (veja [Instalação](#instalação))
-- Menu da bandeja: tempo restante, descansar agora, configurações, iniciar com o sistema, trocar o perfil de rigor
+- Multiplataforma: Windows, macOS e Linux, instalável e atualizável via Microsoft Store, WinGet, Scoop, Homebrew e APT (veja [Instalação](#instalação))
+- Menu da bandeja: tempo restante, descansar agora, configurações, iniciar com o sistema, trocar o perfil de rigor, pausar
 - Instância única
 - Livre e de código aberto sob a licença dupla permissiva MIT / Apache-2.0 (veja [Licença](#licença))
 - Disponível em chinês simplificado, inglês, hindi, espanhol, árabe, francês, bengali, português, alemão, japonês, italiano, coreano e indonésio. O idioma da interface segue o do sistema por padrão (inglês se o idioma do sistema não for suportado); troque quando quiser no submenu "语言 / Language" da bandeja
@@ -137,7 +138,9 @@ Crie quantos perfis personalizados quiser e troque a qualquer momento. Os tempos
 
 ### Windows
 
-Instale com o [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
+Baixe na [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0); ele se atualiza automaticamente.
+
+Ou instale com o [WinGet](https://learn.microsoft.com/windows/package-manager/winget/):
 
 ```powershell
 winget install HansTanzi.RestGuard
@@ -211,7 +214,7 @@ A sobreposição precisa de X11 (veja [Limitações por plataforma](#limitaçõe
 
 ### Verificar os downloads
 
-Os arquivos publicados depois da v0.1.14 são compilados pelo GitHub Actions e trazem uma [atestação de procedência de build](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) assinada, que liga cada arquivo à execução do workflow e ao commit que o gerou. Para verificar um arquivo baixado com o [GitHub CLI](https://cli.github.com):
+Os arquivos publicados depois da v0.1.14 são compilados automaticamente a partir do código-fonte pelo GitHub Actions e trazem uma [atestação de procedência de build](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) assinada, que liga cada arquivo à execução do workflow e ao commit que o gerou. Para verificar um arquivo baixado com o [GitHub CLI](https://cli.github.com):
 
 ```sh
 gh attestation verify RestGuard_<versão>_x64.exe --repo HansTanzi/RestGuard
@@ -329,10 +332,10 @@ Observações:
 ## Perguntas frequentes
 
 **Posso fechar o RestGuard?**
-Entre as pausas, sim: escolha "Sair" no menu da bandeja. Durante uma pausa, ou enquanto ainda houver uma pausa adiada pendente, "Sair" fica desativado.
+Entre as pausas, sim: escolha "Sair" no menu da bandeja. Durante uma pausa, ou enquanto ainda houver uma pausa adiada pendente, "Sair" fica desativado. Se hoje você tem algo importante, como uma reunião decisiva, e não quer que o RestGuard interrompa você, escolha "Pausar" em vez de "Sair": os lembretes voltam sozinhos após 30 minutos, 1 ou 2 horas, ou na manhã seguinte, então você não precisa lembrar de abrir o RestGuard de novo.
 
 **E se uma pausa chegar no meio de uma reunião?**
-No Médio e no Baixo, a pausa espera enquanto Zoom, Microsoft Teams, Webex ou Tencent Meeting estiverem em primeiro plano (Windows, macOS; no Windows também enquanto usam o microfone). Se a pausa já começou, clique em "Estou em uma reunião…" para ser lembrado em 15 minutos. No Alto, as pausas não esperam.
+No Médio e no Baixo, a pausa espera enquanto Zoom, Microsoft Teams, Webex ou Tencent Meeting estiverem em primeiro plano (Windows, macOS; no Windows também enquanto usam o microfone). Se a pausa já começou, clique em "Estou em uma reunião…" para ser lembrado em uma hora. No Alto, as pausas não esperam.
 
 **Estou no meio de algo urgente. Vou perder meu trabalho?**
 Adie a pausa em 5 minutos (até 3 vezes no Médio e no Baixo, uma vez no Alto), ou no Médio e no Baixo use o modo urgente para reduzir a sobreposição e salvar seu trabalho enquanto a contagem regressiva continua.

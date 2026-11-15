@@ -187,6 +187,10 @@ fn cover_everything(window: &tauri::WebviewWindow) {
     });
 }
 
+pub fn any_open(app: &AppHandle) -> bool {
+    app.webview_windows().keys().any(|label| is_overlay(label))
+}
+
 pub fn close_all(app: &AppHandle) {
     for (label, window) in app.webview_windows() {
         if is_overlay(&label) {

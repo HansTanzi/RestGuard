@@ -21,11 +21,12 @@
     website_url: string;
     repo_url: string;
     issues_url: string;
+    feedback_email: string;
     privacy_url: string;
   }
 
   // Keys accepted by open_link in src-tauri/src/about.rs
-  type Link = "website" | "repo" | "issues" | "privacy";
+  type Link = "website" | "repo" | "email" | "issues" | "privacy";
 
   let s = $state<AboutStrings | null>(null);
   let info = $state<AboutInfo | null>(null);
@@ -55,6 +56,8 @@
       ? [
           { link: "website", label: s.website, url: info.website_url },
           { link: "repo", label: s.github, url: info.repo_url },
+          // Shown as the plain address so users without a mail app can select and copy it
+          { link: "email", label: s.email, url: info.feedback_email },
           { link: "issues", label: s.feedback, url: info.issues_url },
         ]
       : [],
@@ -85,7 +88,12 @@
       {#each rows as row (row.link)}
         <li>
           <span>{row.label}</span>
-          <a href={row.url} title={row.url} onclick={(e) => open(e, row.link)}>{short(row.url)}</a>
+          <a
+            href={row.link === "email" ? `mailto:${row.url}` : row.url}
+            title={row.url}
+            class:copyable={row.link === "email"}
+            onclick={(e) => open(e, row.link)}>{short(row.url)}</a
+          >
         </li>
       {/each}
     </ul>
@@ -198,6 +206,10 @@
 
   a:hover {
     text-decoration: underline;
+  }
+
+  .copyable {
+    user-select: text;
   }
 
   .message {

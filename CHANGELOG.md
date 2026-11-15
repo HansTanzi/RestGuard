@@ -8,7 +8,28 @@ Downloads for every version are on the [Releases](https://github.com/HansTanzi/R
 
 ### Added
 
-- Light theme alongside the existing dark one (the break overlay always stays dark)
+- Tray menu: pause reminders for 30 minutes, 1 or 2 hours, or until the next morning, then they resume on their own, so stopping for a while no longer means quitting and forgetting to start RestGuard again. Like Quit, it's unavailable during a break or while a postponed break is owed
+- Tray menu: once a break is over, clicking the status line at the top ("Break over · Back to work") starts work, the same as the button on the overlay
+
+### Fixed
+
+- A break that started while the displays were asleep (such as a lunch break after locking the screen) could get stuck on "Break over" for good: the overlay failed to open and was never tried again, so "Back to work" couldn't be clicked and no more breaks came. The overlay now opens once the displays wake up
+
+## [0.1.22] - 2026-11-11
+
+### Added
+
+- README and website: install from the Microsoft Store on Windows
+
+### Changed
+
+- Meeting detection: "I'm in a meeting" now reminds you again in an hour instead of 15 minutes
+- Tray menu: the language submenu is labelled "Language" followed by the word in the current language, instead of always "语言 / Language"
+
+## [0.1.21] - 2026-11-05
+
+### Added
+
 - README and website in French, Italian, Indonesian, Hindi, Bengali and Arabic, so both now cover all 13 UI languages; the website lays out right to left in Arabic
 
 ### Changed
@@ -20,6 +41,12 @@ Downloads for every version are on the [Releases](https://github.com/HansTanzi/R
 ### Fixed
 
 - Tray menu: when the next break is a fixed break, the countdown now names it and counts down to it, such as "Lunch in 10:00", instead of showing the time to the next regular break
+
+## [0.1.20] - 2026-11-02
+
+### Added
+
+- Light theme alongside the existing dark one (the break overlay always stays dark)
 
 ## [0.1.19] - 2026-11-01
 
@@ -192,7 +219,10 @@ Downloads for every version are on the [Releases](https://github.com/HansTanzi/R
 - English and Simplified Chinese
 - Scoop
 
-[Unreleased]: https://github.com/HansTanzi/RestGuard/compare/v0.1.19...HEAD
+[Unreleased]: https://github.com/HansTanzi/RestGuard/compare/v0.1.22...HEAD
+[0.1.22]: https://github.com/HansTanzi/RestGuard/compare/v0.1.21...v0.1.22
+[0.1.21]: https://github.com/HansTanzi/RestGuard/compare/v0.1.20...v0.1.21
+[0.1.20]: https://github.com/HansTanzi/RestGuard/compare/v0.1.19...v0.1.20
 [0.1.19]: https://github.com/HansTanzi/RestGuard/compare/v0.1.18...v0.1.19
 [0.1.18]: https://github.com/HansTanzi/RestGuard/compare/v0.1.17...v0.1.18
 [0.1.17]: https://github.com/HansTanzi/RestGuard/compare/v0.1.16...v0.1.17

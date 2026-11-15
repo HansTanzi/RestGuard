@@ -13,6 +13,7 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#ইনস্টল-করুন"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
   <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
+  <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#লাইসেন্স"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
 
@@ -39,7 +40,7 @@ winget install HansTanzi.RestGuard            # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
-APT, Scoop, Linux-এ Homebrew ও পোর্টেবল ডাউনলোডের তথ্য [ইনস্টল করুন](#ইনস্টল-করুন) অংশে আছে।
+Microsoft Store, APT, Scoop, Linux-এ Homebrew ও পোর্টেবল ডাউনলোডের তথ্য [ইনস্টল করুন](#ইনস্টল-করুন) অংশে আছে।
 
 ## কেন RestGuard
 
@@ -92,7 +93,7 @@ RestGuard তাঁদের জন্য, যাঁরা জানেন ব�
 
 ### দরকারের সময় বাধা দেয় না
 
-- মিটিং শনাক্তকরণ (Windows, macOS): Zoom, Microsoft Teams, Webex বা Tencent Meeting সামনে থাকলে (অথবা Windows-এ মাইক্রোফোন ব্যবহার করলে) বিরতি মিটিং শেষ হওয়া পর্যন্ত অপেক্ষা করে; বিরতির সময় “আমি মিটিংয়ে আছি”-তে ক্লিক করে 15 মিনিট পরে মনে করিয়ে দিতেও বলতে পারেন
+- মিটিং শনাক্তকরণ (Windows, macOS): Zoom, Microsoft Teams, Webex বা Tencent Meeting সামনে থাকলে (অথবা Windows-এ মাইক্রোফোন ব্যবহার করলে) বিরতি মিটিং শেষ হওয়া পর্যন্ত অপেক্ষা করে; বিরতির সময় “আমি মিটিংয়ে আছি”-তে ক্লিক করে 1 ঘণ্টা পরে মনে করিয়ে দিতেও বলতে পারেন
 - নিষ্ক্রিয়তা শনাক্তকরণ: 5 মিনিট কিবোর্ড বা মাউস ইনপুট না থাকলে আপনাকে অনুপস্থিত ধরা হয় এবং কাজের কাউন্টডাউন থেমে যায়; একটি বিরতির সমান সময় দূরে থাকলে তা পূর্ণ বিরতি হিসেবে গণ্য হয়, তাই ফিরেই আপনাকে বিশ্রামে পাঠানো হয় না
 
 ### বিরতির শেষ কখনো মিস করবেন না
@@ -109,8 +110,8 @@ RestGuard তাঁদের জন্য, যাঁরা জানেন ব�
 
 ### আরও অনেক কিছু
 
-- ক্রস-প্ল্যাটফর্ম: Windows, macOS ও Linux, WinGet, Scoop, Homebrew ও APT দিয়ে ইনস্টল ও আপডেট করা যায় (দেখুন [ইনস্টল করুন](#ইনস্টল-করুন))
-- ট্রে মেনু: বাকি সময়, এখনই বিশ্রাম, সেটিংস, লগইনের সময় চালু, কড়াকড়ির প্রোফাইল বদল
+- ক্রস-প্ল্যাটফর্ম: Windows, macOS ও Linux, Microsoft Store, WinGet, Scoop, Homebrew ও APT দিয়ে ইনস্টল ও আপডেট করা যায় (দেখুন [ইনস্টল করুন](#ইনস্টল-করুন))
+- ট্রে মেনু: বাকি সময়, এখনই বিশ্রাম, সেটিংস, লগইনের সময় চালু, কড়াকড়ির প্রোফাইল বদল, বিরতি দিন
 - একক ইনস্ট্যান্স
 - অনুমতিমূলক MIT / Apache-2.0 দ্বৈত লাইসেন্সের অধীনে বিনামূল্যে ও ওপেন সোর্স (দেখুন [লাইসেন্স](#লাইসেন্স))
 - সরলীকৃত চীনা, ইংরেজি, হিন্দি, স্প্যানিশ, আরবি, ফরাসি, বাংলা, পর্তুগিজ, জার্মান, জাপানি, ইতালীয়, কোরীয় ও ইন্দোনেশীয় ভাষায় পাওয়া যায়। ইন্টারফেসের ভাষা ডিফল্টভাবে সিস্টেম অনুসরণ করে (সিস্টেমের ভাষা সমর্থিত না হলে ইংরেজি); ট্রে মেনুর “语言 / Language” সাবমেনু থেকে যেকোনো সময় বদলান
@@ -137,7 +138,9 @@ RestGuard তাঁদের জন্য, যাঁরা জানেন ব�
 
 ### Windows
 
-[WinGet](https://learn.microsoft.com/windows/package-manager/winget/) দিয়ে ইনস্টল করুন:
+[Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0) থেকে নিন; এটি নিজে থেকেই আপডেট হয়।
+
+অথবা [WinGet](https://learn.microsoft.com/windows/package-manager/winget/) দিয়ে ইনস্টল করুন:
 
 ```powershell
 winget install HansTanzi.RestGuard
@@ -211,7 +214,7 @@ brew install --cask hanstanzi/tap/restguard
 
 ### ডাউনলোড যাচাই করুন
 
-v0.1.14-এর পরের Release ফাইলগুলো GitHub Actions দিয়ে তৈরি এবং স্বাক্ষরিত [বিল্ড প্রোভেন্যান্স অ্যাটেস্টেশন](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) বহন করে, যা প্রতিটি ফাইলকে সেটি তৈরি করা ওয়ার্কফ্লো রান ও কমিটের সঙ্গে যুক্ত করে। ডাউনলোড করা ফাইল [GitHub CLI](https://cli.github.com) দিয়ে যাচাই করতে:
+v0.1.14-এর পরের Release ফাইলগুলো GitHub Actions দিয়ে সোর্স কোড থেকে স্বয়ংক্রিয়ভাবে তৈরি এবং স্বাক্ষরিত [বিল্ড প্রোভেন্যান্স অ্যাটেস্টেশন](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) বহন করে, যা প্রতিটি ফাইলকে সেটি তৈরি করা ওয়ার্কফ্লো রান ও কমিটের সঙ্গে যুক্ত করে। ডাউনলোড করা ফাইল [GitHub CLI](https://cli.github.com) দিয়ে যাচাই করতে:
 
 ```sh
 gh attestation verify RestGuard_<version>_x64.exe --repo HansTanzi/RestGuard
@@ -329,10 +332,10 @@ movable = false          # পূর্ণ স্ক্রিন না হল�
 ## সাধারণ প্রশ্ন
 
 **আমি কি RestGuard থেকে প্রস্থান করতে পারি?**
-দুই বিরতির মাঝে, হ্যাঁ: ট্রে মেনু থেকে “প্রস্থান” বেছে নিন। বিরতির সময়, অথবা পিছিয়ে দেওয়া বিরতি বাকি থাকলে, “প্রস্থান” নিষ্ক্রিয় থাকে।
+দুই বিরতির মাঝে, হ্যাঁ: ট্রে মেনু থেকে “প্রস্থান” বেছে নিন। বিরতির সময়, অথবা পিছিয়ে দেওয়া বিরতি বাকি থাকলে, “প্রস্থান” নিষ্ক্রিয় থাকে। আজ যদি জরুরি কোনো কাজ থাকে, যেমন গুরুত্বপূর্ণ মিটিং, আর RestGuard-এর বাধা না চান, তাহলে “প্রস্থান”-এর বদলে “বিরতি দিন” বেছে নিন: ৩০ মিনিট, ১ বা ২ ঘণ্টা পরে, অথবা পরদিন সকালে রিমাইন্ডার নিজে থেকেই ফিরে আসে, তাই RestGuard আবার চালু করার কথা মনে রাখতে হয় না।
 
 **মিটিংয়ের মধ্যে বিরতি এসে গেলে কী হবে?**
-মাঝারি ও নিম্ন কড়াকড়িতে, Zoom, Microsoft Teams, Webex বা Tencent Meeting সামনে থাকলে (Windows, macOS; Windows-এ মাইক্রোফোন ব্যবহারের সময়ও) বিরতি অপেক্ষা করে। বিরতি শুরু হয়ে গেলে “আমি মিটিংয়ে আছি”-তে ক্লিক করুন, 15 মিনিট পরে আবার মনে করিয়ে দেওয়া হবে। উচ্চ কড়াকড়িতে বিরতি অপেক্ষা করে না।
+মাঝারি ও নিম্ন কড়াকড়িতে, Zoom, Microsoft Teams, Webex বা Tencent Meeting সামনে থাকলে (Windows, macOS; Windows-এ মাইক্রোফোন ব্যবহারের সময়ও) বিরতি অপেক্ষা করে। বিরতি শুরু হয়ে গেলে “আমি মিটিংয়ে আছি”-তে ক্লিক করুন, 1 ঘণ্টা পরে আবার মনে করিয়ে দেওয়া হবে। উচ্চ কড়াকড়িতে বিরতি অপেক্ষা করে না।
 
 **আমি জরুরি কাজের মধ্যে আছি। আমার কাজ কি হারিয়ে যাবে?**
 বিরতি 5 মিনিট পিছিয়ে দিন (মাঝারি ও নিম্নে 3 বার পর্যন্ত, উচ্চে একবার), অথবা মাঝারি ও নিম্নে জরুরি মোডে ওভারলে ছোট করে কাজ সংরক্ষণ করুন, কাউন্টডাউন চলতে থাকবে।

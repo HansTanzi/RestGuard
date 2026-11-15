@@ -36,6 +36,8 @@ const CONFIG_EVENT: &str = "config:changed";
 /// Total time the overlay may stay shrunk per break; then it restores itself and can't be shrunk again,
 /// so urgent mode can't be used to sit out the whole break
 const URGENT_LIMIT: Duration = Duration::from_secs(2 * 60);
+/// How often to try opening the overlay again when a break has none, e.g. it started while the displays were asleep
+const OVERLAY_RETRY: Duration = Duration::from_secs(5);
 
 struct AppState {
     timer: Mutex<Timer>,
@@ -308,6 +310,11 @@ fn end_rest(app: &AppHandle, action: fn(&mut Timer, Instant) -> bool) -> Result<
     Ok(())
 }
 
+/// Tray status line clicked once the break is over: same as "Start working" on the overlay
+pub(crate) fn start_work_now(app: &AppHandle) {
+    let _ = end_rest(app, Timer::start_work);
+}
+
 pub(crate) fn rest_now(app: &AppHandle) {
     let snap = {
         let state = app.state::<AppState>();
@@ -319,6 +326,29 @@ pub(crate) fn rest_now(app: &AppHandle) {
         timer.snapshot(now)
     };
     open_overlays(app);
+    broadcast(app, &snap);
+}
+
+/// Tray "Pause": no breaks until the given local time; refused when quitting would be
+pub(crate) fn pause(app: &AppHandle, until: chrono::NaiveDateTime) {
+    update_timer(app, |timer, _| timer.pause(until));
+}
+
+/// Tray "Resume": ends a pause early
+pub(crate) fn resume(app: &AppHandle) {
+    update_timer(app, Timer::resume);
+}
+
+fn update_timer(app: &AppHandle, action: impl FnOnce(&mut Timer, Instant) -> bool) {
+    let snap = {
+        let state = app.state::<AppState>();
+        let mut timer = state.timer.lock().unwrap();
+        let now = Instant::now();
+        if !action(&mut timer, now) {
+            return;
+        }
+        timer.snapshot(now)
+    };
     broadcast(app, &snap);
 }
 
@@ -362,8 +392,15 @@ fn open_overlays(app: &AppHandle) {
     // See overlay::open_all: windows can't be created directly on the event callback thread
     thread::spawn(move || {
         let state = app.state::<AppState>();
-        // Use the timer's profile, since this break was started with it
-        let profile = state.timer.lock().unwrap().profile().clone();
+        let profile = {
+            let timer = state.timer.lock().unwrap();
+            // The break may have ended before this thread ran
+            if timer.snapshot(Instant::now()).phase == Phase::Working {
+                return;
+            }
+            // Use the timer's profile, since this break was started with it
+            timer.profile().clone()
+        };
         overlay::open_all(&app, profile.coverage(false), profile.force_rest, profile.movable);
     });
 }
@@ -377,6 +414,8 @@ fn broadcast(app: &AppHandle, snap: &Snapshot) {
 fn spawn_ticker(app: AppHandle) {
     // Whether the screen was already locked in this break; the user may unlock and keep resting at the overlay
     let mut locked = false;
+    // Last attempt to open the overlay during this break
+    let mut opened_at: Option<Instant> = None;
     thread::spawn(move || loop {
         thread::sleep(Duration::from_millis(500));
         // Query before taking the lock: on Linux this spawns an external process
@@ -385,10 +424,12 @@ fn spawn_ticker(app: AppHandle) {
             let state = app.state::<AppState>();
             let mut timer = state.timer.lock().unwrap();
             let now = Instant::now();
+            let local = chrono::Local::now();
+            timer.wake(now, local.naive_local());
             if let Some(idle) = idle {
                 timer.idle(now, idle);
             }
-            timer.defer(now, chrono::Local::now().time());
+            timer.defer(now, local.time());
             // Only check the foreground app once a break is due; the enforcement level can disable meeting detection
             let detect = timer.profile().meeting_detection;
             let held = if detect && timer.rest_due(now) {
@@ -404,13 +445,24 @@ fn spawn_ticker(app: AppHandle) {
             (event, timer.snapshot(now))
         };
         match event {
-            Some(TimerEvent::RestStarted) => open_overlays(&app),
+            Some(TimerEvent::RestStarted) => {
+                opened_at = Some(Instant::now());
+                open_overlays(&app);
+            }
             Some(TimerEvent::RestFinished) => {
                 let cfg = app.state::<AppState>().config.lock().unwrap().clone();
                 sound::announce(&cfg);
                 phone::announce(&cfg);
             }
             None => {}
+        }
+        // A break without an overlay can't be ended, as "Start working" is only on the overlay. Opening fails while
+        // displays are asleep (macOS drops sleeping external displays), so keep retrying until one shows
+        if snap.phase == Phase::Working {
+            opened_at = None;
+        } else if !overlay::any_open(&app) && opened_at.is_none_or(|at| at.elapsed() >= OVERLAY_RETRY) {
+            opened_at = Some(Instant::now());
+            open_overlays(&app);
         }
         // Urgent time used up: restore the overlay; auto-lock below then applies again
         if overlay::is_shrunk() && overlay::urgent_left(URGENT_LIMIT).is_zero() {

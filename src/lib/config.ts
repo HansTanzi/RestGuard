@@ -75,18 +75,13 @@ export interface FixedBreak {
   time: string;
   // A break due this long before time waits until time
   quiet_minutes: number;
-  // How long the break that starts at time lasts. Not used by work_end: the day is over then
+  // How long the break that starts at time lasts
   rest_minutes: number;
 }
 
 // Matches BUILTIN_FIXED_BREAKS in src-tauri/src/config.rs
-export const BUILTIN_FIXED_BREAKS = ["work_end", "lunch"] as const;
+export const BUILTIN_FIXED_BREAKS = ["work_end", "lunch", "sleep"] as const;
 export type BuiltinFixedBreak = (typeof BUILTIN_FIXED_BREAKS)[number];
-
-// Matches FixedBreak::has_rest in src-tauri/src/config.rs
-export function fixedBreakHasRest(b: FixedBreak): boolean {
-  return b.name !== "work_end";
-}
 
 export function isBuiltinFixedBreak(name: string): name is BuiltinFixedBreak {
   return (BUILTIN_FIXED_BREAKS as readonly string[]).includes(name);
@@ -141,8 +136,9 @@ export const DEFAULT_CONFIG: Config = {
   postpone_minutes: 5,
   idle_minutes: 5,
   fixed_breaks: [
-    { name: "work_end", enabled: false, time: "18:00", quiet_minutes: 30, rest_minutes: 30 },
+    { name: "work_end", enabled: true, time: "18:00", quiet_minutes: 30, rest_minutes: 30 },
     { name: "lunch", enabled: false, time: "12:00", quiet_minutes: 30, rest_minutes: 30 },
+    { name: "sleep", enabled: true, time: "23:00", quiet_minutes: 30, rest_minutes: 30 },
   ],
   level: "medium",
   lock_screen: false,

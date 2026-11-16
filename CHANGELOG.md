@@ -10,6 +10,12 @@ Downloads for every version are on the [Releases](https://github.com/HansTanzi/R
 
 - Tray menu: pause reminders for 30 minutes, 1 or 2 hours, or until the next morning, then they resume on their own, so stopping for a while no longer means quitting and forgetting to start RestGuard again. Like Quit, it's unavailable during a break or while a postponed break is owed
 - Tray menu: once a break is over, clicking the status line at the top ("Break over · Back to work") starts work, the same as the button on the overlay
+- Settings: a built-in "Sleep" fixed break (23:00 by default). A fixed break you already added named "Sleep" becomes the built-in one
+
+### Changed
+
+- The "End of day" fixed break now has a break length, like Lunch: at that time a break of that length starts, instead of only the held-off regular break
+- "End of day" and "Sleep" are on by default for new installs; a config file that already turns "End of day" off keeps it off
 
 ### Fixed
 

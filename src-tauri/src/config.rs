@@ -12,8 +12,8 @@ pub const SOUNDS: [&str; 4] = ["beep", "chime", "rise", "file"];
 const DEFAULT_SOUND: &str = "beep";
 /// ntfy server for phone notifications; matches DEFAULT_CONFIG in src/lib/config.ts
 const DEFAULT_NTFY_SERVER: &str = "https://ntfy.sh";
-/// Built-in fixed breaks: the end of the working day and lunch. Matches BUILTIN_FIXED_BREAKS in src/lib/config.ts
-pub const BUILTIN_FIXED_BREAKS: [&str; 2] = ["work_end", "lunch"];
+/// Built-in fixed breaks: the end of the working day, lunch and bedtime. Matches BUILTIN_FIXED_BREAKS in src/lib/config.ts
+pub const BUILTIN_FIXED_BREAKS: [&str; 3] = ["work_end", "lunch", "sleep"];
 /// Time of day for a new custom fixed break, as HH:MM; matches newFixedBreak in src/lib/config.ts
 const DEFAULT_FIXED_TIME: &str = "15:00";
 /// Default quiet window before a fixed break, and default length of a fixed break
@@ -102,30 +102,27 @@ pub struct FixedBreak {
     pub time: String,
     /// A break due this long before `time` waits until `time`
     pub quiet_minutes: f64,
-    /// How long the break that starts at `time` lasts. Not used by work_end: the day is over then
+    /// How long the break that starts at `time` lasts
     pub rest_minutes: f64,
 }
 
 impl FixedBreak {
-    /// Built-in fixed breaks, off by default; matches DEFAULT_CONFIG in src/lib/config.ts
+    /// Built-in fixed breaks: the end of the day and sleep are on by default, lunch is off.
+    /// Matches DEFAULT_CONFIG in src/lib/config.ts
     pub fn builtin(name: &str) -> Option<Self> {
-        let time = match name {
-            "work_end" => "18:00",
-            "lunch" => "12:00",
+        let (time, enabled) = match name {
+            "work_end" => ("18:00", true),
+            "lunch" => ("12:00", false),
+            "sleep" => ("23:00", true),
             _ => return None,
         };
         Some(Self {
             name: name.to_string(),
-            enabled: false,
+            enabled,
             time: time.to_string(),
             quiet_minutes: DEFAULT_FIXED_MINUTES,
             rest_minutes: DEFAULT_FIXED_MINUTES,
         })
-    }
-
-    /// Whether a break of rest_minutes starts at `time`; at the end of the working day only a held-off break goes ahead
-    pub fn has_rest(&self) -> bool {
-        self.name != "work_end"
     }
 }
 
@@ -297,15 +294,13 @@ impl Config {
         // Tables must come after all top-level keys
         for b in &self.fixed_breaks {
             text += &format!(
-                "\n[[fixed_breaks]]\nname = {}\nenabled = {}\ntime = {}\nquiet_minutes = {:?}\n",
+                "\n[[fixed_breaks]]\nname = {}\nenabled = {}\ntime = {}\nquiet_minutes = {:?}\nrest_minutes = {:?}\n",
                 quote(&b.name),
                 b.enabled,
                 quote(&b.time),
                 b.quiet_minutes,
+                b.rest_minutes,
             );
-            if b.has_rest() {
-                text += &format!("rest_minutes = {:?}\n", b.rest_minutes);
-            }
         }
         text += &format!("\n# {}\n", c(&comment::PROFILES));
         for p in &self.profiles {
@@ -352,6 +347,10 @@ impl Config {
         let mut seen: Vec<String> = Vec::new();
         for mut b in self.fixed_breaks {
             b.name = b.name.trim().to_string();
+            // A break the user added under a built-in one's name, such as "Sleep", becomes that built-in one
+            if let Some(id) = BUILTIN_FIXED_BREAKS.iter().find(|id| id.eq_ignore_ascii_case(&b.name)) {
+                b.name = id.to_string();
+            }
             if b.name.is_empty() || seen.contains(&b.name) {
                 continue;
             }
@@ -456,7 +455,7 @@ impl Config {
                     name: b.name.clone(),
                     at: parse_clock(&b.time)?,
                     window: minutes(b.quiet_minutes),
-                    rest: b.has_rest().then(|| minutes(b.rest_minutes)),
+                    rest: minutes(b.rest_minutes),
                 })
             })
             .collect()
@@ -464,21 +463,21 @@ impl Config {
 }
 
 /// An enabled fixed break: a break falling due within `window` before `at` waits until `at`,
-/// and if `rest` is set, a break of that length starts at `at`
+/// and a break of `rest` starts at `at`
 #[derive(Debug, Clone, PartialEq)]
 pub struct FixedTime {
     /// FixedBreak::name: a built-in fixed break or the user's own name
     pub name: String,
     pub at: NaiveTime,
     pub window: Duration,
-    pub rest: Option<Duration>,
+    pub rest: Duration,
 }
 
 impl FixedTime {
     /// Time left of the break starting at `at` if `now` falls within it, otherwise None. The break may cross midnight
     pub fn rest_left(&self, now: NaiveTime) -> Option<Duration> {
         let since = until(now, self.at);
-        self.rest.and_then(|rest| rest.checked_sub(since)).filter(|left| !left.is_zero())
+        self.rest.checked_sub(since).filter(|left| !left.is_zero())
     }
 
     /// Whether the clock moved from `prev` past `at` to `now`, such as across 12:00 from 11:59:59.5 to 12:00:00
@@ -491,7 +490,7 @@ impl FixedTime {
     /// before the countdown ends, or the countdown ends in its quiet window. Otherwise None
     pub fn next(&self, now: NaiveTime, work_left: Duration) -> Option<Duration> {
         let left = until(self.at, now);
-        let comes_first = self.rest.is_some() && left <= work_left;
+        let comes_first = left <= work_left;
         let waited_for = left.checked_sub(work_left).is_some_and(|gap| gap <= self.window);
         (!left.is_zero() && (comes_first || waited_for)).then_some(left)
     }
@@ -676,6 +675,8 @@ mod tests {
                 named("Tea", "11:00", 30.0),
                 named("Late", "25:00", 0.0),
                 named("lunch", "soon", 5000.0),
+                // Added by the user before sleep was built in
+                named(" Sleep ", "8:00", 30.0),
             ],
             ..Config::default()
         }
@@ -689,13 +690,15 @@ mod tests {
             summary,
             [
                 // The missing built-in one is restored, and built-in ones come first
-                ("work_end", false, "18:00", 30.0, 30.0),
+                ("work_end", true, "18:00", 30.0, 30.0),
                 ("lunch", true, "12:00", 720.0, 15.0),
+                ("sleep", true, "08:00", 30.0, 15.0),
                 ("Tea", true, "09:05", 30.0, 15.0),
                 ("Late", true, "15:00", 30.0, 30.0),
             ]
         );
-        assert_eq!(Config::default().fixed_times(), [], "Off by default");
+        let on: Vec<_> = Config::default().fixed_times().into_iter().map(|f| f.name).collect();
+        assert_eq!(on, ["work_end", "sleep"], "Lunch is off by default");
     }
 
     #[test]
@@ -711,7 +714,7 @@ mod tests {
             name: "work_end".into(),
             at: at(18, 0),
             window: Duration::from_secs(30 * 60),
-            rest: None,
+            rest: Duration::from_secs(30 * 60),
         };
         assert_eq!(end.wait(at(17, 29)), None);
         assert_eq!(end.wait(at(17, 30)), Some(Duration::from_secs(30 * 60)));
@@ -733,7 +736,7 @@ mod tests {
             name: "lunch".into(),
             at: at(12, 0, 0),
             window: Duration::from_secs(30 * 60),
-            rest: Some(Duration::from_secs(30 * 60)),
+            rest: Duration::from_secs(30 * 60),
         };
         assert!(lunch.reached(at(11, 59, 59), at(12, 0, 0)));
         assert!(lunch.reached(at(11, 0, 0), at(12, 10, 0)), "e.g. after waking from sleep");
@@ -743,9 +746,6 @@ mod tests {
         assert_eq!(lunch.rest_left(at(12, 20, 0)), Some(Duration::from_secs(10 * 60)));
         assert_eq!(lunch.rest_left(at(12, 30, 0)), None);
         assert_eq!(lunch.rest_left(at(11, 59, 0)), None);
-
-        let end = FixedTime { rest: None, ..lunch };
-        assert_eq!(end.rest_left(at(12, 0, 0)), None);
     }
 
     #[test]

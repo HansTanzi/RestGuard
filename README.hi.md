@@ -263,18 +263,26 @@ phone_notify = false     # ब्रेक खत्म होने पर ntfy
 ntfy_server = "https://ntfy.sh"  # ntfy सर्वर, सार्वजनिक या आपका अपना
 ntfy_topic = ""          # ntfy ऐप में सब्सक्राइब करने का टॉपिक; इसे ऐसा रखें कि अंदाज़ा लगाना मुश्किल हो
 
-[[fixed_breaks]]         # एक तय ब्रेक; "work_end" (दिन का अंत) और "lunch" अंतर्निहित हैं
+[[fixed_breaks]]         # एक तय ब्रेक; "work_end" (दिन का अंत), "lunch" और "sleep" (सोने का समय) अंतर्निहित हैं
 name = "work_end"
-enabled = false          # इससे ठीक पहले आने वाले ब्रेक रोकें
+enabled = true          # इससे ठीक पहले आने वाले ब्रेक रोकें
 time = "18:00"           # स्थानीय समय में 24-घंटे का HH:MM
 quiet_minutes = 30.0     # time से इतनी देर पहले आने वाले ब्रेक time तक इंतज़ार करते हैं
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # दोपहर का भोजन: time पर rest_minutes का ब्रेक शुरू होता है
 name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # ब्रेक कितनी देर का है (लंच और आपके अपने तय ब्रेक); सामान्य ब्रेक की अवधि के बाद आप कंप्यूटर का उपयोग जारी रख सकते हैं
+rest_minutes = 30.0      # ब्रेक कितनी देर का है; सामान्य ब्रेक की अवधि के बाद आप कंप्यूटर का उपयोग जारी रख सकते हैं
+
+[[fixed_breaks]]
+name = "sleep"
+enabled = true
+time = "23:00"
+quiet_minutes = 30.0
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # अपने ब्रेक जोड़ें, जैसे चाय का ब्रेक, हर एक के लिए एक [[fixed_breaks]]
 name = "चाय का ब्रेक"

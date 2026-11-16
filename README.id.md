@@ -263,18 +263,26 @@ phone_notify = false     # kirim notifikasi ke ponsel melalui ntfy saat istiraha
 ntfy_server = "https://ntfy.sh"  # server ntfy, yang publik atau milik Anda
 ntfy_topic = ""          # topik yang diikuti di aplikasi ntfy; buat agar sulit ditebak
 
-[[fixed_breaks]]         # istirahat tetap; "work_end" (akhir hari kerja) dan "lunch" sudah bawaan
+[[fixed_breaks]]         # istirahat tetap; "work_end" (akhir hari kerja), "lunch", dan "sleep" (waktu tidur) sudah bawaan
 name = "work_end"
-enabled = false          # tahan istirahat yang jatuh tempo tepat sebelumnya
+enabled = true          # tahan istirahat yang jatuh tempo tepat sebelumnya
 time = "18:00"           # format 24 jam HH:MM dalam waktu setempat
 quiet_minutes = 30.0     # istirahat yang jatuh tempo selama ini sebelum time menunggu sampai time
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # makan siang: istirahat selama rest_minutes dimulai pada time
 name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # lama istirahat (makan siang dan istirahat tetap Anda); setelah melewati lama istirahat biasa Anda bisa lanjut memakai komputer
+rest_minutes = 30.0      # lama istirahat; setelah melewati lama istirahat biasa Anda bisa lanjut memakai komputer
+
+[[fixed_breaks]]
+name = "sleep"
+enabled = true
+time = "23:00"
+quiet_minutes = 30.0
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # tambahkan milik Anda, misalnya istirahat teh, dengan satu [[fixed_breaks]] untuk masing-masing
 name = "Istirahat teh"

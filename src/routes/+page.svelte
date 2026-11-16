@@ -22,7 +22,6 @@
     MAX_FIXED_MINUTES,
     NTFY_TOPIC_PATTERN,
     SOUNDS,
-    fixedBreakHasRest,
     isBuiltinFixedBreak,
     isBuiltinLevel,
     newFixedBreak,
@@ -91,11 +90,12 @@
         name:
           !isBuiltinFixedBreak(b.name) &&
           (!name ||
-            isBuiltinFixedBreak(name) ||
+            // config.rs treats a name like "Sleep" as the built-in sleep
+            isBuiltinFixedBreak(name.toLowerCase()) ||
             draft.fixed_breaks.some((c, j) => j !== i && c.name.trim() === name)),
         time: b.enabled && !/^\d{2}:\d{2}$/.test(b.time),
         quiet_minutes: b.enabled && !span(b.quiet_minutes),
-        rest_minutes: b.enabled && fixedBreakHasRest(b) && !span(b.rest_minutes),
+        rest_minutes: b.enabled && !span(b.rest_minutes),
       };
     }),
   );
@@ -547,8 +547,7 @@
         </section>
       </fieldset>
 
-      <!-- Built-in fixed breaks (end of day, lunch) can only be turned off; the user's own can be renamed and removed.
-           The end of the day has no break length -->
+      <!-- Built-in fixed breaks (end of day, lunch, sleep) can only be turned off; the user's own can be renamed and removed -->
       <fieldset disabled={locked}>
         <section>
           <h2>{s.fixedBreaks}</h2>
@@ -590,20 +589,18 @@
                   bind:value={b.quiet_minutes}
                 />
               </label>
-              {#if fixedBreakHasRest(b)}
-                <label class="sub">
-                  <span>{s.restMinutes}</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max={MAX_FIXED_MINUTES}
-                    step="any"
-                    class:invalid={fixedErrors[i]?.rest_minutes}
-                    disabled={!b.enabled}
-                    bind:value={b.rest_minutes}
-                  />
-                </label>
-              {/if}
+              <label class="sub">
+                <span>{s.restMinutes}</span>
+                <input
+                  type="number"
+                  min="0"
+                  max={MAX_FIXED_MINUTES}
+                  step="any"
+                  class:invalid={fixedErrors[i]?.rest_minutes}
+                  disabled={!b.enabled}
+                  bind:value={b.rest_minutes}
+                />
+              </label>
               {#if !isBuiltinFixedBreak(b.name)}
                 <div class="actions">
                   <button

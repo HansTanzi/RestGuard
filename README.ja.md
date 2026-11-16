@@ -263,18 +263,26 @@ phone_notify = false     # 休憩終了時に ntfy でスマホへ通知する
 ntfy_server = "https://ntfy.sh"  # ntfy サーバー。公開サーバーか自前のサーバー
 ntfy_topic = ""          # ntfy アプリで購読するトピック。推測されにくいものに
 
-[[fixed_breaks]]         # 固定の休憩。"work_end"（終業）と "lunch" は内蔵
+[[fixed_breaks]]         # 固定の休憩。"work_end"（終業）、"lunch"、"sleep"（就寝）は内蔵
 name = "work_end"
-enabled = false          # 終業直前に来る休憩を見送る
+enabled = true          # 終業直前に来る休憩を見送る
 time = "18:00"           # 現地時間の 24 時間制 HH:MM
 quiet_minutes = 30.0     # time のこの時間前以降に来る休憩は time まで待つ
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # 昼休み：time に rest_minutes の休憩が始まる
 name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # 休憩の長さ（昼休みと自分で追加した固定休憩）。通常の休憩の長さを過ぎるとパソコンを使い続けられます
+rest_minutes = 30.0      # 休憩の長さ。通常の休憩の長さを過ぎるとパソコンを使い続けられます
+
+[[fixed_breaks]]
+name = "sleep"
+enabled = true
+time = "23:00"
+quiet_minutes = 30.0
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # 自分で追加する場合（例：ティーブレイク）、1 つにつき [[fixed_breaks]] を 1 つ
 name = "Tea break"

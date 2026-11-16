@@ -263,18 +263,26 @@ phone_notify = false     # বিরতি শেষ হলে ntfy দিয়
 ntfy_server = "https://ntfy.sh"  # ntfy সার্ভার, পাবলিক অথবা আপনার নিজের
 ntfy_topic = ""          # ntfy অ্যাপে সাবস্ক্রাইব করার টপিক; অনুমান করা কঠিন রাখুন
 
-[[fixed_breaks]]         # একটি নির্দিষ্ট বিরতি; "work_end" (দিনের শেষ) ও "lunch" বিল্ট-ইন
+[[fixed_breaks]]         # একটি নির্দিষ্ট বিরতি; "work_end" (দিনের শেষ), "lunch" ও "sleep" (ঘুমের সময়) বিল্ট-ইন
 name = "work_end"
-enabled = false          # এর ঠিক আগে পড়া বিরতিগুলো আটকে রাখুন
+enabled = true          # এর ঠিক আগে পড়া বিরতিগুলো আটকে রাখুন
 time = "18:00"           # স্থানীয় সময়ে 24-ঘণ্টার HH:MM
 quiet_minutes = 30.0     # time-এর এতক্ষণ আগে পড়া বিরতিগুলো time পর্যন্ত অপেক্ষা করে
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # দুপুরের খাবার: time-এ rest_minutes দৈর্ঘ্যের বিরতি শুরু হয়
 name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # বিরতি কতক্ষণের (লাঞ্চ ও আপনার নিজের নির্দিষ্ট বিরতি); সাধারণ বিরতির সময় পার হলে কম্পিউটার ব্যবহার চালিয়ে যেতে পারেন
+rest_minutes = 30.0      # বিরতি কতক্ষণের; সাধারণ বিরতির সময় পার হলে কম্পিউটার ব্যবহার চালিয়ে যেতে পারেন
+
+[[fixed_breaks]]
+name = "sleep"
+enabled = true
+time = "23:00"
+quiet_minutes = 30.0
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # নিজের বিরতি যোগ করুন, যেমন চায়ের বিরতি, প্রতিটির জন্য একটি [[fixed_breaks]]
 name = "চায়ের বিরতি"

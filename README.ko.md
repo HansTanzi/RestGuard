@@ -263,18 +263,26 @@ phone_notify = false     # 휴식이 끝나면 ntfy로 휴대폰에 알림
 ntfy_server = "https://ntfy.sh"  # ntfy 서버, 공개 서버나 직접 운영하는 서버
 ntfy_topic = ""          # ntfy 앱에서 구독할 토픽, 추측하기 어렵게
 
-[[fixed_breaks]]         # 고정 휴식, "work_end"(퇴근)와 "lunch"는 기본 제공
+[[fixed_breaks]]         # 고정 휴식, "work_end"(퇴근), "lunch", "sleep"(취침)은 기본 제공
 name = "work_end"
-enabled = false          # 바로 직전에 오는 휴식은 보류
+enabled = true          # 바로 직전에 오는 휴식은 보류
 time = "18:00"           # 현지 시간 기준 24시간제 HH:MM
 quiet_minutes = 30.0     # time 전 이 시간 안에 오는 휴식은 time까지 기다림
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # 점심: time에 rest_minutes만큼 휴식 시작
 name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # 휴식 시간(점심과 직접 추가한 고정 휴식). 일반 휴식 시간이 지나면 컴퓨터를 계속 사용할 수 있음
+rest_minutes = 30.0      # 휴식 시간. 일반 휴식 시간이 지나면 컴퓨터를 계속 사용할 수 있음
+
+[[fixed_breaks]]
+name = "sleep"
+enabled = true
+time = "23:00"
+quiet_minutes = 30.0
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # 직접 추가(예: 티타임)하려면 하나당 [[fixed_breaks]] 하나
 name = "Tea break"

@@ -263,18 +263,26 @@ phone_notify = false     # push a notification to your phone via ntfy when a bre
 ntfy_server = "https://ntfy.sh"  # ntfy server, the public one or your own
 ntfy_topic = ""          # topic to subscribe to in the ntfy app; keep it hard to guess
 
-[[fixed_breaks]]         # a fixed break; "work_end" (end of the working day) and "lunch" are built in
+[[fixed_breaks]]         # a fixed break; "work_end" (end of the working day), "lunch" and "sleep" are built in
 name = "work_end"
-enabled = false          # hold off breaks that fall due just before it
+enabled = true          # hold off breaks that fall due just before it
 time = "18:00"           # 24-hour HH:MM in local time
 quiet_minutes = 30.0     # breaks due this long before time wait until time
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # lunch: a break of rest_minutes starts at time
 name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # how long the break lasts (lunch and your own fixed breaks); past a regular break's length you can keep using the computer
+rest_minutes = 30.0      # how long the break lasts; past a regular break's length you can keep using the computer
+
+[[fixed_breaks]]
+name = "sleep"
+enabled = true
+time = "23:00"
+quiet_minutes = 30.0
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # add your own, e.g. a tea break, with one [[fixed_breaks]] each
 name = "Tea break"

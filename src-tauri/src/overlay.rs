@@ -78,6 +78,17 @@ struct Layout {
 
 static LAYOUT: LazyLock<Mutex<Layout>> = LazyLock::new(Default::default);
 
+/// Held while overlays are being opened. Two concurrent open_all calls (e.g. tray "Rest now" plus the ticker's retry) could
+/// both pass the label check before either window registers, creating a duplicate native window that the app no longer
+/// tracks: close_all can't destroy it, so it stays on screen after the break and breaks the app's exit
+static OPENING: Mutex<()> = Mutex::new(());
+
+/// Runs `f` while holding the opening lock, so overlays are never opened by two threads at once
+pub fn while_opening<R>(f: impl FnOnce() -> R) -> R {
+    let _guard = OPENING.lock().unwrap_or_else(|e| e.into_inner());
+    f()
+}
+
 pub fn is_overlay(label: &str) -> bool {
     label.starts_with(PREFIX)
 }
@@ -187,8 +198,9 @@ fn cover_everything(window: &tauri::WebviewWindow) {
     });
 }
 
+/// Whether an overlay is showing or being opened right now
 pub fn any_open(app: &AppHandle) -> bool {
-    app.webview_windows().keys().any(|label| is_overlay(label))
+    OPENING.try_lock().is_err() || app.webview_windows().keys().any(|label| is_overlay(label))
 }
 
 pub fn close_all(app: &AppHandle) {

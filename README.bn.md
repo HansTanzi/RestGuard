@@ -12,7 +12,6 @@
   <a href="https://github.com/HansTanzi/RestGuard/releases/latest"><img src="https://img.shields.io/github/v/release/HansTanzi/RestGuard?label=release" alt="Latest release"></a>
   <a href="https://github.com/HansTanzi/RestGuard/releases"><img src="https://img.shields.io/github/downloads/HansTanzi/RestGuard/total" alt="Downloads"></a>
   <a href="#ইনস্টল-করুন"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, Linux"></a>
-  <a href="#windows"><img src="https://img.shields.io/winget/v/HansTanzi.RestGuard?label=winget" alt="WinGet"></a>
   <a href="https://apps.microsoft.com/detail/9PJ3SXDPCNN0"><img src="https://img.shields.io/badge/Microsoft%20Store-get%20it-0078D4" alt="Microsoft Store"></a>
   <a href="#লাইসেন্স"><img src="https://img.shields.io/badge/license-MIT%20%2F%20Apache--2.0-green" alt="License: MIT / Apache-2.0"></a>
 </p>
@@ -36,7 +35,7 @@ Rust + Tauri 2 + Svelte দিয়ে তৈরি। এটি [ProtectEyes](
 এক লাইনে ইনস্টল করুন:
 
 ```sh
-winget install HansTanzi.RestGuard            # Windows
+scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket; scoop install hanstanzi/restguard  # Windows
 brew install --cask hanstanzi/tap/restguard   # macOS
 ```
 
@@ -110,7 +109,7 @@ RestGuard তাঁদের জন্য, যাঁরা জানেন ব�
 
 ### আরও অনেক কিছু
 
-- ক্রস-প্ল্যাটফর্ম: Windows, macOS ও Linux, Microsoft Store, WinGet, Scoop, Homebrew ও APT দিয়ে ইনস্টল ও আপডেট করা যায় (দেখুন [ইনস্টল করুন](#ইনস্টল-করুন))
+- ক্রস-প্ল্যাটফর্ম: Windows, macOS ও Linux, Microsoft Store, Scoop, Homebrew ও APT দিয়ে ইনস্টল ও আপডেট করা যায় (দেখুন [ইনস্টল করুন](#ইনস্টল-করুন))
 - ট্রে মেনু: বাকি সময়, এখনই বিশ্রাম, সেটিংস, লগইনের সময় চালু, কড়াকড়ির প্রোফাইল বদল, বিরতি দিন
 - একক ইনস্ট্যান্স
 - অনুমতিমূলক MIT / Apache-2.0 দ্বৈত লাইসেন্সের অধীনে বিনামূল্যে ও ওপেন সোর্স (দেখুন [লাইসেন্স](#লাইসেন্স))
@@ -140,18 +139,14 @@ RestGuard তাঁদের জন্য, যাঁরা জানেন ব�
 
 [Microsoft Store](https://apps.microsoft.com/detail/9PJ3SXDPCNN0) থেকে নিন; এটি নিজে থেকেই আপডেট হয়।
 
-অথবা [WinGet](https://learn.microsoft.com/windows/package-manager/winget/) দিয়ে ইনস্টল করুন:
-
-```powershell
-winget install HansTanzi.RestGuard
-```
-
 অথবা [Scoop](https://scoop.sh) দিয়ে:
 
 ```powershell
 scoop bucket add hanstanzi https://github.com/HansTanzi/scoop-bucket
 scoop install hanstanzi/restguard
 ```
+
+WinGet: RestGuard অফিসিয়াল WinGet রিপোজিটরিতে জমা দেওয়া হয়েছে এবং এটি [পর্যালোচনার অপেক্ষায়](https://github.com/microsoft/winget-pkgs/pull/450018) আছে। গৃহীত হলে `winget install HansTanzi.RestGuard` দিয়ে ইনস্টল করতে পারবেন।
 
 অথবা [Releases](https://github.com/HansTanzi/RestGuard/releases/latest) থেকে `RestGuard_<version>_x64.exe` ডাউনলোড করে চালান। এটি ইনস্টলার ছাড়া একটি পোর্টেবল exe: যেখানে খুশি রাখুন, আনইনস্টল করতে মুছে ফেলুন। এটি নিজে থেকে আপডেট হয় না; আপডেট করতে নতুন সংস্করণ ডাউনলোড করুন।
 

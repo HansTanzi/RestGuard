@@ -213,6 +213,8 @@
 
   // Push a test notification using the form's unsaved settings
   let sendingTest = $state(false);
+  // Id of the explanation opened by a "?" button, e.g. "quiet-0"; only one is shown at a time
+  let openHint = $state<string | null>(null);
   function testPhone() {
     if (!s) return;
     const sent = s.testSent;
@@ -298,6 +300,24 @@
     };
   });
 </script>
+
+<!-- Small "?" button that toggles the explanation with the given id -->
+{#snippet help(id: string, label: string)}
+  <button
+    type="button"
+    class="ghost help"
+    aria-label={label}
+    aria-expanded={openHint === id}
+    aria-controls={id}
+    onclick={() => (openHint = openHint === id ? null : id)}
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+      <circle class="dot" cx="12" cy="17" r="0.6" />
+    </svg>
+  </button>
+{/snippet}
 
 {#if s}
   <main>
@@ -577,36 +597,55 @@
                   bind:value={b.time}
                 />
               </div>
-              <label class="sub">
-                <span>{s.quietMinutes}</span>
+              <!-- These rows contain a help button, so they can't be labels -->
+              <div class="row sub">
+                <span class="inline">
+                  <span>{s.quietMinutes}</span>
+                  {@render help(`quiet-${i}`, s.quietMinutes)}
+                </span>
                 <input
                   type="number"
                   min="0"
                   max={MAX_FIXED_MINUTES}
                   step="any"
+                  aria-label={s.quietMinutes}
                   class:invalid={fixedErrors[i]?.quiet_minutes}
                   disabled={!b.enabled}
                   bind:value={b.quiet_minutes}
                 />
-              </label>
-              <label class="sub">
-                <span>{s.restMinutes}</span>
+              </div>
+              {#if openHint === `quiet-${i}`}
+                <p class="hint sub" id="quiet-{i}">{s.quietHint}</p>
+              {/if}
+              <div class="row sub">
+                <span class="inline">
+                  <span>{s.restMinutes}</span>
+                  {@render help(`rest-${i}`, s.restMinutes)}
+                </span>
                 <input
                   type="number"
                   min="0"
                   max={MAX_FIXED_MINUTES}
                   step="any"
+                  aria-label={s.restMinutes}
                   class:invalid={fixedErrors[i]?.rest_minutes}
                   disabled={!b.enabled}
                   bind:value={b.rest_minutes}
                 />
-              </label>
+              </div>
+              {#if openHint === `rest-${i}`}
+                <p class="hint sub" id="rest-{i}">{s.fixedRestHint}</p>
+              {/if}
               {#if !isBuiltinFixedBreak(b.name)}
                 <div class="actions">
                   <button
                     type="button"
                     class="ghost small"
-                    onclick={() => draft.fixed_breaks.splice(i, 1)}
+                    onclick={() => {
+                      draft.fixed_breaks.splice(i, 1);
+                      // Indexes shift after removal, so the open hint would jump to another row
+                      openHint = null;
+                    }}
                   >
                     {s.removeFixedBreak}
                   </button>
@@ -951,6 +990,35 @@
 
   button.small {
     padding: 0.25rem 0.9rem;
+  }
+
+  /* Small circled "?" icon next to a setting; click to show its explanation */
+  button.help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.4rem;
+    height: 1.4rem;
+    padding: 0.1rem;
+    border: none;
+  }
+
+  button.help svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  button.help svg .dot {
+    fill: currentColor;
+  }
+
+  button.help[aria-expanded="true"] {
+    color: var(--accent);
   }
 
   input[type="number"],

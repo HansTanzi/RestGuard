@@ -488,11 +488,96 @@ fn spawn_ticker(app: AppHandle) {
     });
 }
 
+/// The single-instance plugin makes a second launch exit silently; say why on the console before that happens.
+/// Dev builds share the identifier with the release, so this also covers `tauri dev` while an installed RestGuard runs.
+fn warn_if_already_running(identifier: &str) {
+    if !already_running(identifier) {
+        return;
+    }
+    // Release builds on Windows have no console of their own: attach to the launching terminal's, if any.
+    // A double-click has none; the dialog the running instance shows is the cue there.
+    #[cfg(all(windows, not(debug_assertions)))]
+    unsafe {
+        use windows::Win32::System::Console::{AttachConsole, ATTACH_PARENT_PROCESS};
+        let _ = AttachConsole(ATTACH_PARENT_PROCESS);
+    }
+    eprintln!(
+        "WARNING: another RestGuard ({identifier}) is already running, so this instance will exit. \
+         Quit the other one from its tray menu first."
+    );
+}
+
+/// Run by the running instance when RestGuard is launched again. Non-blocking, and at most one dialog at a time,
+/// so repeated launches don't stack dialogs up.
+fn show_already_running(app: &AppHandle) {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
+    static SHOWING: AtomicBool = AtomicBool::new(false);
+    if SHOWING.swap(true, Ordering::SeqCst) {
+        return;
+    }
+    app.dialog()
+        .message(i18n::t(&i18n::text::ALREADY_RUNNING))
+        .title("RestGuard")
+        .kind(MessageDialogKind::Info)
+        .show(|_| SHOWING.store(false, Ordering::SeqCst));
+}
+
+/// Probes the named mutex tauri-plugin-single-instance holds on Windows, so it also detects
+/// releases that predate this check.
+#[cfg(windows)]
+fn already_running(identifier: &str) -> bool {
+    use windows::{
+        core::HSTRING,
+        Win32::{
+            Foundation::CloseHandle,
+            System::Threading::{OpenMutexW, SYNCHRONIZATION_SYNCHRONIZE},
+        },
+    };
+    let name = HSTRING::from(format!("{identifier}-sim"));
+    match unsafe { OpenMutexW(SYNCHRONIZATION_SYNCHRONIZE, false, &name) } {
+        Ok(handle) => {
+            let _ = unsafe { CloseHandle(handle) };
+            true
+        }
+        Err(_) => false,
+    }
+}
+
+/// The plugin's state isn't reachable from outside on macOS and Linux, so each instance holds an exclusive
+/// lock on a per-user file for its whole lifetime; the OS releases it when the process exits, even on a crash.
+#[cfg(not(windows))]
+fn already_running(identifier: &str) -> bool {
+    use std::{
+        fs::{File, TryLockError},
+        sync::OnceLock,
+    };
+    static LOCK: OnceLock<File> = OnceLock::new();
+    // Per-user on both: XDG_RUNTIME_DIR on Linux (/tmp is shared between users), $TMPDIR on macOS
+    let dir = std::env::var_os("XDG_RUNTIME_DIR").map_or_else(std::env::temp_dir, PathBuf::from);
+    let Ok(file) = File::create(dir.join(format!("{identifier}.lock"))) else {
+        return false;
+    };
+    match file.try_lock() {
+        Ok(()) => {
+            let _ = LOCK.set(file);
+            false
+        }
+        Err(TryLockError::WouldBlock) => true,
+        Err(TryLockError::Error(_)) => false,
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let context = tauri::generate_context!();
+    warn_if_already_running(&context.config().identifier);
     tauri::Builder::default()
-        // Must be registered first: a second launch exits the new process immediately
-        .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
+        // Must be registered first: a second launch exits the new process immediately, and the running
+        // instance shows a message so the user sees that RestGuard is already running
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            show_already_running(app);
+        }))
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
         .plugin(tauri_plugin_dialog::init())
         // The default macOS menu has Cmd+Q, which would quit the app during a break; setup installs an Edit-only menu instead
@@ -584,7 +669,7 @@ pub fn run() {
             set_overlay_shrunk,
             dev_skip_rest
         ])
-        .build(tauri::generate_context!())
+        .build(context)
         .expect("error while building tauri application")
         .run(|_app, event| {
             // Keep running in the background with no windows; only the tray's "Quit" (with an exit code) really exits

@@ -6,6 +6,7 @@ Thanks for helping out! Bug reports, ideas, translations, docs and code are all 
 
 - **Report a bug**: open a [bug report](https://github.com/HansTanzi/RestGuard/issues/new?template=bug_report.yml). Include your OS, desktop environment on Linux, and RestGuard version (shown in the About window).
 - **Suggest a feature**: open a [feature request](https://github.com/HansTanzi/RestGuard/issues/new?template=feature_request.yml) and describe the problem it solves.
+- **Ask a question or share an idea**: start a thread in [Discussions](https://github.com/HansTanzi/RestGuard/discussions). It's the place for "how do I…" questions and rough ideas that aren't ready to be a feature request.
 - **Improve a translation**: RestGuard ships in 13 languages, and native speakers catch things machine translation misses. See [Translations](#translations).
 - **Fix docs or code**: issues labeled [`good first issue`](https://github.com/HansTanzi/RestGuard/labels/good%20first%20issue) are a good place to start. For larger changes, open an issue first so we can agree on the approach before you spend time on it.
 - **Report a security issue**: please don't open a public issue; see [SECURITY.md](SECURITY.md).

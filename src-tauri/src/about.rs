@@ -23,6 +23,7 @@ pub struct AboutInfo {
     website_url: &'static str,
     repo_url: &'static str,
     issues_url: String,
+    discussions_url: String,
     feedback_email: &'static str,
     privacy_url: String,
 }
@@ -34,6 +35,7 @@ pub fn info(app: &AppHandle) -> AboutInfo {
         website_url: HOMEPAGE_URL,
         repo_url: REPO_URL,
         issues_url: issues_url(),
+        discussions_url: discussions_url(),
         feedback_email: FEEDBACK_EMAIL,
         privacy_url: privacy_url(),
     }
@@ -41,6 +43,11 @@ pub fn info(app: &AppHandle) -> AboutInfo {
 
 fn issues_url() -> String {
     format!("{REPO_URL}/issues")
+}
+
+/// GitHub Discussions, for questions and ideas that aren't bug reports
+fn discussions_url() -> String {
+    format!("{REPO_URL}/discussions")
 }
 
 /// A mailto link with the subject and the info needed to diagnose a problem already filled in,
@@ -89,6 +96,7 @@ pub fn open_link(link: &str) -> Result<(), String> {
         "website" => localized_homepage_url(),
         "repo" => REPO_URL.to_string(),
         "issues" => issues_url(),
+        "discussions" => discussions_url(),
         "email" => feedback_mailto(),
         "privacy" => privacy_url(),
         _ => return Err("Unknown link".into()),
@@ -118,7 +126,7 @@ pub fn open(app: &AppHandle) {
     }
     let built = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App("about".into()))
         .title(title())
-        .inner_size(360.0, 455.0)
+        .inner_size(360.0, 487.0)
         .resizable(false)
         .center()
         .maximizable(false)

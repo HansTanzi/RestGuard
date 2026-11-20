@@ -263,18 +263,26 @@ phone_notify = false     # am Ende einer Pause über ntfy eine Benachrichtigung 
 ntfy_server = "https://ntfy.sh"  # ntfy-Server, der öffentliche oder dein eigener
 ntfy_topic = ""          # Topic, das in der ntfy-App abonniert wird; schwer zu erraten halten
 
-[[fixed_breaks]]         # eine feste Pause; "work_end" (Feierabend) und "lunch" (Mittagspause) sind eingebaut
+[[fixed_breaks]]         # eine feste Pause; "work_end" (Feierabend), "lunch" (Mittagspause) und "sleep" (Schlafenszeit) sind eingebaut
 name = "work_end"
-enabled = false          # Pausen, die kurz davor fällig werden, aufschieben
+enabled = true          # Pausen, die kurz davor fällig werden, aufschieben
 time = "18:00"           # 24-Stunden-Format HH:MM in Ortszeit
 quiet_minutes = 30.0     # Pausen, die so lange vor time fällig werden, warten bis time
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # Mittagspause: um time beginnt eine Pause von rest_minutes
 name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # wie lange die Pause dauert (Mittagspause und eigene feste Pausen); nach der Länge einer normalen Pause können Sie den Computer weiter nutzen
+rest_minutes = 30.0      # wie lange die Pause dauert; nach der Länge einer normalen Pause können Sie den Computer weiter nutzen
+
+[[fixed_breaks]]
+name = "sleep"
+enabled = true
+time = "23:00"
+quiet_minutes = 30.0
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # eigene hinzufügen, z. B. eine Kaffeepause, je ein [[fixed_breaks]]
 name = "Kaffeepause"

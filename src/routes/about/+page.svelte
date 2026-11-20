@@ -21,12 +21,13 @@
     website_url: string;
     repo_url: string;
     issues_url: string;
+    discussions_url: string;
     feedback_email: string;
     privacy_url: string;
   }
 
   // Keys accepted by open_link in src-tauri/src/about.rs
-  type Link = "website" | "repo" | "email" | "issues" | "privacy";
+  type Link = "website" | "repo" | "email" | "issues" | "discussions" | "privacy";
 
   let s = $state<AboutStrings | null>(null);
   let info = $state<AboutInfo | null>(null);
@@ -59,6 +60,7 @@
           // Shown as the plain address so users without a mail app can select and copy it
           { link: "email", label: s.email, url: info.feedback_email },
           { link: "issues", label: s.feedback, url: info.issues_url },
+          { link: "discussions", label: s.discussions, url: info.discussions_url },
         ]
       : [],
   );

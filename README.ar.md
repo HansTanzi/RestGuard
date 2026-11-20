@@ -265,18 +265,26 @@ phone_notify = false     # إرسال إشعار إلى هاتفك عبر ntfy �
 ntfy_server = "https://ntfy.sh"  # خادم ntfy، العام أو خادمك
 ntfy_topic = ""          # الموضوع الذي تشترك فيه في تطبيق ntfy؛ اجعله صعب التخمين
 
-[[fixed_breaks]]         # استراحة ثابتة؛ "work_end" (نهاية يوم العمل) و"lunch" مدمجتان
+[[fixed_breaks]]         # استراحة ثابتة؛ "work_end" (نهاية يوم العمل) و"lunch" و"sleep" (وقت النوم) مدمجة
 name = "work_end"
-enabled = false          # تأخير الاستراحات المستحقة قبلها مباشرة
+enabled = true          # تأخير الاستراحات المستحقة قبلها مباشرة
 time = "18:00"           # HH:MM بنظام 24 ساعة بالتوقيت المحلي
 quiet_minutes = 30.0     # الاستراحات المستحقة قبل time بهذه المدة تنتظر حتى time
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # الغداء: تبدأ استراحة مدتها rest_minutes عند time
 name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # مدة الاستراحة (الغداء واستراحاتك الثابتة)؛ بعد تجاوز مدة الاستراحة العادية يمكنك متابعة استخدام الحاسوب
+rest_minutes = 30.0      # مدة الاستراحة؛ بعد تجاوز مدة الاستراحة العادية يمكنك متابعة استخدام الحاسوب
+
+[[fixed_breaks]]
+name = "sleep"
+enabled = true
+time = "23:00"
+quiet_minutes = 30.0
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # أضف استراحاتك، مثل استراحة شاي، بقسم [[fixed_breaks]] لكل منها
 name = "استراحة الشاي"

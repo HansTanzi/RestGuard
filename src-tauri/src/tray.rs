@@ -387,6 +387,7 @@ pub fn update(app: &AppHandle, snap: &Snapshot) {
             match name {
                 "work_end" => t(&text::BREAK_DEFERRED_WORK_END).replace("{time}", time),
                 "lunch" => t(&text::BREAK_DEFERRED_LUNCH).replace("{time}", time),
+                "sleep" => t(&text::BREAK_DEFERRED_SLEEP).replace("{time}", time),
                 _ => t(&text::BREAK_DEFERRED).replace("{name}", name).replace("{time}", time),
             }
         }
@@ -399,6 +400,7 @@ pub fn update(app: &AppHandle, snap: &Snapshot) {
                 None => t(&text::BREAK_IN).to_string(),
                 Some("work_end") => t(&text::BREAK_IN_WORK_END).to_string(),
                 Some("lunch") => t(&text::BREAK_IN_LUNCH).to_string(),
+                Some("sleep") => t(&text::BREAK_IN_SLEEP).to_string(),
                 Some(name) => t(&text::BREAK_IN_FIXED).replace("{name}", name),
             };
             format!("{label} {}", mm_ss(snap.remaining_secs))

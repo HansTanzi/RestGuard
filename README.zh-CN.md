@@ -267,18 +267,26 @@ phone_notify = false     # 休息结束时通过 ntfy 推送到手机
 ntfy_server = "https://ntfy.sh"  # ntfy 服务器，公共服务器或自建的
 ntfy_topic = ""          # 在 ntfy 应用里订阅的主题，请取一个不易猜到的名字
 
-[[fixed_breaks]]         # 固定休息；"work_end"（下班）和 "lunch"（午休）是内置的
+[[fixed_breaks]]         # 固定休息；"work_end"（下班）、"lunch"（午休）和 "sleep"（睡觉）是内置的
 name = "work_end"
-enabled = false          # 临近这个时间时不再提醒休息
+enabled = true          # 临近这个时间时不再提醒休息
 time = "18:00"           # 24 小时制 HH:MM（本地时间）
 quiet_minutes = 30.0     # 这个时间之前这么久内到点的休息推迟到这个时间
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # 午休：到 time 时开始一次 rest_minutes 长的休息
 name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # 休息多长（午休和自己添加的固定休息才有），超过普通休息时长的部分可以继续使用电脑
+rest_minutes = 30.0      # 休息多长，超过普通休息时长的部分可以继续使用电脑
+
+[[fixed_breaks]]
+name = "sleep"
+enabled = true
+time = "23:00"
+quiet_minutes = 30.0
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # 也可以自己添加，比如茶歇，每个一个 [[fixed_breaks]]
 name = "茶歇"

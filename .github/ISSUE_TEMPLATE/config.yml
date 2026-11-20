@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Questions and ideas
+    url: https://github.com/HansTanzi/RestGuard/discussions
+    about: Ask how to do something or float an idea in Discussions.
   - name: Security vulnerability
     url: https://github.com/HansTanzi/RestGuard/security/advisories/new
     about: Please report security problems privately, not as an issue.

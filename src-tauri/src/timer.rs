@@ -94,8 +94,7 @@ pub struct Timer {
     fixed_due: Option<(FixedTime, Duration)>,
     /// This break is a fixed break; it can't be postponed, as postponing would end it early
     fixed_rest: bool,
-    /// The fixed break this break is for. Also set while a break that waited for one is about to start,
-    /// which at the end of the day is a regular break, not a fixed one
+    /// The fixed break this break is for. Also set while a break that waited for one is about to start
     rest_for: Option<String>,
     /// When the fixed break the user went back to the computer during ends; that time isn't work
     free_until: Option<Instant>,
@@ -228,7 +227,7 @@ impl Timer {
         }
         // Not when the clock first comes in (e.g. the app starts during lunch)
         if let Some(prev) = self.last_clock.replace(clock) {
-            if let Some(f) = self.fixed_times.iter().find(|f| f.rest.is_some() && f.reached(prev, clock)) {
+            if let Some(f) = self.fixed_times.iter().find(|f| f.reached(prev, clock)) {
                 self.fixed_due = Some((f.clone(), Duration::ZERO));
             }
             if let Some(f) = self.deferred.as_ref().filter(|f| f.reached(prev, clock)) {
@@ -687,21 +686,22 @@ mod tests {
         assert_eq!(snap.deferred_until.as_deref(), Some("18:00"));
         assert_eq!(snap.deferred_for.as_deref(), Some("work_end"));
 
-        // 18:00: the break goes ahead
+        // 18:00: the end-of-day break starts, as long as its own length
         let now = now + 20 * MIN;
         t.defer(now, at(18, 0));
         assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
         assert_eq!(t.snapshot(now).deferred_until, None);
         assert_eq!(t.snapshot(now).fixed_break.as_deref(), Some("work_end"));
+        assert_eq!(t.snapshot(now).remaining_secs, 30 * 60);
 
         // Voluntary breaks aren't affected
-        assert_eq!(t.tick(now + 10 * MIN), Some(TimerEvent::RestFinished));
-        assert_eq!(t.snapshot(now + 10 * MIN).fixed_break.as_deref(), Some("work_end"));
-        assert!(t.start_work(now + 10 * MIN));
-        assert_eq!(t.snapshot(now + 10 * MIN).fixed_break, None);
-        t.defer(now + 11 * MIN, at(17, 50));
-        assert!(t.rest_now(now + 11 * MIN));
-        assert_eq!(t.snapshot(now + 11 * MIN).fixed_break, None);
+        assert_eq!(t.tick(now + 30 * MIN), Some(TimerEvent::RestFinished));
+        assert_eq!(t.snapshot(now + 30 * MIN).fixed_break.as_deref(), Some("work_end"));
+        assert!(t.start_work(now + 30 * MIN));
+        assert_eq!(t.snapshot(now + 30 * MIN).fixed_break, None);
+        t.defer(now + 31 * MIN, at(17, 50));
+        assert!(t.rest_now(now + 31 * MIN));
+        assert_eq!(t.snapshot(now + 31 * MIN).fixed_break, None);
     }
 
     #[test]
@@ -752,9 +752,11 @@ mod tests {
         assert_eq!(snap.next_fixed, None);
         assert_eq!(snap.remaining_secs, t.work.as_secs());
 
-        // work_end starts no break of its own, so a countdown ending after it comes first
+        // Likewise the end of the day and bedtime, which start breaks of their own too
         t.defer(t0, at(17, 50));
-        assert_eq!(t.snapshot(t0).next_fixed, None);
+        assert_eq!(t.snapshot(t0).next_fixed.as_deref(), Some("work_end"));
+        t.defer(t0, at(22, 50));
+        assert_eq!(t.snapshot(t0).next_fixed.as_deref(), Some("sleep"));
 
         // The countdown ends in the quiet window before lunch, so that's when the break comes
         let work = t.work;
@@ -763,7 +765,7 @@ mod tests {
         assert_eq!(snap.next_fixed.as_deref(), Some("lunch"));
         assert_eq!(snap.remaining_secs, (work + 3 * MIN).as_secs());
 
-        // Likewise at the end of the day, though it's a regular break that then starts
+        // Likewise at the end of the day
         t.defer(t0, at(18, 0) - chrono::Duration::from_std(work + 3 * MIN).unwrap());
         assert_eq!(t.snapshot(t0).next_fixed.as_deref(), Some("work_end"));
 
@@ -1039,7 +1041,9 @@ mod tests {
         assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
 
         // Disabled: never deferred
-        let mut t = timer(t0);
+        let mut cfg = Config::default();
+        cfg.fixed_breaks.iter_mut().for_each(|b| b.enabled = false);
+        let mut t = Timer::new(&cfg, t0);
         t.defer(now, at(17, 55));
         assert_eq!(t.tick(now), Some(TimerEvent::RestStarted));
     }

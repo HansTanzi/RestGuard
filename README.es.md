@@ -263,18 +263,26 @@ phone_notify = false     # enviar una notificación al móvil por ntfy al termin
 ntfy_server = "https://ntfy.sh"  # servidor ntfy, el público o el tuyo
 ntfy_topic = ""          # tema al que suscribirse en la app ntfy; que sea difícil de adivinar
 
-[[fixed_breaks]]         # un descanso fijo; "work_end" (fin de la jornada) y "lunch" vienen integrados
+[[fixed_breaks]]         # un descanso fijo; "work_end" (fin de la jornada), "lunch" y "sleep" (hora de dormir) vienen integrados
 name = "work_end"
-enabled = false          # retrasar los descansos que tocan justo antes
+enabled = true          # retrasar los descansos que tocan justo antes
 time = "18:00"           # HH:MM en formato de 24 horas, hora local
 quiet_minutes = 30.0     # los descansos que tocan este tiempo antes de time esperan hasta time
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # almuerzo: a la hora time empieza un descanso de rest_minutes
 name = "lunch"
 enabled = true
 time = "12:00"
 quiet_minutes = 30.0
-rest_minutes = 30.0      # duración del descanso (almuerzo y tus propios descansos fijos); pasada la duración de un descanso normal puedes seguir usando el ordenador
+rest_minutes = 30.0      # duración del descanso; pasada la duración de un descanso normal puedes seguir usando el ordenador
+
+[[fixed_breaks]]
+name = "sleep"
+enabled = true
+time = "23:00"
+quiet_minutes = 30.0
+rest_minutes = 30.0
 
 [[fixed_breaks]]         # añade los tuyos, p. ej. una pausa para el té, con un [[fixed_breaks]] cada uno
 name = "Tea break"

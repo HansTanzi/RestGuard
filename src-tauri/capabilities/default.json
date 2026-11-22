@@ -1,8 +1,8 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capability for the rest overlay windows, the away-lock prompts, the settings window and the about window",
-  "windows": ["overlay-*", "lockprompt-*", "settings", "about"],
+  "description": "Capability for the rest overlay windows, the away-lock prompts, the already-running dialog, the settings window and the about window",
+  "windows": ["overlay-*", "lockprompt-*", "already-running", "settings", "about"],
   "permissions": [
     "core:default",
     "core:window:allow-start-dragging",

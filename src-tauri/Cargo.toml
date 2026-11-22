@@ -34,18 +34,13 @@ chrono = { version = "0.4", default-features = false, features = ["clock"] }
 # instead of the default rustls + ring + bundled roots, which added about 1.4 MB to the binary
 ureq = { version = "3", default-features = false, features = ["native-tls-no-default"] }
 
-# Same version as tauri uses; raises the overlay above the menu bar and full-screen apps, detects the frontmost app, running apps and microphone use,
-# and shows the alert on a second launch on the screen under the mouse
+# Same version as tauri uses; raises the overlay above the menu bar and full-screen apps, detects the frontmost app, running apps and microphone use
 [target.'cfg(target_os = "macos")'.dependencies]
-objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSAlert", "NSApplication", "NSEvent", "NSResponder", "NSScreen", "NSWindow", "NSWorkspace", "NSRunningApplication"] }
+objc2-app-kit = { version = "0.3", default-features = false, features = ["std", "NSResponder", "NSWindow", "NSWorkspace", "NSRunningApplication"] }
 objc2-core-foundation = { version = "0.3", default-features = false, features = ["std", "CFCGTypes", "CFString"] }
 objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSArray", "NSGeometry", "NSString", "objc2-core-foundation"] }
 
-# Same version as tauri uses; shows the dialog on a second launch on the monitor under the pointer
-[target.'cfg(target_os = "linux")'.dependencies]
-gtk = "0.18"
-
-# Same version as tauri uses; for Store (MSIX) autostart, warning on a second launch, detecting the foreground app and microphone use, idle detection, opening the config file, playing sounds, and locking the screen
+# Same version as tauri uses; for Store (MSIX) autostart, the console warning on a second launch, detecting the foreground app and microphone use, idle detection, opening the config file, playing sounds, and locking the screen
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62", features = ["ApplicationModel", "Foundation", "Media_Core", "Media_Playback", "Storage", "Storage_Streams", "Win32_Foundation", "Win32_Storage_Packaging_Appx", "Win32_System_Console", "Win32_System_Diagnostics_ToolHelp", "Win32_System_Registry", "Win32_System_Shutdown", "Win32_System_SystemInformation", "Win32_System_Threading", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
 

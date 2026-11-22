@@ -1666,3 +1666,111 @@ const lockPrompt: Record<UiLang, LockPromptStrings> = {
 export function lockPromptStrings(lang: UiLang): LockPromptStrings {
   return lockPrompt[lang] ?? lockPrompt.en;
 }
+
+// "Already running" dialog, shown when RestGuard is launched again (src/routes/already-running/+page.svelte)
+export interface AlreadyRunningStrings {
+  title: string;
+  message: string;
+  ok: string;
+  openSettings: string;
+  // Replaces the message during a break, when "Open settings" is disabled (as in the tray menu)
+  settingsLocked: string;
+}
+
+const alreadyRunning: Record<UiLang, AlreadyRunningStrings> = {
+  zh: {
+    title: "RestGuard 已在运行",
+    message: "可以在系统托盘中找到它",
+    ok: "知道了",
+    openSettings: "打开设置",
+    settingsLocked: "休息期间不能打开设置",
+  },
+  en: {
+    title: "RestGuard is already running",
+    message: "You can find it in the system tray.",
+    ok: "OK",
+    openSettings: "Open settings",
+    settingsLocked: "Settings can't be opened during a break",
+  },
+  hi: {
+    title: "RestGuard पहले से चल रहा है",
+    message: "आप इसे सिस्टम ट्रे में पा सकते हैं।",
+    ok: "ठीक है",
+    openSettings: "सेटिंग्स खोलें",
+    settingsLocked: "ब्रेक के दौरान सेटिंग्स नहीं खोली जा सकतीं",
+  },
+  es: {
+    title: "RestGuard ya se está ejecutando",
+    message: "Puedes encontrarlo en la bandeja del sistema.",
+    ok: "Aceptar",
+    openSettings: "Abrir ajustes",
+    settingsLocked: "No se pueden abrir los ajustes durante un descanso",
+  },
+  ar: {
+    title: "RestGuard قيد التشغيل بالفعل",
+    message: "يمكنك العثور عليه في علبة النظام.",
+    ok: "حسنًا",
+    openSettings: "فتح الإعدادات",
+    settingsLocked: "لا يمكن فتح الإعدادات أثناء الاستراحة",
+  },
+  fr: {
+    title: "RestGuard est déjà en cours d'exécution",
+    message: "Vous le trouverez dans la zone de notification.",
+    ok: "OK",
+    openSettings: "Ouvrir les paramètres",
+    settingsLocked: "Impossible d'ouvrir les paramètres pendant une pause",
+  },
+  bn: {
+    title: "RestGuard ইতিমধ্যে চলছে",
+    message: "আপনি এটি সিস্টেম ট্রেতে খুঁজে পাবেন।",
+    ok: "ঠিক আছে",
+    openSettings: "সেটিংস খুলুন",
+    settingsLocked: "বিরতির সময় সেটিংস খোলা যাবে না",
+  },
+  pt: {
+    title: "O RestGuard já está em execução",
+    message: "Você pode encontrá-lo na bandeja do sistema.",
+    ok: "OK",
+    openSettings: "Abrir configurações",
+    settingsLocked: "Não é possível abrir as configurações durante uma pausa",
+  },
+  de: {
+    title: "RestGuard läuft bereits",
+    message: "Sie finden es im Infobereich der Taskleiste.",
+    ok: "OK",
+    openSettings: "Einstellungen öffnen",
+    settingsLocked: "Während einer Pause können die Einstellungen nicht geöffnet werden",
+  },
+  ja: {
+    title: "RestGuard はすでに実行中です",
+    message: "システムトレイから操作できます。",
+    ok: "OK",
+    openSettings: "設定を開く",
+    settingsLocked: "休憩中は設定を開けません",
+  },
+  it: {
+    title: "RestGuard è già in esecuzione",
+    message: "Puoi trovarlo nell'area di notifica.",
+    ok: "OK",
+    openSettings: "Apri impostazioni",
+    settingsLocked: "Non puoi aprire le impostazioni durante una pausa",
+  },
+  ko: {
+    title: "RestGuard가 이미 실행 중입니다",
+    message: "시스템 트레이에서 찾을 수 있습니다.",
+    ok: "확인",
+    openSettings: "설정 열기",
+    settingsLocked: "휴식 중에는 설정을 열 수 없습니다",
+  },
+  id: {
+    title: "RestGuard sudah berjalan",
+    message: "Anda dapat menemukannya di baki sistem.",
+    ok: "OK",
+    openSettings: "Buka pengaturan",
+    settingsLocked: "Pengaturan tidak bisa dibuka saat istirahat",
+  },
+};
+
+export function alreadyRunningStrings(lang: UiLang): AlreadyRunningStrings {
+  return alreadyRunning[lang] ?? alreadyRunning.en;
+}

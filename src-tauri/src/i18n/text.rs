@@ -571,23 +571,6 @@ pub const AUDIO_FILES: Tr = Tr {
     id: "File audio",
 };
 
-/// Shown by the running instance when RestGuard is launched again
-pub const ALREADY_RUNNING: Tr = Tr {
-    zh: "RestGuard 已经在运行了，可以在系统托盘中找到它。",
-    en: "RestGuard is already running. You can find it in the system tray.",
-    hi: "RestGuard पहले से चल रहा है। आप इसे सिस्टम ट्रे में पा सकते हैं।",
-    es: "RestGuard ya se está ejecutando. Puedes encontrarlo en la bandeja del sistema.",
-    ar: "RestGuard قيد التشغيل بالفعل. يمكنك العثور عليه في علبة النظام.",
-    fr: "RestGuard est déjà en cours d'exécution. Vous le trouverez dans la zone de notification.",
-    bn: "RestGuard ইতিমধ্যে চলছে। আপনি এটি সিস্টেম ট্রেতে খুঁজে পাবেন।",
-    pt: "O RestGuard já está em execução. Você pode encontrá-lo na bandeja do sistema.",
-    de: "RestGuard läuft bereits. Du findest es im Infobereich der Taskleiste.",
-    ja: "RestGuard はすでに実行中です。システムトレイから操作できます。",
-    it: "RestGuard è già in esecuzione. Puoi trovarlo nell'area di notifica.",
-    ko: "RestGuard가 이미 실행 중입니다. 시스템 트레이에서 찾을 수 있습니다.",
-    id: "RestGuard sudah berjalan. Anda dapat menemukannya di baki sistem.",
-};
-
 /// Message when previewing a custom file fails (usually an unsupported format)
 pub const SOUND_FILE_FAILED: Tr = Tr {
     zh: "无法播放这个文件，可能是本系统不支持它的格式，请换一个文件",

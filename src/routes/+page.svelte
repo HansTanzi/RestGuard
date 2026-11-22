@@ -549,18 +549,25 @@
               bind:value={draft.postpone_minutes}
             />
           </label>
-          <label>
-            <span>{s.idleMinutes}</span>
+          <!-- This row contains a help button, so it can't be a label -->
+          <div class="row">
+            <span class="inline">
+              <span>{s.idleMinutes}</span>
+              {@render help("idle-hint", s.idleMinutes)}
+            </span>
             <input
               type="number"
               min="0"
               step="any"
+              aria-label={s.idleMinutes}
               class:invalid={errors.idle_minutes}
               bind:value={draft.idle_minutes}
             />
-          </label>
+          </div>
+          {#if openHint === "idle-hint"}
+            <p class="hint" id="idle-hint">{s.idleHint}</p>
+          {/if}
           <p class="hint">{s.minutesHint}</p>
-          <p class="hint">{s.idleHint}</p>
           {#if saved && draft.work_minutes !== saved.work_minutes}
             <p class="hint accent">{s.workRestartHint}</p>
           {/if}

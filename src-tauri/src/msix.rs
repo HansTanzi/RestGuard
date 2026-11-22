@@ -4,7 +4,9 @@
 use std::sync::OnceLock;
 use windows::{
     core::HSTRING,
-    ApplicationModel::{StartupTask, StartupTaskState},
+    ApplicationModel::{
+        Activation::ActivationKind, AppInstance, StartupTask, StartupTaskState,
+    },
     Win32::{
         Foundation::APPMODEL_ERROR_NO_PACKAGE, Storage::Packaging::Appx::GetCurrentPackageFullName,
     },
@@ -31,6 +33,13 @@ pub fn startup_enabled() -> bool {
         .is_ok_and(|state| {
             state == StartupTaskState::Enabled || state == StartupTaskState::EnabledByPolicy
         })
+}
+
+/// Whether this launch is the StartupTask's at login rather than the user's
+pub fn launched_by_startup_task() -> bool {
+    AppInstance::GetActivatedEventArgs()
+        .and_then(|args| args.Kind())
+        .is_ok_and(|kind| kind == ActivationKind::StartupTask)
 }
 
 pub fn set_startup(on: bool) -> windows::core::Result<()> {

@@ -35,6 +35,8 @@ const SHRINK_EVENT: &str = "overlay:shrunk";
 const AUTOSTART_EVENT: &str = "autostart:changed";
 /// Payload is the new config; matches CONFIG_EVENT in src/lib/config.ts
 const CONFIG_EVENT: &str = "config:changed";
+/// Passed by the autostart entry, so a launch at login doesn't show the "started" dialog (see already_running)
+const AUTOSTART_ARG: &str = "--autostart";
 /// Total time the overlay may stay shrunk per break; then it restores itself and can't be shrunk again,
 /// so urgent mode can't be used to sit out the whole break
 const URGENT_LIMIT: Duration = Duration::from_secs(2 * 60);
@@ -312,6 +314,12 @@ fn fit_lock_prompt(window: tauri::WebviewWindow, height: f64) {
     away_lock::fit(&window, height);
 }
 
+/// Which message the already-running dialog shows, asked for when it loads
+#[tauri::command]
+fn already_running_kind() -> already_running::Kind {
+    already_running::kind()
+}
+
 /// "OK" on the already-running dialog, or Esc
 #[tauri::command]
 fn close_already_running(app: AppHandle) {
@@ -542,6 +550,15 @@ fn spawn_ticker(app: AppHandle) {
     });
 }
 
+/// Whether this launch is autostart's at login rather than the user's
+fn launched_by_autostart() -> bool {
+    #[cfg(windows)]
+    if msix::is_packaged() {
+        return msix::launched_by_startup_task();
+    }
+    std::env::args().skip(1).any(|a| a == AUTOSTART_ARG)
+}
+
 /// The single-instance plugin makes a second launch exit silently; say why on the console before that happens.
 /// Dev builds share the identifier with the release, so this also covers `tauri dev` while an installed RestGuard runs.
 fn warn_if_already_running(identifier: &str) {
@@ -614,9 +631,12 @@ pub fn run() {
         // Must be registered first: a second launch exits the new process immediately, and the running
         // instance shows a message so the user sees that RestGuard is already running
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            already_running::show(app);
+            already_running::show(app, already_running::Kind::AlreadyRunning);
         }))
-        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            Some(vec![AUTOSTART_ARG]),
+        ))
         .plugin(tauri_plugin_dialog::init())
         // The default macOS menu has Cmd+Q, which would quit the app during a break; setup installs an Edit-only menu instead
         .enable_macos_default_menu(false)
@@ -661,7 +681,12 @@ pub fn run() {
                 config_path,
             });
             tray::init(app.handle())?;
+            tray::refresh_autostart_entry(app.handle());
             spawn_ticker(app.handle().clone());
+            // Launched by hand, only a tray icon would appear: say RestGuard is running and where its icon is
+            if !launched_by_autostart() {
+                already_running::show(app.handle(), already_running::Kind::Started);
+            }
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -705,6 +730,7 @@ pub fn run() {
             test_phone_notify,
             pick_sound_file,
             get_autostart,
+            already_running_kind,
             set_autostart,
             get_about,
             open_link,

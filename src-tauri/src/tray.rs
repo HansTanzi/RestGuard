@@ -469,6 +469,23 @@ pub fn set_autostart(app: &AppHandle, on: bool) -> bool {
     actual
 }
 
+/// Rewrites an enabled autostart entry so it launches with the current command, including crate::AUTOSTART_ARG:
+/// entries written by versions before that flag start RestGuard without it, which would show the "started" dialog
+/// on every login. Leaves a disabled entry alone (is_enabled is false when the user turned it off in Task Manager).
+/// The Store version starts through its StartupTask instead, which has no command to rewrite
+pub fn refresh_autostart_entry(app: &AppHandle) {
+    #[cfg(windows)]
+    if crate::msix::is_packaged() {
+        return;
+    }
+    let launcher = app.autolaunch();
+    if launcher.is_enabled().unwrap_or(false) {
+        if let Err(e) = launcher.enable() {
+            eprintln!("Failed to refresh the autostart entry: {e}");
+        }
+    }
+}
+
 fn toggle_autostart(app: &AppHandle, on: bool) -> Result<(), String> {
     #[cfg(windows)]
     if crate::msix::is_packaged() {

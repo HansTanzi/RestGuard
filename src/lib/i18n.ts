@@ -1667,104 +1667,175 @@ export function lockPromptStrings(lang: UiLang): LockPromptStrings {
   return lockPrompt[lang] ?? lockPrompt.en;
 }
 
-// "Already running" dialog, shown when RestGuard is launched again (src/routes/already-running/+page.svelte)
+// Launch dialog (src/routes/already-running/+page.svelte): "started" when RestGuard is launched by hand, as otherwise
+// only a tray icon appears, and "already running" when it's launched again
 export interface AlreadyRunningStrings {
   title: string;
-  message: string;
+  startedTitle: string;
+  // Under startedTitle, before the tray hint
+  startedMessage: string;
+  // Where the tray icon is, by OS. Windows 11 hides new tray icons behind the ^ button by default
+  trayWindows: string;
+  trayMac: string;
+  trayOther: string;
   ok: string;
   openSettings: string;
-  // Replaces the message during a break, when "Open settings" is disabled (as in the tray menu)
+  // Replaces the tray hint during a break, when "Open settings" is disabled (as in the tray menu)
   settingsLocked: string;
 }
 
 const alreadyRunning: Record<UiLang, AlreadyRunningStrings> = {
   zh: {
     title: "RestGuard 已在运行",
-    message: "可以在系统托盘中找到它",
+    startedTitle: "RestGuard 正在后台运行",
+    startedMessage: "到休息时间时会提醒你。",
+    trayWindows: "图标在任务栏右下角的系统托盘里；如果没看到，点击 ^ 展开隐藏的图标。",
+    trayMac: "图标在屏幕顶部的菜单栏里。",
+    trayOther: "图标在系统托盘里。",
     ok: "知道了",
     openSettings: "打开设置",
     settingsLocked: "休息期间不能打开设置",
   },
   en: {
     title: "RestGuard is already running",
-    message: "You can find it in the system tray.",
+    startedTitle: "RestGuard is running in the background",
+    startedMessage: "It will remind you when it's time for a break.",
+    trayWindows:
+      "Its icon is in the system tray at the bottom right of the taskbar. Don't see it? Click ^ to show hidden icons.",
+    trayMac: "Its icon is in the menu bar at the top of the screen.",
+    trayOther: "Its icon is in the system tray.",
     ok: "OK",
     openSettings: "Open settings",
     settingsLocked: "Settings can't be opened during a break",
   },
   hi: {
     title: "RestGuard पहले से चल रहा है",
-    message: "आप इसे सिस्टम ट्रे में पा सकते हैं।",
+    startedTitle: "RestGuard बैकग्राउंड में चल रहा है",
+    startedMessage: "ब्रेक का समय होने पर यह आपको याद दिलाएगा।",
+    trayWindows:
+      "इसका आइकन टास्कबार के नीचे दाईं ओर सिस्टम ट्रे में है। नहीं दिख रहा? छिपे हुए आइकन दिखाने के लिए ^ पर क्लिक करें।",
+    trayMac: "इसका आइकन स्क्रीन के ऊपर मेनू बार में है।",
+    trayOther: "इसका आइकन सिस्टम ट्रे में है।",
     ok: "ठीक है",
     openSettings: "सेटिंग्स खोलें",
     settingsLocked: "ब्रेक के दौरान सेटिंग्स नहीं खोली जा सकतीं",
   },
   es: {
     title: "RestGuard ya se está ejecutando",
-    message: "Puedes encontrarlo en la bandeja del sistema.",
+    startedTitle: "RestGuard se está ejecutando en segundo plano",
+    startedMessage: "Te avisará cuando sea hora de descansar.",
+    trayWindows:
+      "Su icono está en la bandeja del sistema, abajo a la derecha de la barra de tareas. ¿No lo ves? Haz clic en ^ para mostrar los iconos ocultos.",
+    trayMac: "Su icono está en la barra de menús, en la parte superior de la pantalla.",
+    trayOther: "Su icono está en la bandeja del sistema.",
     ok: "Aceptar",
     openSettings: "Abrir ajustes",
     settingsLocked: "No se pueden abrir los ajustes durante un descanso",
   },
   ar: {
     title: "RestGuard قيد التشغيل بالفعل",
-    message: "يمكنك العثور عليه في علبة النظام.",
+    startedTitle: "RestGuard يعمل في الخلفية",
+    startedMessage: "سيذكّرك عندما يحين وقت الاستراحة.",
+    // No left or right: the taskbar is mirrored in Arabic Windows
+    trayWindows: "أيقونته في علبة النظام على شريط المهام. لا تراها؟ انقر على ^ لإظهار الأيقونات المخفية.",
+    trayMac: "أيقونته في شريط القوائم أعلى الشاشة.",
+    trayOther: "أيقونته في علبة النظام.",
     ok: "حسنًا",
     openSettings: "فتح الإعدادات",
     settingsLocked: "لا يمكن فتح الإعدادات أثناء الاستراحة",
   },
   fr: {
     title: "RestGuard est déjà en cours d'exécution",
-    message: "Vous le trouverez dans la zone de notification.",
+    startedTitle: "RestGuard fonctionne en arrière-plan",
+    startedMessage: "Il vous préviendra quand ce sera l'heure de faire une pause.",
+    trayWindows:
+      "Son icône se trouve dans la zone de notification, en bas à droite de la barre des tâches. Vous ne la voyez pas ? Cliquez sur ^ pour afficher les icônes cachées.",
+    trayMac: "Son icône se trouve dans la barre des menus, en haut de l'écran.",
+    trayOther: "Son icône se trouve dans la zone de notification.",
     ok: "OK",
     openSettings: "Ouvrir les paramètres",
     settingsLocked: "Impossible d'ouvrir les paramètres pendant une pause",
   },
   bn: {
     title: "RestGuard ইতিমধ্যে চলছে",
-    message: "আপনি এটি সিস্টেম ট্রেতে খুঁজে পাবেন।",
+    startedTitle: "RestGuard ব্যাকগ্রাউন্ডে চলছে",
+    startedMessage: "বিরতির সময় হলে এটি আপনাকে মনে করিয়ে দেবে।",
+    trayWindows:
+      "এর আইকন টাস্কবারের নিচে ডান দিকে সিস্টেম ট্রেতে আছে। দেখতে পাচ্ছেন না? লুকানো আইকন দেখাতে ^ ক্লিক করুন।",
+    trayMac: "এর আইকন স্ক্রিনের উপরে মেনু বারে আছে।",
+    trayOther: "এর আইকন সিস্টেম ট্রেতে আছে।",
     ok: "ঠিক আছে",
     openSettings: "সেটিংস খুলুন",
     settingsLocked: "বিরতির সময় সেটিংস খোলা যাবে না",
   },
   pt: {
     title: "O RestGuard já está em execução",
-    message: "Você pode encontrá-lo na bandeja do sistema.",
+    startedTitle: "O RestGuard está em execução em segundo plano",
+    startedMessage: "Ele vai avisar quando for hora de uma pausa.",
+    trayWindows:
+      "O ícone fica na bandeja do sistema, no canto inferior direito da barra de tarefas. Não está vendo? Clique em ^ para mostrar os ícones ocultos.",
+    trayMac: "O ícone fica na barra de menus, no topo da tela.",
+    trayOther: "O ícone fica na bandeja do sistema.",
     ok: "OK",
     openSettings: "Abrir configurações",
     settingsLocked: "Não é possível abrir as configurações durante uma pausa",
   },
   de: {
     title: "RestGuard läuft bereits",
-    message: "Sie finden es im Infobereich der Taskleiste.",
+    startedTitle: "RestGuard läuft im Hintergrund",
+    startedMessage: "Es erinnert Sie, wenn es Zeit für eine Pause ist.",
+    trayWindows:
+      "Das Symbol befindet sich im Infobereich unten rechts in der Taskleiste. Nicht zu sehen? Klicken Sie auf ^, um ausgeblendete Symbole anzuzeigen.",
+    trayMac: "Das Symbol befindet sich in der Menüleiste oben auf dem Bildschirm.",
+    trayOther: "Das Symbol befindet sich im Infobereich der Taskleiste.",
     ok: "OK",
     openSettings: "Einstellungen öffnen",
     settingsLocked: "Während einer Pause können die Einstellungen nicht geöffnet werden",
   },
   ja: {
     title: "RestGuard はすでに実行中です",
-    message: "システムトレイから操作できます。",
+    startedTitle: "RestGuard はバックグラウンドで実行中です",
+    startedMessage: "休憩の時間になるとお知らせします。",
+    trayWindows:
+      "アイコンはタスクバー右下のシステムトレイにあります。見当たらない場合は ^ をクリックして、隠れているアイコンを表示してください。",
+    trayMac: "アイコンは画面上部のメニューバーにあります。",
+    trayOther: "アイコンはシステムトレイにあります。",
     ok: "OK",
     openSettings: "設定を開く",
     settingsLocked: "休憩中は設定を開けません",
   },
   it: {
     title: "RestGuard è già in esecuzione",
-    message: "Puoi trovarlo nell'area di notifica.",
+    startedTitle: "RestGuard è in esecuzione in background",
+    startedMessage: "Ti avviserà quando sarà ora di fare una pausa.",
+    trayWindows:
+      "L'icona si trova nell'area di notifica, in basso a destra sulla barra delle applicazioni. Non la vedi? Fai clic su ^ per mostrare le icone nascoste.",
+    trayMac: "L'icona si trova nella barra dei menu, in alto sullo schermo.",
+    trayOther: "L'icona si trova nell'area di notifica.",
     ok: "OK",
     openSettings: "Apri impostazioni",
     settingsLocked: "Non puoi aprire le impostazioni durante una pausa",
   },
   ko: {
     title: "RestGuard가 이미 실행 중입니다",
-    message: "시스템 트레이에서 찾을 수 있습니다.",
+    startedTitle: "RestGuard가 백그라운드에서 실행 중입니다",
+    startedMessage: "휴식할 시간이 되면 알려 드립니다.",
+    trayWindows:
+      "아이콘은 작업 표시줄 오른쪽 아래의 시스템 트레이에 있습니다. 보이지 않으면 ^를 클릭해 숨겨진 아이콘을 표시하세요.",
+    trayMac: "아이콘은 화면 상단의 메뉴 막대에 있습니다.",
+    trayOther: "아이콘은 시스템 트레이에 있습니다.",
     ok: "확인",
     openSettings: "설정 열기",
     settingsLocked: "휴식 중에는 설정을 열 수 없습니다",
   },
   id: {
     title: "RestGuard sudah berjalan",
-    message: "Anda dapat menemukannya di baki sistem.",
+    startedTitle: "RestGuard berjalan di latar belakang",
+    startedMessage: "RestGuard akan mengingatkan Anda saat waktunya istirahat.",
+    trayWindows:
+      "Ikonnya ada di baki sistem, di kanan bawah bilah tugas. Tidak terlihat? Klik ^ untuk menampilkan ikon tersembunyi.",
+    trayMac: "Ikonnya ada di bilah menu di bagian atas layar.",
+    trayOther: "Ikonnya ada di baki sistem.",
     ok: "OK",
     openSettings: "Buka pengaturan",
     settingsLocked: "Pengaturan tidak bisa dibuka saat istirahat",

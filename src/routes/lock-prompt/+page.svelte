@@ -50,6 +50,8 @@
 </script>
 
 <main>
+  <!-- The prompt has no title bar, so name the app that opened it -->
+  <div class="brand">RestGuard</div>
   {#if s}
     <h1>{s.title}</h1>
     <p>{s.message(left ?? 30)}</p>
@@ -72,6 +74,7 @@
   }
 
   main {
+    position: relative;
     box-sizing: border-box;
     height: 100vh;
     display: flex;
@@ -90,6 +93,17 @@
       "PingFang SC",
       "Microsoft YaHei",
       sans-serif;
+  }
+
+  .brand {
+    position: absolute;
+    top: 0.7rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--muted);
   }
 
   h1 {

@@ -100,6 +100,8 @@
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <main class:movable onmousedown={onMouseDown} in:fade={{ duration: 600 }}>
+  <!-- The overlay has no title bar, so name the app that opened it -->
+  <div class="brand">RestGuard</div>
   {#if snap && s}
     <!-- The enforcement level can disable urgent mode; unforced breaks can just be skipped, no need to shrink -->
     {#if snap.canShrink || shrunk}
@@ -318,6 +320,22 @@
   .shrink {
     position: absolute;
     top: 1.25rem;
+  }
+
+  /* Same row as the shrink and language controls, centered between them */
+  .brand {
+    position: absolute;
+    top: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    /* Same box as .ghost so the text lines up with the buttons beside it */
+    padding: 0.4rem 0;
+    border: 1px solid transparent;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    pointer-events: none;
   }
 
   .lang {

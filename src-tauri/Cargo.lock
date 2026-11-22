@@ -2943,7 +2943,7 @@ dependencies = [
 
 [[package]]
 name = "restguard"
-version = "1.0.3"
+version = "1.0.4"
 dependencies = [
  "chrono",
  "objc2-app-kit",

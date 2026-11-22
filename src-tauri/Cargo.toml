@@ -1,6 +1,6 @@
 [package]
 name = "restguard"
-version = "1.0.3"
+version = "1.0.4"
 description = "Cross-platform break reminder that actually makes you rest"
 authors = ["Tanzi"]
 license = "MIT OR Apache-2.0"

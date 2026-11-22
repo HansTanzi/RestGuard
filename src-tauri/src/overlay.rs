@@ -285,6 +285,15 @@ pub fn keep_on_home(window: &Window, pos: PhysicalPosition<i32>) {
     }
 }
 
+/// Position and size of a window of the given logical size, centered on a display. Used by the away-lock prompt
+pub fn centered_on(monitor: &Monitor, w: f64, h: f64) -> (Position, Size) {
+    let home = Rect::of_monitor(monitor);
+    // Logical size to the units of Rect: physical pixels, except logical points on macOS
+    let k = monitor.scale_factor() / unit_scale(monitor.scale_factor());
+    let (w, h) = ((w * k).min(home.w), (h * k).min(home.h));
+    (position(home.x + (home.w - w) / 2.0, home.y + (home.h - h) / 2.0), size(w, h))
+}
+
 /// Computes the centered area covering the given fraction
 fn cover_rect(home: Rect, coverage: f64) -> Rect {
     let (w, h) = (home.w * coverage, home.h * coverage);

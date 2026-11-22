@@ -1,4 +1,5 @@
 mod about;
+mod away_lock;
 mod bypass;
 mod config;
 mod i18n;
@@ -286,6 +287,24 @@ fn shrink_overlays(app: &AppHandle, shrunk: bool) {
     let _ = app.emit(SHRINK_EVENT, shrunk);
 }
 
+/// Seconds left before the away-lock prompt locks the screen; None when it isn't showing
+#[tauri::command]
+fn lock_prompt_left() -> Option<u64> {
+    away_lock::left_secs()
+}
+
+/// "Cancel" on the away-lock prompt
+#[tauri::command]
+fn cancel_lock_prompt(app: AppHandle) {
+    away_lock::cancel(&app);
+}
+
+/// "Lock now" on the away-lock prompt
+#[tauri::command]
+fn lock_prompt_now(app: AppHandle) {
+    away_lock::lock_now(&app);
+}
+
 /// Dev builds only: pressing Esc on the overlay ends the break immediately, for debugging
 #[tauri::command]
 fn dev_skip_rest(app: AppHandle) -> Result<(), String> {
@@ -473,6 +492,11 @@ fn spawn_ticker(app: AppHandle) {
         if overlay::is_shrunk() && overlay::urgent_left(URGENT_LIMIT).is_zero() {
             shrink_overlays(&app, false);
         }
+        {
+            let cfg = app.state::<AppState>().config.lock().unwrap().clone();
+            let away = cfg.idle().zip(idle).is_some_and(|(threshold, idle)| idle >= threshold);
+            away_lock::tick(&app, cfg.idle_lock() && snap.phase == Phase::Working, away);
+        }
         if snap.phase != Phase::Resting {
             locked = false;
         } else if !locked && !overlay::is_shrunk() {
@@ -627,6 +651,15 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| {
+            // Closing an away-lock prompt (e.g. Alt+F4) counts as cancelling it
+            if away_lock::is_prompt(window.label()) {
+                if let WindowEvent::CloseRequested { api, .. } = event {
+                    api.prevent_close();
+                    let app = window.app_handle().clone();
+                    thread::spawn(move || away_lock::cancel(&app));
+                }
+                return;
+            }
             if !overlay::is_overlay(window.label()) {
                 return;
             }
@@ -667,6 +700,9 @@ pub fn run() {
             keep_using,
             dismiss_break,
             set_overlay_shrunk,
+            lock_prompt_left,
+            cancel_lock_prompt,
+            lock_prompt_now,
             dev_skip_rest
         ])
         .build(context)

@@ -147,6 +147,9 @@ pub struct Config {
     pub postpone_minutes: f64,
     /// No input for this long counts as being away from the computer; 0 disables idle detection
     pub idle_minutes: f64,
+    /// Once counted as away while working, prompt on every screen and lock unless the prompt is clicked (see away_lock.rs).
+    /// Has no effect when idle detection is off
+    pub idle_lock: bool,
     /// Fixed times such as the end of the working day or lunch; breaks due shortly before one wait for it.
     /// The built-in ones always come first, followed by the user's own
     pub fixed_breaks: Vec<FixedBreak>,
@@ -179,6 +182,7 @@ impl Default for Config {
             rest_minutes: 10.0,
             postpone_minutes: 5.0,
             idle_minutes: 5.0,
+            idle_lock: true,
             fixed_breaks: BUILTIN_FIXED_BREAKS.iter().filter_map(|b| FixedBreak::builtin(b)).collect(),
             level: DEFAULT_LEVEL.to_string(),
             lock_screen: false,
@@ -251,6 +255,7 @@ impl Config {
              # {}\nrest_minutes = {:?}\n\n\
              # {}\npostpone_minutes = {:?}\n\n\
              # {}\nidle_minutes = {:?}\n\n\
+             # {}\nidle_lock = {}\n\n\
              # {}\nlevel = {}\n\n\
              # {}\nlock_screen = {}\n\n\
              # {}\nlock_delay_minutes = {:?}\n\n\
@@ -271,6 +276,8 @@ impl Config {
             self.postpone_minutes,
             c(&comment::IDLE),
             self.idle_minutes,
+            c(&comment::IDLE_LOCK),
+            self.idle_lock,
             c(&comment::LEVEL),
             quote(&self.level),
             c(&comment::LOCK_SCREEN),
@@ -402,6 +409,7 @@ impl Config {
             } else {
                 d.idle_minutes
             },
+            idle_lock: self.idle_lock,
             fixed_breaks,
             level,
             lock_screen: self.lock_screen,
@@ -443,6 +451,11 @@ impl Config {
     /// Idle detection threshold; None means disabled
     pub fn idle(&self) -> Option<Duration> {
         (self.idle_minutes > 0.0).then(|| minutes(self.idle_minutes))
+    }
+
+    /// Whether to prompt and lock the screen once away; needs idle detection
+    pub fn idle_lock(&self) -> bool {
+        self.idle_lock && self.idle().is_some()
     }
 
     /// The enabled fixed breaks and the quiet windows before them
@@ -530,6 +543,7 @@ mod tests {
             rest_minutes: 0.5,
             postpone_minutes: 2.5,
             idle_minutes: 0.0,
+            idle_lock: false,
             fixed_breaks: vec![
                 FixedBreak {
                     enabled: true,
@@ -625,6 +639,16 @@ mod tests {
         assert_eq!(delay(8.0), 5.0, "No later than the break lasts");
         assert_eq!(delay(-1.0), 3.0);
         assert_eq!(Config::default().lock_delay(), None, "Off by default");
+    }
+
+    #[test]
+    fn idle_lock_needs_idle_detection() {
+        assert!(Config::default().idle_lock(), "On by default");
+        let off = Config {
+            idle_minutes: 0.0,
+            ..Config::default()
+        };
+        assert!(!off.idle_lock());
     }
 
     #[test]

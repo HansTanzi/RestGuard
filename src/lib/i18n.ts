@@ -274,6 +274,9 @@ export interface SettingsStrings {
   idleMinutes: string;
   minutesHint: string;
   idleHint: string;
+  // Checkbox under the idle threshold; the seconds match PROMPT_TIME in src-tauri/src/away_lock.rs
+  idleLock: string;
+  idleLockHint: string;
   fixedBreaks: string;
   fixedBreakNames: Record<BuiltinFixedBreak, string>;
   // Accessible label for the name input of a custom fixed break
@@ -355,6 +358,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     idleMinutes: "离开判定（分钟）",
     minutesHint: "可以写小数，例如 0.5 表示 30 秒",
     idleHint: "超过这么久没有操作算离开电脑，离开期间不计工作时间；离开满一次休息时长就当已休息过。0 表示关闭",
+    idleLock: "自动锁屏",
+    idleLockHint: "判定为离开后，每个屏幕上都会弹出提示，30 秒内没有点击就自动锁屏。离开判定为 0 时不可用",
     fixedBreaks: "固定休息",
     fixedBreakNames: { work_end: "下班", lunch: "午休", sleep: "睡觉" },
     fixedBreakName: "名称",
@@ -432,6 +437,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     idleMinutes: "Idle threshold (minutes)",
     minutesHint: "Fractions are allowed, e.g. 0.5 = 30 seconds",
     idleHint: "No input for this long counts as away: that time isn't counted as work, and being away for a full break counts as a break. 0 = off",
+    idleLock: "Auto-lock",
+    idleLockHint: "Once you count as away, a prompt shows on every screen, and the screen locks unless it's clicked within 30 seconds. Unavailable when the idle threshold is 0",
     fixedBreaks: "Fixed breaks",
     fixedBreakNames: { work_end: "End of day", lunch: "Lunch", sleep: "Sleep" },
     fixedBreakName: "Name",
@@ -509,6 +516,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     idleMinutes: "दूर मानें (मिनट बाद)",
     minutesHint: "दशमलव भी चलेगा, जैसे 0.5 = 30 सेकंड",
     idleHint: "इतनी देर कोई इनपुट न हो तो आपको दूर माना जाएगा: वह समय काम नहीं गिना जाएगा, और पूरे ब्रेक जितनी देर दूर रहना ब्रेक माना जाएगा। 0 = बंद",
+    idleLock: "अपने आप लॉक करें",
+    idleLockHint: "दूर माने जाने पर हर स्क्रीन पर एक सूचना दिखती है, और 30 सेकंड में क्लिक न करने पर स्क्रीन लॉक हो जाती है। मान 0 होने पर उपलब्ध नहीं",
     fixedBreaks: "तय ब्रेक",
     fixedBreakNames: { work_end: "दिन का अंत", lunch: "लंच", sleep: "सोना" },
     fixedBreakName: "नाम",
@@ -586,6 +595,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     idleMinutes: "Umbral de inactividad (minutos)",
     minutesHint: "Se admiten decimales, p. ej. 0.5 = 30 segundos",
     idleHint: "Sin actividad durante este tiempo cuentas como ausente: no cuenta como trabajo, y ausentarte lo que dura un descanso cuenta como descanso. 0 = desactivado",
+    idleLock: "Bloqueo automático",
+    idleLockHint: "Cuando cuentas como ausente aparece un aviso en cada pantalla, y se bloquea si no se pulsa en 30 segundos. No disponible si el umbral es 0",
     fixedBreaks: "Pausas fijas",
     fixedBreakNames: { work_end: "Fin de la jornada", lunch: "Comida", sleep: "Dormir" },
     fixedBreakName: "Nombre",
@@ -663,6 +674,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     idleMinutes: "حد الخمول (بالدقائق)",
     minutesHint: "يُسمح بالكسور، مثلًا 0.5 = 30 ثانية",
     idleHint: "عدم الإدخال طوال هذه المدة يُعدّ غيابًا: لا يُحسب وقت عمل، والغياب بطول استراحة كاملة يُحسب استراحة. 0 = إيقاف",
+    idleLock: "قفل تلقائي",
+    idleLockHint: "عندما تُعدّ بعيدًا يظهر تنبيه على كل شاشة، وتُقفل الشاشة إن لم يُنقر عليه خلال 30 ثانية. غير متاح عندما يكون الحد صفرًا",
     fixedBreaks: "الاستراحات الثابتة",
     fixedBreakNames: { work_end: "نهاية الدوام", lunch: "الغداء", sleep: "النوم" },
     fixedBreakName: "الاسم",
@@ -740,6 +753,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     idleMinutes: "Seuil d'inactivité (minutes)",
     minutesHint: "Décimales acceptées, ex. 0.5 = 30 secondes",
     idleHint: "Sans activité pendant ce temps, vous êtes considéré absent : ce temps ne compte pas comme travail, et une absence aussi longue qu'une pause compte comme une pause. 0 = désactivé",
+    idleLock: "Verrouillage automatique",
+    idleLockHint: "Quand vous êtes considéré absent, un avis s'affiche sur chaque écran, et l'écran se verrouille sans clic dans les 30 secondes. Indisponible si le seuil vaut 0",
     fixedBreaks: "Pauses fixes",
     fixedBreakNames: { work_end: "Fin de journée", lunch: "Déjeuner", sleep: "Coucher" },
     fixedBreakName: "Nom",
@@ -817,6 +832,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     idleMinutes: "দূরে ধরা হবে (মিনিট পরে)",
     minutesHint: "দশমিক লেখা যায়, যেমন 0.5 = 30 সেকেন্ড",
     idleHint: "এতক্ষণ কোনো ইনপুট না থাকলে আপনাকে দূরে ধরা হবে: সেই সময় কাজ হিসেবে গোনা হবে না, আর পুরো বিরতির সমান সময় দূরে থাকলে বিরতি ধরা হবে। 0 = বন্ধ",
+    idleLock: "স্বয়ংক্রিয় লক",
+    idleLockHint: "দূরে ধরা হলে প্রতিটি স্ক্রিনে একটি বার্তা দেখায়, 30 সেকেন্ডের মধ্যে ক্লিক না করলে স্ক্রিন লক হয়ে যায়। মান 0 হলে পাওয়া যাবে না",
     fixedBreaks: "নির্দিষ্ট বিরতি",
     fixedBreakNames: { work_end: "দিনের শেষ", lunch: "দুপুরের খাবার", sleep: "ঘুম" },
     fixedBreakName: "নাম",
@@ -894,6 +911,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     idleMinutes: "Limite de inatividade (minutos)",
     minutesHint: "Aceita decimais, ex.: 0.5 = 30 segundos",
     idleHint: "Sem atividade por esse tempo, você conta como ausente: não conta como trabalho, e ficar ausente por uma pausa inteira conta como pausa. 0 = desativado",
+    idleLock: "Bloqueio automático",
+    idleLockHint: "Quando você conta como ausente, aparece um aviso em cada tela, e ela é bloqueada se não houver clique em 30 segundos. Indisponível se o limite for 0",
     fixedBreaks: "Pausas fixas",
     fixedBreakNames: { work_end: "Fim do expediente", lunch: "Almoço", sleep: "Dormir" },
     fixedBreakName: "Nome",
@@ -971,6 +990,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     idleMinutes: "Inaktivitätsschwelle (Minuten)",
     minutesHint: "Dezimalwerte erlaubt, z. B. 0.5 = 30 Sekunden",
     idleHint: "So lange ohne Eingabe gilt als abwesend: Diese Zeit zählt nicht als Arbeit, und so lange weg wie eine Pause zählt als Pause. 0 = aus",
+    idleLock: "Automatisch sperren",
+    idleLockHint: "Sobald Sie als abwesend gelten, erscheint auf jedem Bildschirm ein Hinweis; ohne Klick innerhalb von 30 Sekunden wird der Bildschirm gesperrt. Nicht verfügbar, wenn die Schwelle 0 ist",
     fixedBreaks: "Feste Pausen",
     fixedBreakNames: { work_end: "Feierabend", lunch: "Mittagspause", sleep: "Schlafenszeit" },
     fixedBreakName: "Name",
@@ -1049,6 +1070,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     idleMinutes: "離席とみなすまで（分）",
     minutesHint: "小数も使えます（例：0.5 は 30 秒）",
     idleHint: "この時間操作がなければ離席とみなし、作業時間に数えません。休憩時間分離席したら休憩済みとみなします。0 で無効",
+    idleLock: "自動ロック",
+    idleLockHint: "離席とみなされると各画面に通知が表示され、30 秒以内にクリックしなければ画面をロックします。0 のときは使えません",
     fixedBreaks: "固定の休憩",
     fixedBreakNames: { work_end: "終業", lunch: "昼休み", sleep: "就寝" },
     fixedBreakName: "名前",
@@ -1126,6 +1149,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     idleMinutes: "Soglia di inattività (minuti)",
     minutesHint: "Sono ammessi decimali, es. 0.5 = 30 secondi",
     idleHint: "Senza attività per questo tempo risulti assente: non conta come lavoro, e un'assenza lunga quanto una pausa conta come pausa. 0 = disattivato",
+    idleLock: "Blocco automatico",
+    idleLockHint: "Quando risulti assente compare un avviso su ogni schermo, e lo schermo si blocca se non lo clicchi entro 30 secondi. Non disponibile se la soglia è 0",
     fixedBreaks: "Pause fisse",
     fixedBreakNames: { work_end: "Fine giornata", lunch: "Pranzo", sleep: "Dormire" },
     fixedBreakName: "Nome",
@@ -1203,6 +1228,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     idleMinutes: "자리 비움 판정(분)",
     minutesHint: "소수도 입력할 수 있습니다(예: 0.5 = 30초)",
     idleHint: "이 시간 동안 입력이 없으면 자리 비움으로 보고 작업 시간에 넣지 않습니다. 휴식 시간만큼 비우면 휴식한 것으로 봅니다. 0 = 끄기",
+    idleLock: "자동 잠금",
+    idleLockHint: "자리 비움으로 판정되면 모든 화면에 알림이 뜨고, 30초 안에 클릭하지 않으면 화면을 잠급니다. 0이면 사용할 수 없습니다",
     fixedBreaks: "고정 휴식",
     fixedBreakNames: { work_end: "퇴근", lunch: "점심", sleep: "취침" },
     fixedBreakName: "이름",
@@ -1280,6 +1307,8 @@ const settings: Record<UiLang, SettingsStrings> = {
     idleMinutes: "Dianggap pergi setelah (menit)",
     minutesHint: "Boleh desimal, mis. 0.5 = 30 detik",
     idleHint: "Tanpa aktivitas selama ini dianggap pergi: waktunya tidak dihitung kerja, dan pergi selama satu istirahat penuh dihitung istirahat. 0 = mati",
+    idleLock: "Kunci otomatis",
+    idleLockHint: "Saat Anda dianggap pergi, pemberitahuan muncul di setiap layar, dan layar dikunci jika tidak diklik dalam 30 detik. Tidak tersedia jika batasnya 0",
     fixedBreaks: "Istirahat tetap",
     fixedBreakNames: { work_end: "Akhir jam kerja", lunch: "Makan siang", sleep: "Tidur" },
     fixedBreakName: "Nama",
@@ -1528,4 +1557,97 @@ const about: Record<UiLang, AboutStrings> = {
 
 export function aboutStrings(lang: UiLang): AboutStrings {
   return about[lang] ?? about.en;
+}
+
+// Away-lock prompt (src/routes/lock-prompt/+page.svelte)
+export interface LockPromptStrings {
+  title: string;
+  message: (secs: number) => string;
+  cancel: string;
+  lockNow: string;
+}
+
+const lockPrompt: Record<UiLang, LockPromptStrings> = {
+  zh: {
+    title: "即将锁屏",
+    message: (secs) => `检测到你已离开电脑，${secs} 秒后自动锁屏`,
+    cancel: "我还在，取消",
+    lockNow: "立即锁屏",
+  },
+  en: {
+    title: "Locking soon",
+    message: (secs) => `You seem to be away. The screen locks in ${secs} s`,
+    cancel: "I'm here, cancel",
+    lockNow: "Lock now",
+  },
+  hi: {
+    title: "स्क्रीन जल्द लॉक होगी",
+    message: (secs) => `लगता है आप दूर हैं। ${secs} सेकंड में स्क्रीन लॉक हो जाएगी`,
+    cancel: "मैं यहीं हूँ, रद्द करें",
+    lockNow: "अभी लॉक करें",
+  },
+  es: {
+    title: "Bloqueo inminente",
+    message: (secs) => `Parece que no estás. La pantalla se bloqueará en ${secs} s`,
+    cancel: "Estoy aquí, cancelar",
+    lockNow: "Bloquear ahora",
+  },
+  ar: {
+    title: "ستُقفل الشاشة قريبًا",
+    message: (secs) => `يبدو أنك بعيد. ستُقفل الشاشة بعد ${secs} ث`,
+    cancel: "أنا هنا، إلغاء",
+    lockNow: "اقفل الآن",
+  },
+  fr: {
+    title: "Verrouillage imminent",
+    message: (secs) => `Vous semblez absent. L'écran se verrouille dans ${secs} s`,
+    cancel: "Je suis là, annuler",
+    lockNow: "Verrouiller maintenant",
+  },
+  bn: {
+    title: "শীঘ্রই স্ক্রিন লক হবে",
+    message: (secs) => `মনে হচ্ছে আপনি দূরে আছেন। ${secs} সেকেন্ডে স্ক্রিন লক হবে`,
+    cancel: "আমি আছি, বাতিল করুন",
+    lockNow: "এখনই লক করুন",
+  },
+  pt: {
+    title: "Bloqueio em instantes",
+    message: (secs) => `Parece que você saiu. A tela será bloqueada em ${secs} s`,
+    cancel: "Estou aqui, cancelar",
+    lockNow: "Bloquear agora",
+  },
+  de: {
+    title: "Bildschirm wird gleich gesperrt",
+    message: (secs) => `Sie scheinen abwesend zu sein. Sperre in ${secs} s`,
+    cancel: "Bin da, abbrechen",
+    lockNow: "Jetzt sperren",
+  },
+  ja: {
+    title: "まもなく画面をロックします",
+    message: (secs) => `離席しているようです。${secs} 秒後に画面をロックします`,
+    cancel: "います、キャンセル",
+    lockNow: "今すぐロック",
+  },
+  it: {
+    title: "Blocco imminente",
+    message: (secs) => `Sembra che tu sia assente. Lo schermo si blocca tra ${secs} s`,
+    cancel: "Ci sono, annulla",
+    lockNow: "Blocca ora",
+  },
+  ko: {
+    title: "곧 화면을 잠급니다",
+    message: (secs) => `자리를 비우신 것 같아요. ${secs}초 후 화면을 잠급니다`,
+    cancel: "여기 있어요, 취소",
+    lockNow: "지금 잠그기",
+  },
+  id: {
+    title: "Layar segera dikunci",
+    message: (secs) => `Sepertinya Anda sedang pergi. Layar dikunci dalam ${secs} dtk`,
+    cancel: "Saya di sini, batal",
+    lockNow: "Kunci sekarang",
+  },
+};
+
+export function lockPromptStrings(lang: UiLang): LockPromptStrings {
+  return lockPrompt[lang] ?? lockPrompt.en;
 }

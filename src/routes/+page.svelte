@@ -567,6 +567,23 @@
           {#if openHint === "idle-hint"}
             <p class="hint" id="idle-hint">{s.idleHint}</p>
           {/if}
+          <!-- Needs idle detection, so it's off while the threshold is 0 -->
+          <div class="row sub">
+            <span class="inline">
+              <label class="check">
+                <input
+                  type="checkbox"
+                  disabled={!positive(draft.idle_minutes)}
+                  bind:checked={draft.idle_lock}
+                />
+                <span>{s.idleLock}</span>
+              </label>
+              {@render help("idle-lock-hint", s.idleLock)}
+            </span>
+          </div>
+          {#if openHint === "idle-lock-hint"}
+            <p class="hint sub" id="idle-lock-hint">{s.idleLockHint}</p>
+          {/if}
           <p class="hint">{s.minutesHint}</p>
           {#if saved && draft.work_minutes !== saved.work_minutes}
             <p class="hint accent">{s.workRestartHint}</p>

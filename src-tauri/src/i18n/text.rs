@@ -840,6 +840,22 @@ pub mod config {
         id: "Lama tanpa aktivitas hingga Anda dianggap pergi; waktu pergi tidak dihitung kerja, dan pergi selama satu istirahat penuh dihitung istirahat. 0 = mati",
     };
 
+    pub const IDLE_LOCK: Tr = Tr {
+        zh: "判定为离开后是否自动锁屏（true / false）：先在每个屏幕上弹出提示，30 秒内没点击就锁屏。idle_minutes 为 0 时无效",
+        en: "Lock the screen once you count as away (true / false): a prompt shows on every screen first, and the screen locks unless it's clicked within 30 seconds. No effect when idle_minutes is 0",
+        hi: "दूर माने जाने पर स्क्रीन अपने आप लॉक करें (true / false): पहले हर स्क्रीन पर सूचना दिखती है, और 30 सेकंड में क्लिक न करने पर स्क्रीन लॉक हो जाती है। idle_minutes 0 होने पर कोई असर नहीं",
+        es: "Bloquear la pantalla cuando cuentas como ausente (true / false): primero aparece un aviso en cada pantalla y se bloquea si no se pulsa en 30 segundos. Sin efecto si idle_minutes es 0",
+        ar: "قفل الشاشة عندما تُعدّ بعيدًا (true / false): يظهر تنبيه على كل شاشة أولًا، وتُقفل الشاشة إن لم يُنقر عليه خلال 30 ثانية. لا أثر له عندما يكون idle_minutes صفرًا",
+        fr: "Verrouiller l'écran quand vous êtes considéré absent (true / false) : un avis s'affiche d'abord sur chaque écran, et l'écran se verrouille sans clic dans les 30 secondes. Sans effet si idle_minutes vaut 0",
+        bn: "দূরে ধরা হলে স্ক্রিন লক করা হবে কি না (true / false): আগে প্রতিটি স্ক্রিনে একটি বার্তা দেখায়, 30 সেকেন্ডের মধ্যে ক্লিক না করলে স্ক্রিন লক হয়। idle_minutes 0 হলে কোনো প্রভাব নেই",
+        pt: "Bloquear a tela quando você conta como ausente (true / false): primeiro aparece um aviso em cada tela, e ela é bloqueada se não houver clique em 30 segundos. Sem efeito se idle_minutes for 0",
+        de: "Bildschirm sperren, sobald Sie als abwesend gelten (true / false): Zuerst erscheint auf jedem Bildschirm ein Hinweis; ohne Klick innerhalb von 30 Sekunden wird gesperrt. Ohne Wirkung, wenn idle_minutes 0 ist",
+        ja: "離席とみなされたら画面をロックするか（true / false）。まず各画面に通知を表示し、30 秒以内にクリックされなければロックします。idle_minutes が 0 のときは無効",
+        it: "Bloccare lo schermo quando risulti assente (true / false): prima compare un avviso su ogni schermo, e lo schermo si blocca se non lo clicchi entro 30 secondi. Nessun effetto se idle_minutes è 0",
+        ko: "자리 비움으로 판정되면 화면을 잠글지 여부(true / false). 먼저 모든 화면에 알림을 띄우고 30초 안에 클릭하지 않으면 잠급니다. idle_minutes가 0이면 효과 없음",
+        id: "Kunci layar saat Anda dianggap pergi (true / false): pemberitahuan muncul dulu di setiap layar, dan layar dikunci jika tidak diklik dalam 30 detik. Tidak berpengaruh jika idle_minutes 0",
+    };
+
     pub const FIXED_BREAKS: Tr = Tr {
         zh: "固定休息，每个 [[fixed_breaks]] 一个。work_end（下班）、lunch（午休）和 sleep（睡觉）是内置的，其他名字是自己添加的（如茶歇）。enabled 是否启用；time 时间，24 小时制 HH:MM（本地时间）；quiet_minutes 在这个时间之前多久内到点的休息推迟到这个时间；rest_minutes 到这个时间时开始的休息有多长，超过 rest_minutes 的部分可以继续使用电脑",
         en: "Fixed breaks, one [[fixed_breaks]] each. work_end (end of the working day), lunch and sleep (bedtime) are built in; other names are your own (e.g. a tea break). enabled: turn it on; time: 24-hour HH:MM in local time; quiet_minutes: a break due within this long before time waits until time; rest_minutes: how long the break that starts at time lasts; past the regular break length you can keep using the computer",
@@ -1018,13 +1034,14 @@ pub mod config {
 
     /// For tests: all comments
     #[cfg(test)]
-    pub const ALL: [&Tr; 17] = [
+    pub const ALL: [&Tr; 18] = [
         &HEADER,
         &UNITS,
         &WORK,
         &REST,
         &POSTPONE,
         &IDLE,
+        &IDLE_LOCK,
         &FIXED_BREAKS,
         &LEVEL,
         &LOCK_SCREEN,

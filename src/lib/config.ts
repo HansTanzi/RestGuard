@@ -105,6 +105,8 @@ export interface Config {
   rest_minutes: number;
   postpone_minutes: number;
   idle_minutes: number;
+  // Once away, prompt on every screen and lock unless clicked within 30 seconds; no effect when idle_minutes is 0
+  idle_lock: boolean;
   // Fixed times such as the end of the working day or lunch; the built-in ones come first, followed by the user's own
   fixed_breaks: FixedBreak[];
   // A built-in level or the name of a custom profile
@@ -135,6 +137,7 @@ export const DEFAULT_CONFIG: Config = {
   rest_minutes: 10,
   postpone_minutes: 5,
   idle_minutes: 5,
+  idle_lock: true,
   fixed_breaks: [
     { name: "work_end", enabled: true, time: "18:00", quiet_minutes: 30, rest_minutes: 30 },
     { name: "lunch", enabled: false, time: "12:00", quiet_minutes: 30, rest_minutes: 30 },

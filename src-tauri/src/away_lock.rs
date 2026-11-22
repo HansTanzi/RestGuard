@@ -9,16 +9,16 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
-use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{AppHandle, Emitter, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 
 const PREFIX: &str = "lockprompt-";
 /// How long the prompt waits for a click before locking; the "30 seconds" in the texts of src/lib/i18n.ts and the config comment match it
 const PROMPT_TIME: Duration = Duration::from_secs(30);
 /// Payload is the whole seconds left before locking; matches LEFT_EVENT in src/routes/lock-prompt/+page.svelte
 const LEFT_EVENT: &str = "lock-prompt:left";
-/// Logical size of each prompt window
+/// Logical size of each prompt window; the frontend asks for more height when its content needs it (see fit)
 const WIDTH: f64 = 460.0;
-const HEIGHT: f64 = 250.0;
+const HEIGHT: f64 = 280.0;
 
 struct State {
     /// When the screen locks; Some while the prompt is showing
@@ -97,6 +97,21 @@ pub fn lock_now(app: &AppHandle) {
     thread::spawn(lock::lock_screen);
 }
 
+/// The prompt's content needs `height` logical pixels (long texts wrap more in some languages): grows the prompt to
+/// fit and centers it again on its display. Never shrinks below HEIGHT
+pub fn fit(window: &WebviewWindow, height: f64) {
+    if !is_prompt(window.label()) || !height.is_finite() {
+        return;
+    }
+    let Ok(Some(monitor)) = window.current_monitor() else {
+        return;
+    };
+    // centered_on also caps it at the display's height
+    let (pos, size) = overlay::centered_on(&monitor, WIDTH, height.max(HEIGHT));
+    let _ = window.set_position(pos);
+    let _ = window.set_size(size);
+}
+
 fn showing() -> bool {
     STATE.lock().unwrap().deadline.is_some()
 }
@@ -135,8 +150,11 @@ fn open_all(app: &AppHandle) {
         match built {
             Ok(window) => {
                 let (pos, size) = overlay::centered_on(monitor, WIDTH, HEIGHT);
-                let _ = window.set_size(size);
+                // Move first, then size (as overlay::open_all does): the window is created on the primary display, and
+                // moving it to a display of another scale makes Windows rescale it by the ratio of the two scales,
+                // which would shrink or grow a size set before the move
                 let _ = window.set_position(pos);
+                let _ = window.set_size(size);
                 let _ = window.show();
                 // Focus the one on the primary screen so Esc and Enter work there
                 if primary_pos.is_none_or(|p| p == *monitor.position()) {

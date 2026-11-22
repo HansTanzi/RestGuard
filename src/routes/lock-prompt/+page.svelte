@@ -17,6 +17,7 @@
 
   let s = $state<LockPromptStrings | null>(null);
   let left = $state<number | null>(null);
+  let main: HTMLElement;
 
   function applyLang(v: UiLang) {
     s = lockPromptStrings(v);
@@ -42,14 +43,24 @@
       if (e.key === "Escape") cancel();
     };
     window.addEventListener("keydown", onKey);
+    // main is at least as tall as the window and grows past it when the texts wrap more (long languages,
+    // big system font): then ask the backend to grow the window to fit
+    const fit = new ResizeObserver(() => {
+      const need = Math.ceil(main.offsetHeight);
+      if (need > window.innerHeight + 1) {
+        invoke("fit_lock_prompt", { height: need }).catch(console.error);
+      }
+    });
+    fit.observe(main);
     return () => {
       unlistens.forEach((p) => p.then((off) => off()));
       window.removeEventListener("keydown", onKey);
+      fit.disconnect();
     };
   });
 </script>
 
-<main>
+<main bind:this={main}>
   <!-- The prompt has no title bar, so name the app that opened it -->
   <div class="brand">RestGuard</div>
   {#if s}
@@ -60,6 +71,7 @@
       <button class="primary" autofocus onclick={cancel}>{s.cancel}</button>
       <button class="ghost" onclick={lockNow}>{s.lockNow}</button>
     </div>
+    <p class="hint">{s.hint}</p>
   {/if}
 </main>
 
@@ -76,13 +88,15 @@
   main {
     position: relative;
     box-sizing: border-box;
-    height: 100vh;
+    /* Not height: content that doesn't fit makes main taller, which the ResizeObserver above notices */
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 0.9rem;
-    padding: 1.25rem 1.5rem;
+    /* Top padding keeps the content clear of .brand */
+    padding: 2.2rem 1.5rem 1.25rem;
     text-align: center;
     color: var(--fg);
     border: 1px solid var(--line);
@@ -117,6 +131,11 @@
     margin: 0;
     color: var(--muted);
     font-variant-numeric: tabular-nums;
+  }
+
+  .hint {
+    font-size: 0.75rem;
+    opacity: 0.8;
   }
 
   .actions {

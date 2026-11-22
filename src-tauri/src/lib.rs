@@ -305,6 +305,12 @@ fn lock_prompt_now(app: AppHandle) {
     away_lock::lock_now(&app);
 }
 
+/// The away-lock prompt's content needs `height` logical pixels; grows that prompt to fit
+#[tauri::command]
+fn fit_lock_prompt(window: tauri::WebviewWindow, height: f64) {
+    away_lock::fit(&window, height);
+}
+
 /// Dev builds only: pressing Esc on the overlay ends the break immediately, for debugging
 #[tauri::command]
 fn dev_skip_rest(app: AppHandle) -> Result<(), String> {
@@ -703,6 +709,7 @@ pub fn run() {
             lock_prompt_left,
             cancel_lock_prompt,
             lock_prompt_now,
+            fit_lock_prompt,
             dev_skip_rest
         ])
         .build(context)

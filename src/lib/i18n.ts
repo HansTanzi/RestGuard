@@ -1565,6 +1565,8 @@ export interface LockPromptStrings {
   message: (secs: number) => string;
   cancel: string;
   lockNow: string;
+  // Where to turn the feature off; uses the labels of SettingsStrings.title, timing and idleLock
+  hint: string;
 }
 
 const lockPrompt: Record<UiLang, LockPromptStrings> = {
@@ -1573,78 +1575,91 @@ const lockPrompt: Record<UiLang, LockPromptStrings> = {
     message: (secs) => `检测到你已离开电脑，${secs} 秒后自动锁屏`,
     cancel: "我还在，取消",
     lockNow: "立即锁屏",
+    hint: "可在“设置 › 时间 › 离开判定”中关闭自动锁屏或修改判定时长",
   },
   en: {
     title: "Locking soon",
     message: (secs) => `You seem to be away. The screen locks in ${secs} s`,
     cancel: "I'm here, cancel",
     lockNow: "Lock now",
+    hint: "You can turn off auto-lock or change the threshold in Settings › Timing › Idle threshold",
   },
   hi: {
     title: "स्क्रीन जल्द लॉक होगी",
     message: (secs) => `लगता है आप दूर हैं। ${secs} सेकंड में स्क्रीन लॉक हो जाएगी`,
     cancel: "मैं यहीं हूँ, रद्द करें",
     lockNow: "अभी लॉक करें",
+    hint: "सेटिंग्स › समय › दूर मानें में आप अपने आप लॉक बंद कर सकते हैं या समय सीमा बदल सकते हैं",
   },
   es: {
     title: "Bloqueo inminente",
     message: (secs) => `Parece que no estás. La pantalla se bloqueará en ${secs} s`,
     cancel: "Estoy aquí, cancelar",
     lockNow: "Bloquear ahora",
+    hint: "Puedes desactivar el bloqueo automático o cambiar el umbral en Ajustes › Tiempos › Umbral de inactividad",
   },
   ar: {
     title: "ستُقفل الشاشة قريبًا",
     message: (secs) => `يبدو أنك بعيد. ستُقفل الشاشة بعد ${secs} ث`,
     cancel: "أنا هنا، إلغاء",
     lockNow: "اقفل الآن",
+    hint: "يمكنك إيقاف القفل التلقائي أو تغيير المدة من الإعدادات › التوقيت › حد الخمول",
   },
   fr: {
     title: "Verrouillage imminent",
     message: (secs) => `Vous semblez absent. L'écran se verrouille dans ${secs} s`,
     cancel: "Je suis là, annuler",
     lockNow: "Verrouiller maintenant",
+    hint: "Vous pouvez désactiver le verrouillage automatique ou modifier le seuil dans Paramètres › Durées › Seuil d'inactivité",
   },
   bn: {
     title: "শীঘ্রই স্ক্রিন লক হবে",
     message: (secs) => `মনে হচ্ছে আপনি দূরে আছেন। ${secs} সেকেন্ডে স্ক্রিন লক হবে`,
     cancel: "আমি আছি, বাতিল করুন",
     lockNow: "এখনই লক করুন",
+    hint: "সেটিংস › সময় › দূরে ধরা হবে থেকে স্বয়ংক্রিয় লক বন্ধ করতে বা সময়সীমা বদলাতে পারেন",
   },
   pt: {
     title: "Bloqueio em instantes",
     message: (secs) => `Parece que você saiu. A tela será bloqueada em ${secs} s`,
     cancel: "Estou aqui, cancelar",
     lockNow: "Bloquear agora",
+    hint: "Você pode desativar o bloqueio automático ou alterar o limite em Configurações › Tempos › Limite de inatividade",
   },
   de: {
     title: "Bildschirm wird gleich gesperrt",
     message: (secs) => `Sie scheinen abwesend zu sein. Sperre in ${secs} s`,
     cancel: "Bin da, abbrechen",
     lockNow: "Jetzt sperren",
+    hint: "Unter Einstellungen › Zeiten › Inaktivitätsschwelle können Sie die automatische Sperre deaktivieren oder die Schwelle ändern",
   },
   ja: {
     title: "まもなく画面をロックします",
     message: (secs) => `離席しているようです。${secs} 秒後に画面をロックします`,
     cancel: "います、キャンセル",
     lockNow: "今すぐロック",
+    hint: "「設定 › 時間 › 離席とみなすまで」で自動ロックをオフにしたり、判定時間を変更したりできます",
   },
   it: {
     title: "Blocco imminente",
     message: (secs) => `Sembra che tu sia assente. Lo schermo si blocca tra ${secs} s`,
     cancel: "Ci sono, annulla",
     lockNow: "Blocca ora",
+    hint: "Puoi disattivare il blocco automatico o modificare la soglia in Impostazioni › Tempi › Soglia di inattività",
   },
   ko: {
     title: "곧 화면을 잠급니다",
     message: (secs) => `자리를 비우신 것 같아요. ${secs}초 후 화면을 잠급니다`,
     cancel: "여기 있어요, 취소",
     lockNow: "지금 잠그기",
+    hint: "설정 › 시간 › 자리 비움 판정에서 자동 잠금을 끄거나 판정 시간을 바꿀 수 있어요",
   },
   id: {
     title: "Layar segera dikunci",
     message: (secs) => `Sepertinya Anda sedang pergi. Layar dikunci dalam ${secs} dtk`,
     cancel: "Saya di sini, batal",
     lockNow: "Kunci sekarang",
+    hint: "Anda dapat menonaktifkan kunci otomatis atau mengubah durasinya di Pengaturan › Waktu › Dianggap pergi setelah",
   },
 };
 

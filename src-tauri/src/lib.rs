@@ -541,16 +541,167 @@ fn warn_if_already_running(identifier: &str) {
 /// so repeated launches don't stack dialogs up.
 fn show_already_running(app: &AppHandle) {
     use std::sync::atomic::{AtomicBool, Ordering};
-    use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
     static SHOWING: AtomicBool = AtomicBool::new(false);
     if SHOWING.swap(true, Ordering::SeqCst) {
         return;
     }
-    app.dialog()
-        .message(i18n::t(&i18n::text::ALREADY_RUNNING))
-        .title("RestGuard")
-        .kind(MessageDialogKind::Info)
-        .show(|_| SHOWING.store(false, Ordering::SeqCst));
+    #[cfg(windows)]
+    {
+        // The work area of the display under the cursor: that's where the user just launched RestGuard from.
+        // An ownerless message box would otherwise open on the primary display, easy to miss with several
+        let area = app
+            .cursor_position()
+            .ok()
+            .and_then(|p| app.monitor_from_point(p.x, p.y).ok().flatten())
+            .map(|m| *m.work_area());
+        thread::spawn(move || {
+            already_running_box(area);
+            SHOWING.store(false, Ordering::SeqCst);
+        });
+    }
+    // AppKit and GTK only work on the main thread
+    #[cfg(target_os = "macos")]
+    if app
+        .run_on_main_thread(|| {
+            already_running_alert();
+            SHOWING.store(false, Ordering::SeqCst);
+        })
+        .is_err()
+    {
+        SHOWING.store(false, Ordering::SeqCst);
+    }
+    #[cfg(target_os = "linux")]
+    if app.run_on_main_thread(|| already_running_dialog(|| SHOWING.store(false, Ordering::SeqCst))).is_err() {
+        SHOWING.store(false, Ordering::SeqCst);
+    }
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
+    {
+        use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
+        app.dialog()
+            .message(i18n::t(&i18n::text::ALREADY_RUNNING))
+            .title("RestGuard")
+            .kind(MessageDialogKind::Info)
+            .show(|_| SHOWING.store(false, Ordering::SeqCst));
+    }
+}
+
+/// Shows the "already running" message box, blocking until it's dismissed, centered on `area` (physical pixels) and
+/// above other windows. A CBT hook on this thread moves the box when it's activated, before it's first painted.
+#[cfg(windows)]
+fn already_running_box(area: Option<tauri::PhysicalRect<i32, u32>>) {
+    use std::cell::Cell;
+    use windows::{
+        core::HSTRING,
+        Win32::{
+            Foundation::{HWND, LPARAM, LRESULT, RECT, WPARAM},
+            System::Threading::GetCurrentThreadId,
+            UI::WindowsAndMessaging::{
+                CallNextHookEx, GetWindowRect, MessageBoxW, SetWindowPos, SetWindowsHookExW, UnhookWindowsHookEx,
+                HCBT_ACTIVATE, HHOOK, MB_ICONINFORMATION, MB_OK, MB_SETFOREGROUND, MB_TOPMOST, SWP_NOACTIVATE,
+                SWP_NOSIZE, SWP_NOZORDER, WH_CBT,
+            },
+        },
+    };
+    thread_local! {
+        static HOOK: Cell<Option<(HHOOK, tauri::PhysicalRect<i32, u32>)>> = const { Cell::new(None) };
+    }
+    unsafe extern "system" fn on_cbt(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
+        if code == HCBT_ACTIVATE as i32 {
+            if let Some((hook, area)) = HOOK.take() {
+                let hwnd = HWND(wparam.0 as _);
+                // Twice: the box is laid out for the primary display, and moving it to one of another scale makes
+                // Windows rescale it, so the second pass centers it at its new size
+                for _ in 0..2 {
+                    let mut rect = RECT::default();
+                    if unsafe { GetWindowRect(hwnd, &mut rect) }.is_err() {
+                        break;
+                    }
+                    let (w, h) = (rect.right - rect.left, rect.bottom - rect.top);
+                    let (aw, ah) = (area.size.width as i32, area.size.height as i32);
+                    let x = area.position.x + ((aw - w) / 2).max(0);
+                    let y = area.position.y + ((ah - h) / 2).max(0);
+                    if (x, y) == (rect.left, rect.top) {
+                        break;
+                    }
+                    let flags = SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE;
+                    let _ = unsafe { SetWindowPos(hwnd, None, x, y, 0, 0, flags) };
+                }
+                let _ = unsafe { UnhookWindowsHookEx(hook) };
+            }
+        }
+        unsafe { CallNextHookEx(None, code, wparam, lparam) }
+    }
+    if let Some(area) = area {
+        if let Ok(hook) = unsafe { SetWindowsHookExW(WH_CBT, Some(on_cbt), None, GetCurrentThreadId()) } {
+            HOOK.set(Some((hook, area)));
+        }
+    }
+    let text = HSTRING::from(i18n::t(&i18n::text::ALREADY_RUNNING));
+    let flags = MB_OK | MB_ICONINFORMATION | MB_TOPMOST | MB_SETFOREGROUND;
+    unsafe { MessageBoxW(None, &text, &HSTRING::from("RestGuard"), flags) };
+    // The box never activated (it failed to open): don't leave the hook behind
+    if let Some((hook, _)) = HOOK.take() {
+        let _ = unsafe { UnhookWindowsHookEx(hook) };
+    }
+}
+
+/// Shows the "already running" alert on the screen under the mouse, blocking until it's dismissed. Main thread only.
+/// An alert with no parent window otherwise opens on the main screen, easy to miss with several
+#[cfg(target_os = "macos")]
+fn already_running_alert() {
+    use objc2_app_kit::{NSAlert, NSApplication, NSEvent, NSScreen};
+    use objc2_foundation::{MainThreadMarker, NSPoint, NSString};
+    let Some(mtm) = MainThreadMarker::new() else {
+        return;
+    };
+    let alert = NSAlert::new(mtm);
+    alert.setMessageText(&NSString::from_str("RestGuard"));
+    alert.setInformativeText(&NSString::from_str(i18n::t(&i18n::text::ALREADY_RUNNING)));
+    // Lay out now rather than in runModal, so the window has its final size to center
+    alert.layout();
+    let window = alert.window();
+    // Both in global points with the origin at the bottom left of the main screen
+    let mouse = NSEvent::mouseLocation();
+    let screen = NSScreen::screens(mtm).iter().find(|s| {
+        let f = s.frame();
+        (f.origin.x..f.origin.x + f.size.width).contains(&mouse.x)
+            && (f.origin.y..f.origin.y + f.size.height).contains(&mouse.y)
+    });
+    if let Some(screen) = screen {
+        let area = screen.visibleFrame();
+        let size = window.frame().size;
+        window.setFrameOrigin(NSPoint::new(
+            area.origin.x + (area.size.width - size.width).max(0.0) / 2.0,
+            area.origin.y + (area.size.height - size.height).max(0.0) / 2.0,
+        ));
+    }
+    // RestGuard runs as an accessory app that's normally inactive: bring the alert in front of other apps so that
+    // Return dismisses it. The replacement, activate, needs macOS 14
+    #[allow(deprecated)]
+    NSApplication::sharedApplication(mtm).activateIgnoringOtherApps(true);
+    alert.runModal();
+}
+
+/// Shows the "already running" dialog without blocking and calls `closed` once it's dismissed. Main thread only.
+/// GTK centers it on the monitor under the pointer; on Wayland the compositor places it instead
+#[cfg(target_os = "linux")]
+fn already_running_dialog(closed: impl Fn() + 'static) {
+    use gtk::prelude::*;
+    let dialog = gtk::MessageDialog::new(
+        None::<&gtk::Window>,
+        gtk::DialogFlags::empty(),
+        gtk::MessageType::Info,
+        gtk::ButtonsType::Ok,
+        i18n::t(&i18n::text::ALREADY_RUNNING),
+    );
+    dialog.set_title("RestGuard");
+    dialog.set_position(gtk::WindowPosition::Center);
+    dialog.set_keep_above(true);
+    dialog.connect_response(move |dialog, _| {
+        dialog.close();
+        closed();
+    });
+    dialog.present();
 }
 
 /// Probes the named mutex tauri-plugin-single-instance holds on Windows, so it also detects
